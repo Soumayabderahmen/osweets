@@ -4,12 +4,14 @@ import {
   Leaf,
   Lock,
   Package,
+  MapPin,
   ChevronRight,
   ArrowRight,
   ArrowUpRight,
   Instagram,
   Send,
 } from "lucide-react";
+import { FULFILLMENT_LABELS } from "@/lib/fulfillment";
 import hero from "@/assets/hero-plateau-signature.jpg";
 import catKaak from "@/assets/cat-kaak.jpg";
 import catPat from "@/assets/cat-patisserie.jpg";
@@ -114,16 +116,17 @@ function Home() {
 
       {/* Trust badges */}
       <section className="border-y border-beige bg-sand/50">
-        <div className="container-os grid grid-cols-2 md:grid-cols-4">
+        <div className="container-os grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {[
             { Icon: Hand, t: "Fait main", s: "Façonné à la commande" },
             { Icon: Leaf, t: "Ingrédients frais", s: "Sélection d'exception" },
             { Icon: Lock, t: "Paiement sécurisé", s: "Stripe · PayPal" },
             { Icon: Package, t: "Livraison France", s: "Expédié en 24-48h" },
+            { Icon: MapPin, t: FULFILLMENT_LABELS.pickup, s: "Évry-Courcouronnes" },
           ].map(({ Icon, t, s }, i) => (
             <div
               key={t}
-              className={`flex items-center gap-3 px-2 py-6 md:py-7 ${i % 2 === 1 ? "border-l border-beige" : ""} ${i > 0 ? "md:border-l md:border-beige" : ""}`}
+              className={`flex items-center gap-3 px-2 py-6 md:py-7 ${i % 2 === 1 ? "border-l border-beige" : ""} ${i > 0 ? "lg:border-l lg:border-beige" : ""}`}
             >
               <Icon className="h-5 w-5 shrink-0 text-gold" strokeWidth={1.5} />
               <div>
