@@ -291,7 +291,7 @@ export function CategoryPage({
     <>
       {banner}
 
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-beige pb-4">
         <div className="flex items-center gap-4">
           <span className="text-[11px] uppercase tracking-[0.18em] text-charbon-soft">
             {filtered.length} produit{filtered.length > 1 ? "s" : ""}
@@ -318,7 +318,7 @@ export function CategoryPage({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="min-w-[150px] border-0 border-b border-line bg-transparent px-1 py-1.5 text-sm text-charbon focus:border-gold focus:outline-none"
+            className="min-w-[150px] rounded-full border border-beige bg-transparent px-4 py-1.5 text-sm text-charbon outline-none focus:border-gold"
           >
             <option value="feature">En vedette</option>
             <option value="new">Nouveautés</option>
@@ -329,7 +329,7 @@ export function CategoryPage({
       </div>
 
       {visible.length === 0 ? (
-        <div className="py-20 text-center text-charbon-soft">
+        <div className="py-10 text-center text-charbon-soft">
           <p>Aucun produit ne correspond à ces filtres.</p>
           <button onClick={resetFilters} className="link-gold mt-5 inline-block">
             Réinitialiser les filtres
@@ -411,7 +411,7 @@ export function CategoryPage({
         />
       )}
       <div>
-        <div className="container-os py-5">
+        <div className="container-os py-6">
           {breadcrumb && (
             <nav className="text-xs text-charbon-soft" aria-label="Fil d'ariane">
               <ol className="flex flex-wrap items-center gap-1">

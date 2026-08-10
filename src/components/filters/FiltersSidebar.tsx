@@ -3,7 +3,6 @@ import { SlidersHorizontal, Filter } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-
 export type FilterOption = { value: string; label: string; count: number };
 
 export type Section =
@@ -76,14 +75,13 @@ function SidebarBody({
       </div>
 
       {sections.map((s, i) => (
-        <div key={i} className="border-t border-line pt-7">
+        <div key={i} className="border-t border-beige pt-7">
           <SectionView section={s} />
         </div>
       ))}
     </div>
   );
 }
-
 
 function SectionView({ section }: { section: Section }) {
   if (section.kind === "stock") {
@@ -130,9 +128,7 @@ function SectionView({ section }: { section: Section }) {
           {section.label ?? "Prix"}
         </h3>
         <p className="text-xs text-charbon/60 mb-4">
-          {single
-            ? `Prix : ${safeMin} €`
-            : `Le prix le plus élevé est ${safeMax} €`}
+          {single ? `Prix : ${safeMin} €` : `Le prix le plus élevé est ${safeMax} €`}
         </p>
         <div className="px-1 mb-5">
           <Slider
@@ -141,9 +137,7 @@ function SectionView({ section }: { section: Section }) {
             max={sliderMax}
             step={1}
             disabled={single}
-            onValueChange={(v) =>
-              section.onChange(section.min, v[0] ?? safeMax)
-            }
+            onValueChange={(v) => section.onChange(section.min, v[0] ?? safeMax)}
           />
         </div>
         <div className="flex items-center gap-3">
@@ -159,7 +153,7 @@ function SectionView({ section }: { section: Section }) {
                 const v = Number(e.target.value);
                 section.onChange(v, Math.max(v, section.max));
               }}
-              className="w-full border border-border bg-white px-3 py-2 text-sm mt-1 disabled:opacity-70"
+              className="mt-1 w-full rounded-xl border border-beige bg-white px-3 py-2 text-sm outline-none focus:border-gold disabled:opacity-70"
             />
           </div>
           <span className="pt-5 text-charbon/40">—</span>
@@ -175,7 +169,7 @@ function SectionView({ section }: { section: Section }) {
                 const v = Number(e.target.value);
                 section.onChange(Math.min(v, section.min), v);
               }}
-              className="w-full border border-border bg-white px-3 py-2 text-sm mt-1 disabled:opacity-70"
+              className="mt-1 w-full rounded-xl border border-beige bg-white px-3 py-2 text-sm outline-none focus:border-gold disabled:opacity-70"
             />
           </div>
         </div>
@@ -292,17 +286,13 @@ export function FiltersSidebar({
         />
       </aside>
 
-
-
       {/* Mobile trigger */}
       <div className="lg:hidden flex items-center justify-between gap-3 -mb-2">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="inline-flex items-center gap-2 border border-border bg-white px-4 py-2 text-xs uppercase tracking-[0.16em] text-charbon hover:border-gold hover:text-gold transition">
+            <button className="inline-flex items-center gap-2 rounded-full border border-beige bg-white px-4 py-2 text-xs uppercase tracking-[0.18em] text-charbon transition hover:border-gold hover:text-gold">
               <Filter className="h-4 w-4" /> Filtrer
-              {hasActive && (
-                <span className="ml-1 inline-block h-2 w-2 rounded-full bg-gold" />
-              )}
+              {hasActive && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-gold" />}
             </button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[320px] sm:w-[380px] overflow-y-auto">
