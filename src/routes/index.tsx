@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Hand,
@@ -66,6 +67,7 @@ function Home() {
   const bestSellers = products
     .filter((p) => p.badge === "bestseller" || p.badge === "nouveau")
     .slice(0, 6);
+  const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "success" | "error">("idle");
 
   return (
     <div className="fade-in-up">
@@ -430,7 +432,7 @@ function Home() {
       </section>
 
       {/* NEWSLETTER */}
-      <section className="section-y bg-ivory">
+      <section className="bg-ivory py-24 lg:py-32">
         <div className="container-os mx-auto max-w-2xl text-center">
           <div className="eyebrow mb-4">Newsletter</div>
           <h2 className="font-display text-4xl md:text-5xl leading-tight text-charbon">
@@ -439,27 +441,45 @@ function Home() {
           <p className="mt-5 text-charbon-soft leading-relaxed">
             Nouvelles collections, créations saisonnières, offres exclusives.
           </p>
-          <form
-            className="mt-9 max-w-md mx-auto flex flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Merci ! Inscription enregistrée.");
-            }}
-          >
-            <label htmlFor="newsletter-email" className="sr-only">
-              Adresse email
-            </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              required
-              placeholder="Votre email"
-              className="h-12 flex-1 rounded-full border border-beige bg-sand px-5 text-sm text-charbon placeholder:text-charbon-soft outline-none focus:border-gold"
-            />
-            <button type="submit" className="btn bg-charbon text-ivory hover:bg-gold">
-              S'inscrire <Send className="h-3.5 w-3.5" />
-            </button>
-          </form>
+          {newsletterStatus === "success" ? (
+            <p className="mt-8 text-sm text-gold">Merci ! Inscription enregistrée.</p>
+          ) : (
+            <form
+              className="mx-auto mt-9 flex max-w-md flex-col gap-3 sm:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const email = new FormData(e.currentTarget).get("email");
+                if (typeof email !== "string" || !email.includes("@")) {
+                  setNewsletterStatus("error");
+                  return;
+                }
+                setNewsletterStatus("success");
+              }}
+            >
+              <label htmlFor="newsletter-email" className="sr-only">
+                Adresse email
+              </label>
+              <input
+                id="newsletter-email"
+                name="email"
+                type="email"
+                required
+                placeholder="Votre email"
+                className="h-12 flex-1 rounded-full border border-beige bg-sand px-5 text-sm text-charbon placeholder:text-charbon-soft outline-none focus:border-gold"
+              />
+              <button
+                type="submit"
+                className="btn bg-charbon text-ivory hover:bg-gold disabled:opacity-50"
+              >
+                S'inscrire <Send className="h-3.5 w-3.5" />
+              </button>
+            </form>
+          )}
+          {newsletterStatus === "error" && (
+            <p className="mt-4 text-xs text-destructive">
+              Merci de renseigner une adresse email valide.
+            </p>
+          )}
         </div>
       </section>
     </div>
