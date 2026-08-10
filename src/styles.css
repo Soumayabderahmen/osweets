@@ -158,16 +158,16 @@
     border: 1px solid transparent;
     white-space: normal;
   }
-  /* Primaire : charbon plein */
+  /* Primaire : charbon plein — au survol, l'or est la couleur d'accent, jamais un charbon plus foncé */
   .btn-gold { background: var(--charbon); color: var(--ivory); }
-  .btn-gold:hover { background: #000; }
+  .btn-gold:hover { background: var(--gold); }
   /* Secondaire : contour fin */
   .btn-outline-gold { background: transparent; color: var(--charbon); border-color: var(--charbon); }
   .btn-outline-gold:hover { background: var(--charbon); color: var(--ivory); }
   .btn-outline-white { background: transparent; color: white; border-color: rgba(255,255,255,0.7); }
   .btn-outline-white:hover { background: white; color: var(--charbon); }
   .btn-dark { background: var(--charbon); color: var(--ivory); }
-  .btn-dark:hover { background: #000; }
+  .btn-dark:hover { background: var(--gold); }
 
   /* Lien doré souligné (tertiaire) */
   .link-gold {

@@ -88,33 +88,33 @@ function Page() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-white border border-border p-8 space-y-4" noValidate>
+            <form onSubmit={handleSubmit} className="rounded-2xl bg-white border border-beige p-8 space-y-4" noValidate>
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Prénom *" className="w-full bg-white border border-border px-4 py-3" />
+                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Prénom *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
                   {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
                 </div>
                 <div>
-                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom *" className="w-full bg-white border border-border px-4 py-3" />
+                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
                   {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email *" className="w-full bg-white border border-border px-4 py-3" />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
                   {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
                 </div>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone" className="w-full bg-white border border-border px-4 py-3" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
               </div>
 
               <div>
-                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Sujet *" className="w-full bg-white border border-border px-4 py-3" />
+                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Sujet *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
                 {errors.subject && <p className="text-xs text-red-600 mt-1">{errors.subject}</p>}
               </div>
 
               <div>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6} placeholder="Votre message *" className="w-full bg-white border border-border px-4 py-3" />
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6} placeholder="Votre message *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
                 {errors.message && <p className="text-xs text-red-600 mt-1">{errors.message}</p>}
               </div>
 

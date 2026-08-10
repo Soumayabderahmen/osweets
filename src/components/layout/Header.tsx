@@ -707,7 +707,7 @@ export function Header() {
 
             {/* Panel */}
             <aside
-              className={`absolute inset-y-0 left-0 w-[88%] max-w-[380px] bg-ivory shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+              className={`absolute inset-y-0 left-0 w-[88%] max-w-[380px] bg-ivory shadow-xl flex flex-col transition-transform duration-300 ease-out ${
                 mobileOpen ? "translate-x-0" : "-translate-x-full"
               }`}
               role="dialog"
