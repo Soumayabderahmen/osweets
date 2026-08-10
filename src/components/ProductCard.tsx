@@ -154,7 +154,7 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <ProductImage
               src={product.image}
               alt={product.name}
-              className="transition-transform duration-700 group-hover:scale-[1.03]"
+              className="transition-transform duration-700 group-hover:scale-105"
             />
           </Link>
           <div className="flex flex-1 flex-col justify-center py-5 sm:py-6 sm:pl-8">
@@ -226,9 +226,12 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <ProductImage
               src={product.image}
               alt={product.name}
-              className="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </Link>
+
+          {/* Voile au survol (desktop) */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-charbon/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           {badge && (
             <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charbon px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.2em] text-ivory">
@@ -236,8 +239,8 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             </span>
           )}
 
-          {/* Actions rondes — survol desktop, permanentes sur mobile */}
-          <div className="absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-2 transition-all duration-300 lg:translate-y-2 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100">
+          {/* Actions rondes flottantes — desktop uniquement, au survol */}
+          <div className="absolute inset-x-0 bottom-4 z-10 hidden items-center justify-center gap-2.5 opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 lg:flex">
             <RoundButton
               label={`${fav ? "Retirer" : "Ajouter"} ${product.name} ${fav ? "des" : "aux"} favoris`}
               onClick={onFavorite}
@@ -262,6 +265,37 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
               <Eye className="h-4 w-4 text-charbon" />
             </RoundButton>
           </div>
+        </div>
+
+        {/* Actions — rangée permanente sous la card, mobile uniquement */}
+        <div className="mt-3 flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={onFavorite}
+            aria-label={`${fav ? "Retirer" : "Ajouter"} ${product.name} ${fav ? "des" : "aux"} favoris`}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-beige"
+          >
+            <Heart
+              className={`h-4 w-4 ${fav ? "text-favorite" : "text-charbon"}`}
+              style={fav ? { fill: "var(--favorite)", color: "var(--favorite)" } : undefined}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={actionMeta[action].run}
+            aria-label={`${actionMeta[action].label} — ${product.name}`}
+            className="h-11 flex-1 rounded-full bg-charbon text-xs uppercase tracking-[0.15em] text-ivory"
+          >
+            {actionMeta[action].label}
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickView(true)}
+            aria-label={`Aperçu rapide — ${product.name}`}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-beige"
+          >
+            <Eye className="h-4 w-4 text-charbon" />
+          </button>
         </div>
 
         {/* Texte — hérite de la police d'affichage globale (h1-h4), aucune classe font-* à ajouter */}
