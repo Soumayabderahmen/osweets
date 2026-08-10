@@ -245,7 +245,7 @@ function Home() {
       </section>
 
       {/* COFFRETS — presets + composer CTA (fond sombre) */}
-      <section className="section-y scroll-mt-32 bg-charbon text-ivory">
+      <section className="scroll-mt-32 bg-charbon py-24 text-ivory lg:py-32">
         <div className="container-os">
           <div className="mb-14 max-w-2xl">
             <div className="eyebrow mb-4">L'art du coffret</div>
