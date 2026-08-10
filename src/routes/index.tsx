@@ -362,9 +362,11 @@ function Home() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-charbon/80 via-charbon/20 to-transparent" />
             <div className="relative max-w-2xl p-8 text-white md:p-14 lg:p-20">
-              <div className="eyebrow text-gold mb-5">Vos plus beaux jours</div>
+              <div className="mb-5 text-[11px] uppercase tracking-[0.3em] text-gold">
+                Vos plus beaux jours
+              </div>
               <h2 className="text-balance font-display text-4xl leading-[1.05] text-ivory md:text-5xl lg:text-6xl">
-                Pour le plus beau jour <em className="italic text-gold">de votre vie</em>
+                Pour le plus beau jour <span className="italic">de votre vie</span>
               </h2>
               <p className="mt-6 max-w-md leading-relaxed text-ivory/80">
                 Pièces montées et buffets de pâtisseries orientales sur mesure pour mariages,
