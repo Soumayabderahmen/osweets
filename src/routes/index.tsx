@@ -10,7 +10,7 @@ import {
   Instagram,
   Send,
 } from "lucide-react";
-import hero from "@/assets/hero-platter.jpg";
+import hero from "@/assets/hero-plateau-signature.jpg";
 import catKaak from "@/assets/cat-kaak.jpg";
 import catPat from "@/assets/cat-patisserie.jpg";
 import catCakes from "@/assets/cat-cakes.jpg";
