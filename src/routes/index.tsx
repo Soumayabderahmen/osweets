@@ -172,14 +172,14 @@ function Home() {
         </div>
       </section>
       {/* NOS COLLECTIONS */}
-      <section className="section-y bg-sand/40">
+      <section className="bg-sand/40 py-24 lg:py-32">
         <div className="container-os mb-14 flex items-end justify-between gap-6">
           <div>
             <div className="eyebrow mb-4">Nos collections</div>
             <h2 className="font-display text-4xl text-charbon md:text-5xl">L'univers Ö' Sweets</h2>
           </div>
           <span className="hidden shrink-0 text-xs tracking-wide text-charbon-soft sm:block">
-            {String(cats.length).padStart(2, "0")} collections
+            {String(cats.length).padStart(2, "0")}
           </span>
         </div>
         <div className="container-os grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
@@ -187,14 +187,20 @@ function Home() {
             <Reveal key={c.name} delay={(i % 3) * 0.06}>
               <Link to={c.to} className="group block">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-beige">
-                  <img
-                    src={c.img}
-                    alt={c.name}
-                    loading="lazy"
-                    width={800}
-                    height={1000}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-105"
-                  />
+                  {c.img ? (
+                    <img
+                      src={c.img}
+                      alt={c.name}
+                      loading="lazy"
+                      width={800}
+                      height={1000}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1100ms] ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full select-none items-center justify-center bg-gradient-to-br from-sand to-beige">
+                      <span className="font-display text-8xl text-gold/30">Ö</span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-charbon/45 via-transparent to-transparent" />
                   <span className="absolute left-5 top-5 font-display text-lg text-ivory/90">
                     {String(i + 1).padStart(2, "0")}
