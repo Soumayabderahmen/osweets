@@ -146,7 +146,7 @@ function Home() {
             <h2 className="text-balance mt-5 font-display text-4xl leading-[1.08] text-charbon md:text-5xl">
               La tradition tunisienne,
               <br />
-              <em className="italic font-light text-gold">rencontrée par l'élégance française.</em>
+              <span className="italic">rencontrée par l'élégance française.</span>
             </h2>
           </Reveal>
           <Reveal delay={0.1} className="flex flex-col justify-end lg:col-span-6 lg:col-start-7">

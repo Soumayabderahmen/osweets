@@ -51,7 +51,7 @@
   --color-noir: var(--noir);
   --color-favorite: var(--favorite);
   --color-terracotta: var(--terracotta);
-  --color-whatsapp: #25D366;
+  --color-whatsapp: #25d366;
 
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Inter", system-ui, -apple-system, sans-serif;
@@ -62,21 +62,21 @@
   --radius: 0.5rem;
 
   /* Brand palette — Ö' Sweets editorial luxury (valeurs alignées base44) */
-  --gold: #A79152;                   /* Or doux */
-  --gold-light: #C3AE78;             /* Or clair */
-  --gold-dark: #8C7840;              /* Or profond */
-  --gold-faint: #E4D5B0;             /* Or très clair (placeholders) */
-  --ivory: #FCFAF8;                  /* Fond principal */
-  --beige: #E7DED0;                  /* Bordures / fonds beige (collections, badges) */
-  --sand: #F4EFE6;                   /* Bandeaux / surfaces */
-  --sable: #F4EFE6;                  /* alias sable (compat) */
-  --line: #E7DED0;                   /* Bordures fines */
-  --charbon: #29221F;                /* Texte principal */
-  --charbon-soft: #6B5F57;           /* Texte secondaire (gris) */
-  --noir: #29221F;                   /* Boutons pleins / footer */
-  --favorite: #A83D3D;
-  --terracotta: #B5623B;
-  --gold-border: #E7DED0;
+  --gold: #a79152; /* Or doux */
+  --gold-light: #c3ae78; /* Or clair */
+  --gold-dark: #8c7840; /* Or profond */
+  --gold-faint: #e4d5b0; /* Or très clair (placeholders) */
+  --ivory: #fcfaf8; /* Fond principal */
+  --beige: #e7ded0; /* Bordures / fonds beige (collections, badges) */
+  --sand: #f4efe6; /* Bandeaux / surfaces */
+  --sable: #f4efe6; /* alias sable (compat) */
+  --line: #e7ded0; /* Bordures fines */
+  --charbon: #29221f; /* Texte principal */
+  --charbon-soft: #6b5f57; /* Texte secondaire (gris) */
+  --noir: #29221f; /* Boutons pleins / footer */
+  --favorite: #a83d3d;
+  --terracotta: #b5623b;
+  --gold-border: #e7ded0;
 
   --background: var(--ivory);
   --foreground: var(--charbon);
@@ -104,12 +104,23 @@
   --gradient-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.35) 100%);
 }
 
-
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { max-width: 100%; overflow-x: hidden; }
-  html { scroll-behavior: smooth; }
-  img, video { max-width: 100%; height: auto; }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -118,33 +129,53 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: 0;
     color: var(--color-foreground);
   }
-  .font-display { font-family: var(--font-display); font-weight: 400; }
-  .font-price { font-family: var(--font-price); font-weight: 500; }
-  .font-body { font-family: var(--font-body); }
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+  .font-price {
+    font-family: var(--font-price);
+    font-weight: 500;
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
 }
 
 @layer components {
-  .container-os { @apply mx-auto w-full max-w-7xl px-5 md:px-10; }
-  .section-y { @apply py-20 md:py-24 lg:py-32; }
-  .section-y-lg { @apply py-24 lg:py-36; }
+  .container-os {
+    @apply mx-auto w-full max-w-7xl px-5 md:px-10;
+  }
+  .section-y {
+    @apply py-20 md:py-24 lg:py-32;
+  }
+  .section-y-lg {
+    @apply py-24 lg:py-36;
+  }
 
   .eyebrow {
     font-family: var(--font-body);
-    font-size: 0.68rem;
+    font-size: 0.6875rem; /* 11px */
     font-weight: 500;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--gold);
   }
 
   .btn {
-    display: inline-flex; align-items: center; justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.85rem 1.9rem;
     font-family: var(--font-body);
@@ -153,21 +184,49 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     border-radius: 999px;
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+    transition:
+      background 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease,
+      opacity 0.25s ease;
     cursor: pointer;
     border: 1px solid transparent;
     white-space: normal;
   }
   /* Primaire : charbon plein — au survol, l'or est la couleur d'accent, jamais un charbon plus foncé */
-  .btn-gold { background: var(--charbon); color: var(--ivory); }
-  .btn-gold:hover { background: var(--gold); }
+  .btn-gold {
+    background: var(--charbon);
+    color: var(--ivory);
+  }
+  .btn-gold:hover {
+    background: var(--gold);
+  }
   /* Secondaire : contour fin */
-  .btn-outline-gold { background: transparent; color: var(--charbon); border-color: var(--charbon); }
-  .btn-outline-gold:hover { background: var(--charbon); color: var(--ivory); }
-  .btn-outline-white { background: transparent; color: white; border-color: rgba(255,255,255,0.7); }
-  .btn-outline-white:hover { background: white; color: var(--charbon); }
-  .btn-dark { background: var(--charbon); color: var(--ivory); }
-  .btn-dark:hover { background: var(--gold); }
+  .btn-outline-gold {
+    background: transparent;
+    color: var(--charbon);
+    border-color: var(--charbon);
+  }
+  .btn-outline-gold:hover {
+    background: var(--charbon);
+    color: var(--ivory);
+  }
+  .btn-outline-white {
+    background: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+  .btn-outline-white:hover {
+    background: white;
+    color: var(--charbon);
+  }
+  .btn-dark {
+    background: var(--charbon);
+    color: var(--ivory);
+  }
+  .btn-dark:hover {
+    background: var(--gold);
+  }
 
   /* Lien doré souligné (tertiaire) */
   .link-gold {
@@ -179,7 +238,9 @@
     padding-bottom: 2px;
     transition: opacity 0.25s ease;
   }
-  .link-gold:hover { opacity: 0.65; }
+  .link-gold:hover {
+    opacity: 0.65;
+  }
 
   .card-product {
     background: transparent;
@@ -189,11 +250,18 @@
     transition: opacity 0.35s ease;
     box-shadow: none;
   }
-  .card-product:hover { box-shadow: none; transform: none; }
+  .card-product:hover {
+    box-shadow: none;
+    transform: none;
+  }
 
-
-  .hover-lift { transition: all 0.35s ease; }
-  .hover-lift:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+  .hover-lift {
+    transition: all 0.35s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift);
+  }
 
   .marquee {
     display: flex;
@@ -206,46 +274,79 @@
     animation: marquee 35s linear infinite;
   }
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 
   .fade-in-up {
     animation: fadeInUp 0.8s ease-out both;
   }
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Reveal — apparition au scroll (voir components/Reveal.tsx) */
   .reveal {
     opacity: 0;
     transform: translateY(18px);
-    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .reveal.is-visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  .text-gold { color: var(--gold); }
-  .bg-gold { background: var(--gold); }
-  .bg-ivory { background: var(--ivory); }
-  .bg-beige { background: var(--beige); }
-  .bg-sable { background: var(--sable); }
-  .bg-charbon { background: var(--charbon); }
-  .border-gold { border-color: var(--gold); }
+  .text-gold {
+    color: var(--gold);
+  }
+  .bg-gold {
+    background: var(--gold);
+  }
+  .bg-ivory {
+    background: var(--ivory);
+  }
+  .bg-beige {
+    background: var(--beige);
+  }
+  .bg-sable {
+    background: var(--sable);
+  }
+  .bg-charbon {
+    background: var(--charbon);
+  }
+  .border-gold {
+    border-color: var(--gold);
+  }
 
   .divider-gold {
     display: inline-block;
-    width: 40px; height: 1px;
+    width: 40px;
+    height: 1px;
     background: var(--gold);
     vertical-align: middle;
   }
-  .bg-noir { background: var(--noir); }
-  .text-noir { color: var(--noir); }
-  .text-charbon-soft { color: var(--charbon-soft); }
+  .bg-noir {
+    background: var(--noir);
+  }
+  .text-noir {
+    color: var(--noir);
+  }
+  .text-charbon-soft {
+    color: var(--charbon-soft);
+  }
 
   /* Cadre minimaliste : plus d'ornements, simple filet très clair. */
   .ornate-frame {
@@ -270,8 +371,12 @@
   }
 
   /* Motif mosaïque désactivé : le design éditorial privilégie l'espace vide. */
-  .mosaic-bg { position: relative; }
-  .mosaic-bg > * { position: relative; }
+  .mosaic-bg {
+    position: relative;
+  }
+  .mosaic-bg > * {
+    position: relative;
+  }
 
   /* Placeholder produit sans photo */
   .img-placeholder {
@@ -282,7 +387,6 @@
     font-family: var(--font-display);
     line-height: 1;
   }
-
 
   /* Dark commander button per luxury spec */
   .btn-commander {
@@ -302,7 +406,10 @@
     text-transform: uppercase;
     white-space: nowrap;
     max-width: 100%;
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    transition:
+      background 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
   }
   .btn-commander:hover {
     background: var(--gold);
@@ -311,7 +418,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.001ms !important;
       transition-duration: 0.001ms !important;
     }
