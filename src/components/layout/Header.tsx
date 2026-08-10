@@ -355,6 +355,7 @@ export function Header() {
   const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [pastHairline, setPastHairline] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -362,7 +363,10 @@ export function Header() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+      setPastHairline(window.scrollY > 8);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -402,9 +406,7 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-40 bg-ivory/95 backdrop-blur-md transition-shadow ${
-        scrolled
-          ? "shadow-[0_4px_24px_-12px_rgba(42,35,32,0.18)]"
-          : "border-b border-beige/60"
+        pastHairline ? "shadow-[0_4px_24px_-12px_rgba(42,35,32,0.18)]" : "border-b border-beige/60"
       }`}
       onMouseLeave={scheduleClose}
     >
@@ -436,12 +438,10 @@ export function Header() {
         {/* Center — logo */}
         <div className="flex justify-center">
           <Link to="/" className="flex flex-col items-center leading-none">
-            <span
-              className={`font-display tracking-[0.04em] text-charbon transition-all ${scrolled ? "text-2xl md:text-3xl" : "text-3xl md:text-[36px]"}`}
-            >
+            <span className="font-display leading-none text-charbon text-2xl lg:text-[30px]">
               Ö' Sweets
             </span>
-            <span className="hidden sm:flex items-center gap-2 mt-1.5 text-[9px] tracking-[0.4em] uppercase text-gold font-medium">
+            <span className="hidden sm:flex items-center gap-2 mt-1.5 text-[8px] tracking-[0.4em] uppercase text-gold font-medium">
               <span className="h-px w-4 bg-gold" />
               Pâtisserie
               <span className="h-px w-4 bg-gold" />
@@ -489,7 +489,7 @@ export function Header() {
       </div>
 
       {/* Nav row — centered under logo */}
-      <nav className="hidden border-t border-line lg:block">
+      <nav className="hidden border-t border-beige lg:block">
         <ul className="container-os flex items-center justify-center gap-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-charbon xl:gap-8">
           {NAV.map((item) => {
             const active = hovered === item.label;
@@ -586,34 +586,50 @@ export function Header() {
             ) : (
               // ─── Layout standard (autres menus) ───
               <>
-                <div className="grid grid-cols-12 gap-8 p-8">
+                <div className="grid grid-cols-12 gap-0 py-2">
                   <div
-                    className={`grid gap-8 ${current.card || current.extraBlock ? "col-span-8" : "col-span-12"} ${({ 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" } as Record<number, string>)[Math.min(Math.max(current.cols.length, 1), 4)]}`}
+                    className={`grid ${current.card || current.extraBlock ? "col-span-8" : "col-span-12"} ${({ 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" } as Record<number, string>)[Math.min(Math.max(current.cols.length, 1), 4)]}`}
                   >
-                    {current.cols.map((col) => (
-                      <div key={col.title}>
+                    {current.cols.map((col, i) => (
+                      <div
+                        key={col.title}
+                        className={`p-7 ${i > 0 ? "border-l border-beige" : ""}`}
+                      >
                         <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
                           {col.title}
                         </h4>
-                        <ul className="space-y-2.5">
-                          {col.items.map((l) => (
-                            <li key={l.to + l.label}>
-                              <Link
-                                to={l.to}
-                                onClick={() => setHovered(null)}
-                                className={`text-sm normal-case tracking-normal transition ${l.highlight ? "text-gold font-medium border-b border-gold/40 pb-0.5" : "text-charbon/80 hover:text-gold"}`}
-                              >
-                                {l.label}
-                              </Link>
-                            </li>
-                          ))}
+                        <ul>
+                          {col.items.map((l) =>
+                            l.highlight ? (
+                              <li key={l.to + l.label}>
+                                <Link
+                                  to={l.to}
+                                  onClick={() => setHovered(null)}
+                                  className="inline-block py-2.5 text-sm normal-case tracking-normal text-gold font-medium border-b border-gold/40 pb-0.5"
+                                >
+                                  {l.label}
+                                </Link>
+                              </li>
+                            ) : (
+                              <li key={l.to + l.label}>
+                                <Link
+                                  to={l.to}
+                                  onClick={() => setHovered(null)}
+                                  className="group flex items-center justify-between gap-2 py-2.5 text-[15px] normal-case tracking-normal text-charbon transition-colors hover:text-gold"
+                                >
+                                  {l.label}
+                                  <ArrowUpRight className="h-4 w-4 shrink-0 text-charbon-soft/40 transition-colors group-hover:text-gold" />
+                                </Link>
+                              </li>
+                            ),
+                          )}
                         </ul>
                       </div>
                     ))}
                   </div>
 
                   {(current.card || current.extraBlock) && (
-                    <div className="col-span-4 space-y-4">
+                    <div className="col-span-4 space-y-4 p-7">
                       {current.card && (
                         <Link
                           to={current.card.to}
