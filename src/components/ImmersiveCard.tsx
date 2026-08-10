@@ -26,6 +26,7 @@ export function ImmersiveCard({
   const ratioClass =
     ratio === "portrait" ? "aspect-[3/4]" : ratio === "square" ? "aspect-square" : "aspect-[4/3]";
   const roundedClass = rounded === "2xl" ? "rounded-2xl" : "rounded-md";
+  const bgClass = overlay === "bottom-left" ? "bg-sand" : "bg-charbon";
   const zoomClass =
     overlay === "bottom-left"
       ? "duration-[1100ms] ease-out group-hover:scale-105"
@@ -33,7 +34,7 @@ export function ImmersiveCard({
 
   const inner = (
     <div
-      className={`relative ${ratioClass} overflow-hidden ${roundedClass} bg-charbon group cursor-pointer`}
+      className={`relative ${ratioClass} overflow-hidden ${roundedClass} ${bgClass} group cursor-pointer`}
     >
       <img
         src={image}
