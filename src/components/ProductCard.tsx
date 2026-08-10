@@ -154,7 +154,7 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <ProductImage
               src={product.image}
               alt={product.name}
-              className="transition-transform duration-1000 group-hover:scale-[1.03]"
+              className="transition-transform duration-700 group-hover:scale-[1.03]"
             />
           </Link>
           <div className="flex flex-1 flex-col justify-center py-5 sm:py-6 sm:pl-8">
@@ -226,7 +226,7 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <ProductImage
               src={product.image}
               alt={product.name}
-              className="transition-transform duration-[900ms] ease-out group-hover:scale-[1.03]"
+              className="transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             />
           </Link>
 

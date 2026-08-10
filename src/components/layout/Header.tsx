@@ -401,7 +401,11 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-40 border-b border-line bg-ivory/95 backdrop-blur-md"
+      className={`sticky top-0 z-40 bg-ivory/95 backdrop-blur-md transition-shadow ${
+        scrolled
+          ? "shadow-[0_4px_24px_-12px_rgba(42,35,32,0.18)]"
+          : "border-b border-beige/60"
+      }`}
       onMouseLeave={scheduleClose}
     >
       {/* Top row : tagline left · logo center · icons right */}

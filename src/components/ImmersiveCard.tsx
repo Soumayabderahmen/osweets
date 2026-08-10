@@ -29,7 +29,7 @@ export function ImmersiveCard({
   const zoomClass =
     overlay === "bottom-left"
       ? "duration-[1100ms] ease-out group-hover:scale-105"
-      : "duration-[1200ms] ease-out group-hover:scale-110";
+      : "duration-700 ease-out group-hover:scale-110";
 
   const inner = (
     <div
