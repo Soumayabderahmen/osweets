@@ -1,0 +1,308 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+   Ö' SWEETS — Design System
+   Or doux #A89152 · Ivoire #FAF9F6 · Beige #EDE5D8
+   Charbon #2C2C2C · Or clair #C9A96E · Sable #F5F0E8
+   ========================================================= */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-ivory: var(--ivory);
+  --color-beige: var(--beige);
+  --color-sable: var(--sable);
+  --color-sand: var(--sand);
+  --color-line: var(--line);
+  --color-gold-faint: var(--gold-faint);
+
+  --color-charbon: var(--charbon);
+  --color-charbon-soft: var(--charbon-soft);
+  --color-noir: var(--noir);
+  --color-favorite: var(--favorite);
+  --color-terracotta: var(--terracotta);
+  --color-whatsapp: #25D366;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-price: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* Brand palette — Ö' Sweets editorial luxury */
+  --gold: #A89152;                   /* Or doux */
+  --gold-light: #C3AE78;             /* Or clair */
+  --gold-dark: #8C7840;              /* Or profond */
+  --gold-faint: #E4D5B0;             /* Or très clair (placeholders) */
+  --ivory: #FCFAF6;                  /* Fond principal */
+  --beige: #FCFAF6;                  /* alias fond (compat) */
+  --sand: #F2EDE4;                   /* Bandeaux / surfaces */
+  --sable: #F2EDE4;                  /* alias sable (compat) */
+  --line: #E9E2D6;                   /* Bordures fines */
+  --charbon: #2A2320;                /* Texte principal */
+  --charbon-soft: #6B6058;           /* Texte secondaire */
+  --noir: #2A2320;                   /* Boutons pleins / footer */
+  --favorite: #A83D3D;
+  --terracotta: #B5623B;
+  --gold-border: #E7DED0;
+
+  --background: var(--ivory);
+  --foreground: var(--charbon);
+  --card: var(--ivory);
+  --card-foreground: var(--charbon);
+  --popover: var(--ivory);
+  --popover-foreground: var(--charbon);
+  --primary: var(--charbon);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--sand);
+  --secondary-foreground: var(--charbon);
+  --muted: var(--sand);
+  --muted-foreground: var(--charbon-soft);
+  --accent: var(--sand);
+  --accent-foreground: var(--charbon);
+  --destructive: var(--favorite);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--gold);
+
+  --shadow-soft: 0 2px 14px rgba(42, 35, 32, 0.05);
+  --shadow-lift: 0 8px 28px rgba(42, 35, 32, 0.08);
+  --gradient-gold: linear-gradient(135deg, var(--gold), var(--gold-light));
+  --gradient-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  html { scroll-behavior: smooth; }
+  img, video { max-width: 100%; height: auto; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--color-foreground);
+  }
+  .font-display { font-family: var(--font-display); font-weight: 400; }
+  .font-price { font-family: var(--font-price); font-weight: 500; }
+  .font-body { font-family: var(--font-body); }
+}
+
+@layer components {
+  .container-os { @apply mx-auto w-full max-w-7xl px-5 md:px-10; }
+  .section-y { @apply py-16 md:py-24 lg:py-28; }
+
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.9rem;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: normal;
+  }
+  /* Primaire : charbon plein */
+  .btn-gold { background: var(--charbon); color: var(--ivory); }
+  .btn-gold:hover { background: #000; }
+  /* Secondaire : contour fin */
+  .btn-outline-gold { background: transparent; color: var(--charbon); border-color: var(--charbon); }
+  .btn-outline-gold:hover { background: var(--charbon); color: var(--ivory); }
+  .btn-outline-white { background: transparent; color: white; border-color: rgba(255,255,255,0.7); }
+  .btn-outline-white:hover { background: white; color: var(--charbon); }
+  .btn-dark { background: var(--charbon); color: var(--ivory); }
+  .btn-dark:hover { background: #000; }
+
+  /* Lien doré souligné (tertiaire) */
+  .link-gold {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+    transition: opacity 0.25s ease;
+  }
+  .link-gold:hover { opacity: 0.65; }
+
+  .card-product {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
+    transition: opacity 0.35s ease;
+    box-shadow: none;
+  }
+  .card-product:hover { box-shadow: none; transform: none; }
+
+
+  .hover-lift { transition: all 0.35s ease; }
+  .hover-lift:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-flex;
+    gap: 4rem;
+    animation: marquee 35s linear infinite;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.8s ease-out both;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .text-gold { color: var(--gold); }
+  .bg-gold { background: var(--gold); }
+  .bg-ivory { background: var(--ivory); }
+  .bg-beige { background: var(--beige); }
+  .bg-sable { background: var(--sable); }
+  .bg-charbon { background: var(--charbon); }
+  .border-gold { border-color: var(--gold); }
+
+  .divider-gold {
+    display: inline-block;
+    width: 40px; height: 1px;
+    background: var(--gold);
+    vertical-align: middle;
+  }
+  .bg-noir { background: var(--noir); }
+  .text-noir { color: var(--noir); }
+  .text-charbon-soft { color: var(--charbon-soft); }
+
+  /* Cadre minimaliste : plus d'ornements, simple filet très clair. */
+  .ornate-frame {
+    position: relative;
+    background: var(--ivory);
+    border: 1px solid var(--line);
+  }
+
+  /* Séparateur éditorial : simple filet clair. */
+  .divider-rosette {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gold);
+  }
+  .divider-rosette::before,
+  .divider-rosette::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* Motif mosaïque désactivé : le design éditorial privilégie l'espace vide. */
+  .mosaic-bg { position: relative; }
+  .mosaic-bg > * { position: relative; }
+
+  /* Placeholder produit sans photo */
+  .img-placeholder {
+    display: grid;
+    place-items: center;
+    background: var(--sand);
+    color: var(--gold-faint);
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+
+
+  /* Dark commander button per luxury spec */
+  .btn-commander {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: var(--noir);
+    color: var(--gold-light);
+    border: 1px solid var(--gold);
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    max-width: 100%;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .btn-commander:hover {
+    background: var(--gold);
+    color: var(--noir);
+    border-color: var(--gold-dark);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
