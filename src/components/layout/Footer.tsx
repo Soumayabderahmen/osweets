@@ -1,26 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MessageCircle, Star } from "lucide-react";
-
-const IgIcon = (p: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...p}
-  >
-    <rect x="3" y="3" width="18" height="18" rx="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-  </svg>
-);
-const FbIcon = (p: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
-    <path d="M13 22v-8h2.7l.4-3.1H13V8.9c0-.9.3-1.5 1.5-1.5H16V4.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.4H7.2V14h2.7v8H13z" />
-  </svg>
-);
+import { Star } from "lucide-react";
 
 // Mêmes collections que le mega menu "Pâtisserie Tunisienne" du Header.
 const FOOTER_COLLECTIONS = [
@@ -46,33 +25,30 @@ export function Footer() {
             <br />
             Évry-Courcouronnes, livraison dans toute la France.
           </p>
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-4 mt-6 text-sm text-ivory/60">
             <a
               href="https://www.instagram.com/osweet_patisserie/"
               target="_blank"
               rel="noreferrer"
-              className="h-9 w-9 grid place-items-center border border-ivory/30 rounded-full hover:bg-gold hover:border-gold transition"
-              aria-label="Instagram"
+              className="hover:text-gold transition-colors"
             >
-              <IgIcon className="h-4 w-4" />
+              Instagram
             </a>
             <a
               href="https://www.facebook.com/OSweets.fr"
               target="_blank"
               rel="noreferrer"
-              className="h-9 w-9 grid place-items-center border border-ivory/30 rounded-full hover:bg-gold hover:border-gold transition"
-              aria-label="Facebook"
+              className="hover:text-gold transition-colors"
             >
-              <FbIcon className="h-4 w-4" />
+              Facebook
             </a>
             <a
               href="https://wa.me/33699466030"
               target="_blank"
               rel="noreferrer"
-              className="h-9 w-9 grid place-items-center border border-ivory/30 rounded-full hover:bg-[#25D366] hover:border-[#25D366] transition"
-              aria-label="WhatsApp"
+              className="hover:text-gold transition-colors"
             >
-              <MessageCircle className="h-4 w-4" />
+              WhatsApp
             </a>
           </div>
         </div>
@@ -203,8 +179,8 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-ivory/10 mt-0">
-        <div className="container-os py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ivory/40">
+      <div className="border-t border-ivory/10 mt-8">
+        <div className="container-os pt-6 pb-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ivory/40">
           <p>© {new Date().getFullYear()} Ö' Sweets Pâtisserie — Tous droits réservés</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <Link to="/cgv" className="hover:text-gold">
