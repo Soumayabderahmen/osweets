@@ -9,190 +9,85 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SurMesureRouteImport } from './routes/sur-mesure'
-import { Route as RemboursementRouteImport } from './routes/remboursement'
-import { Route as PatisserieRouteImport } from './routes/patisserie'
-import { Route as ParrainageRouteImport } from './routes/parrainage'
-import { Route as PanierRouteImport } from './routes/panier'
-import { Route as OffreProfessionnelleRouteImport } from './routes/offre-professionnelle'
-import { Route as MonCompteRouteImport } from './routes/mon-compte'
-import { Route as LivraisonRouteImport } from './routes/livraison'
-import { Route as LaMaisonRouteImport } from './routes/la-maison'
-import { Route as GalerieRouteImport } from './routes/galerie'
-import { Route as FavorisRouteImport } from './routes/favoris'
-import { Route as FaqRouteImport } from './routes/faq'
-import { Route as EpicerieSaleeRouteImport } from './routes/epicerie-salee'
-import { Route as DevisRouteImport } from './routes/devis'
-import { Route as CreationSurMesureRouteImport } from './routes/creation-sur-mesure'
-import { Route as CookiesRouteImport } from './routes/cookies'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
-import { Route as ComposerRouteImport } from './routes/composer'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CgvRouteImport } from './routes/cgv'
-import { Route as CadeauxRouteImport } from './routes/cadeaux'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SaleIndexRouteImport } from './routes/sale.index'
-import { Route as PatisserieIndexRouteImport } from './routes/patisserie.index'
-import { Route as GateauxIndexRouteImport } from './routes/gateaux.index'
-import { Route as EvenementsIndexRouteImport } from './routes/evenements.index'
-import { Route as SaleMariageRouteImport } from './routes/sale.mariage'
-import { Route as SaleFiancaillesRouteImport } from './routes/sale.fiancailles'
-import { Route as ProduitsSlugRouteImport } from './routes/produits.$slug'
-import { Route as PatisserieTraditionRouteImport } from './routes/patisserie.tradition'
-import { Route as PatisserieRamadanRouteImport } from './routes/patisserie.ramadan'
-import { Route as PatisseriePistacheMachmoumPignonRouteImport } from './routes/patisserie.pistache-machmoum-pignon'
-import { Route as PatisseriePerlesRouteImport } from './routes/patisserie.perles'
-import { Route as PatisserieAmandesRouteImport } from './routes/patisserie.amandes'
-import { Route as PatisserieAidRouteImport } from './routes/patisserie.aid'
-import { Route as PacksMariageRouteImport } from './routes/packs.mariage'
-import { Route as PacksFiancaillesRouteImport } from './routes/packs.fiancailles'
-import { Route as PacksCirconcisionRouteImport } from './routes/packs.circoncision'
-import { Route as GateauxWeddingCakesRouteImport } from './routes/gateaux.wedding-cakes'
-import { Route as GateauxVoyageRouteImport } from './routes/gateaux.voyage'
-import { Route as GateauxVerrinesRouteImport } from './routes/gateaux.verrines'
-import { Route as GateauxTiramisuRouteImport } from './routes/gateaux.tiramisu'
-import { Route as GateauxTartesRouteImport } from './routes/gateaux.tartes'
-import { Route as GateauxPiecesMonteesRouteImport } from './routes/gateaux.pieces-montees'
-import { Route as GateauxMariagePieceMonteeRouteImport } from './routes/gateaux.mariage-piece-montee'
-import { Route as GateauxMariageRouteImport } from './routes/gateaux.mariage'
-import { Route as GateauxGenderRevealRouteImport } from './routes/gateaux.gender-reveal'
-import { Route as GateauxGateauxDeVoyageRouteImport } from './routes/gateaux.gateaux-de-voyage'
-import { Route as GateauxFraisierRouteImport } from './routes/gateaux.fraisier'
-import { Route as GateauxFondantsRouteImport } from './routes/gateaux.fondants'
-import { Route as GateauxFinAnneeRouteImport } from './routes/gateaux.fin-annee'
-import { Route as GateauxEntremetsRouteImport } from './routes/gateaux.entremets'
-import { Route as GateauxCupcakesRouteImport } from './routes/gateaux.cupcakes'
-import { Route as GateauxCookiesRouteImport } from './routes/gateaux.cookies'
-import { Route as GateauxConfigurerRouteImport } from './routes/gateaux.configurer'
-import { Route as GateauxCheesecakeRouteImport } from './routes/gateaux.cheesecake'
-import { Route as GateauxCakesRouteImport } from './routes/gateaux.cakes'
-import { Route as GateauxCakeDeVoyageRouteImport } from './routes/gateaux.cake-de-voyage'
-import { Route as GateauxBentoRouteImport } from './routes/gateaux.bento'
-import { Route as EvenementsRamadanRouteImport } from './routes/evenements.ramadan'
-import { Route as EvenementsPresentationsRouteImport } from './routes/evenements.presentations'
-import { Route as EvenementsMariageRouteImport } from './routes/evenements.mariage'
-import { Route as EvenementsGenderRevealRouteImport } from './routes/evenements.gender-reveal'
-import { Route as EvenementsFiancaillesRouteImport } from './routes/evenements.fiancailles'
-import { Route as EvenementsEntrepriseRouteImport } from './routes/evenements.entreprise'
-import { Route as EvenementsBabyShowerRouteImport } from './routes/evenements.baby-shower'
-import { Route as EvenementsAnniversaireRouteImport } from './routes/evenements.anniversaire'
-import { Route as EvenementsAidRouteImport } from './routes/evenements.aid'
-import { Route as EvenementsSlugRouteImport } from './routes/evenements.$slug'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CadeauxRouteImport } from './routes/cadeaux'
+import { Route as CgvRouteImport } from './routes/cgv'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ComposerRouteImport } from './routes/composer'
+import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as CreationSurMesureRouteImport } from './routes/creation-sur-mesure'
+import { Route as DevisRouteImport } from './routes/devis'
+import { Route as EpicerieSaleeRouteImport } from './routes/epicerie-salee'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as FavorisRouteImport } from './routes/favoris'
+import { Route as GalerieRouteImport } from './routes/galerie'
+import { Route as LaMaisonRouteImport } from './routes/la-maison'
+import { Route as LivraisonRouteImport } from './routes/livraison'
+import { Route as MonCompteRouteImport } from './routes/mon-compte'
+import { Route as OffreProfessionnelleRouteImport } from './routes/offre-professionnelle'
+import { Route as PanierRouteImport } from './routes/panier'
+import { Route as ParrainageRouteImport } from './routes/parrainage'
+import { Route as PatisserieRouteImport } from './routes/patisserie'
+import { Route as RemboursementRouteImport } from './routes/remboursement'
+import { Route as SurMesureRouteImport } from './routes/sur-mesure'
 import { Route as CadeauxSlugRouteImport } from './routes/cadeaux.$slug'
+import { Route as EvenementsIndexRouteImport } from './routes/evenements.index'
+import { Route as EvenementsSlugRouteImport } from './routes/evenements.$slug'
+import { Route as EvenementsAidRouteImport } from './routes/evenements.aid'
+import { Route as EvenementsAnniversaireRouteImport } from './routes/evenements.anniversaire'
+import { Route as EvenementsBabyShowerRouteImport } from './routes/evenements.baby-shower'
+import { Route as EvenementsEntrepriseRouteImport } from './routes/evenements.entreprise'
+import { Route as EvenementsFiancaillesRouteImport } from './routes/evenements.fiancailles'
+import { Route as EvenementsGenderRevealRouteImport } from './routes/evenements.gender-reveal'
+import { Route as EvenementsMariageRouteImport } from './routes/evenements.mariage'
+import { Route as EvenementsPresentationsRouteImport } from './routes/evenements.presentations'
+import { Route as EvenementsRamadanRouteImport } from './routes/evenements.ramadan'
+import { Route as GateauxIndexRouteImport } from './routes/gateaux.index'
+import { Route as GateauxBentoRouteImport } from './routes/gateaux.bento'
+import { Route as GateauxCakeDeVoyageRouteImport } from './routes/gateaux.cake-de-voyage'
+import { Route as GateauxCakesRouteImport } from './routes/gateaux.cakes'
+import { Route as GateauxCheesecakeRouteImport } from './routes/gateaux.cheesecake'
+import { Route as GateauxConfigurerRouteImport } from './routes/gateaux.configurer'
+import { Route as GateauxCookiesRouteImport } from './routes/gateaux.cookies'
+import { Route as GateauxCupcakesRouteImport } from './routes/gateaux.cupcakes'
+import { Route as GateauxEntremetsRouteImport } from './routes/gateaux.entremets'
+import { Route as GateauxFinAnneeRouteImport } from './routes/gateaux.fin-annee'
+import { Route as GateauxFondantsRouteImport } from './routes/gateaux.fondants'
+import { Route as GateauxFraisierRouteImport } from './routes/gateaux.fraisier'
+import { Route as GateauxGateauxDeVoyageRouteImport } from './routes/gateaux.gateaux-de-voyage'
+import { Route as GateauxGenderRevealRouteImport } from './routes/gateaux.gender-reveal'
+import { Route as GateauxMariageRouteImport } from './routes/gateaux.mariage'
+import { Route as GateauxMariagePieceMonteeRouteImport } from './routes/gateaux.mariage-piece-montee'
+import { Route as GateauxPiecesMonteesRouteImport } from './routes/gateaux.pieces-montees'
+import { Route as GateauxTartesRouteImport } from './routes/gateaux.tartes'
+import { Route as GateauxTiramisuRouteImport } from './routes/gateaux.tiramisu'
+import { Route as GateauxVerrinesRouteImport } from './routes/gateaux.verrines'
+import { Route as GateauxVoyageRouteImport } from './routes/gateaux.voyage'
+import { Route as GateauxWeddingCakesRouteImport } from './routes/gateaux.wedding-cakes'
+import { Route as PacksCirconcisionRouteImport } from './routes/packs.circoncision'
+import { Route as PacksFiancaillesRouteImport } from './routes/packs.fiancailles'
+import { Route as PacksMariageRouteImport } from './routes/packs.mariage'
+import { Route as PatisserieIndexRouteImport } from './routes/patisserie.index'
+import { Route as PatisserieAidRouteImport } from './routes/patisserie.aid'
+import { Route as PatisserieAmandesRouteImport } from './routes/patisserie.amandes'
+import { Route as PatisseriePerlesRouteImport } from './routes/patisserie.perles'
+import { Route as PatisseriePistacheMachmoumPignonRouteImport } from './routes/patisserie.pistache-machmoum-pignon'
+import { Route as PatisserieRamadanRouteImport } from './routes/patisserie.ramadan'
+import { Route as PatisserieTraditionRouteImport } from './routes/patisserie.tradition'
+import { Route as ProduitsSlugRouteImport } from './routes/produits.$slug'
+import { Route as SaleIndexRouteImport } from './routes/sale.index'
+import { Route as SaleFiancaillesRouteImport } from './routes/sale.fiancailles'
+import { Route as SaleMariageRouteImport } from './routes/sale.mariage'
 import { Route as GateauxAnniversaireIndexRouteImport } from './routes/gateaux.anniversaire.index'
-import { Route as GateauxAnniversairePersonnaliserRouteImport } from './routes/gateaux.anniversaire.personnaliser'
 import { Route as GateauxAnniversaireThemeRouteImport } from './routes/gateaux.anniversaire.$theme'
+import { Route as GateauxAnniversairePersonnaliserRouteImport } from './routes/gateaux.anniversaire.personnaliser'
 
-const SurMesureRoute = SurMesureRouteImport.update({
-  id: '/sur-mesure',
-  path: '/sur-mesure',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RemboursementRoute = RemboursementRouteImport.update({
-  id: '/remboursement',
-  path: '/remboursement',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatisserieRoute = PatisserieRouteImport.update({
-  id: '/patisserie',
-  path: '/patisserie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParrainageRoute = ParrainageRouteImport.update({
-  id: '/parrainage',
-  path: '/parrainage',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PanierRoute = PanierRouteImport.update({
-  id: '/panier',
-  path: '/panier',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OffreProfessionnelleRoute = OffreProfessionnelleRouteImport.update({
-  id: '/offre-professionnelle',
-  path: '/offre-professionnelle',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MonCompteRoute = MonCompteRouteImport.update({
-  id: '/mon-compte',
-  path: '/mon-compte',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LivraisonRoute = LivraisonRouteImport.update({
-  id: '/livraison',
-  path: '/livraison',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LaMaisonRoute = LaMaisonRouteImport.update({
-  id: '/la-maison',
-  path: '/la-maison',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalerieRoute = GalerieRouteImport.update({
-  id: '/galerie',
-  path: '/galerie',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FavorisRoute = FavorisRouteImport.update({
-  id: '/favoris',
-  path: '/favoris',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FaqRoute = FaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EpicerieSaleeRoute = EpicerieSaleeRouteImport.update({
-  id: '/epicerie-salee',
-  path: '/epicerie-salee',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DevisRoute = DevisRouteImport.update({
-  id: '/devis',
-  path: '/devis',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreationSurMesureRoute = CreationSurMesureRouteImport.update({
-  id: '/creation-sur-mesure',
-  path: '/creation-sur-mesure',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CookiesRoute = CookiesRouteImport.update({
-  id: '/cookies',
-  path: '/cookies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
-  id: '/confidentialite',
-  path: '/confidentialite',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ComposerRoute = ComposerRouteImport.update({
-  id: '/composer',
-  path: '/composer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CgvRoute = CgvRouteImport.update({
-  id: '/cgv',
-  path: '/cgv',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadeauxRoute = CadeauxRouteImport.update({
-  id: '/cadeaux',
-  path: '/cadeaux',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -200,120 +95,249 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CadeauxRoute = CadeauxRouteImport.update({
+  id: '/cadeaux',
+  path: '/cadeaux',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SaleIndexRoute = SaleIndexRouteImport.update({
-  id: '/sale/',
-  path: '/sale/',
+const CgvRoute = CgvRouteImport.update({
+  id: '/cgv',
+  path: '/cgv',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PatisserieIndexRoute = PatisserieIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const GateauxIndexRoute = GateauxIndexRouteImport.update({
-  id: '/gateaux/',
-  path: '/gateaux/',
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ComposerRoute = ComposerRouteImport.update({
+  id: '/composer',
+  path: '/composer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
+  id: '/confidentialite',
+  path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreationSurMesureRoute = CreationSurMesureRouteImport.update({
+  id: '/creation-sur-mesure',
+  path: '/creation-sur-mesure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevisRoute = DevisRouteImport.update({
+  id: '/devis',
+  path: '/devis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EpicerieSaleeRoute = EpicerieSaleeRouteImport.update({
+  id: '/epicerie-salee',
+  path: '/epicerie-salee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavorisRoute = FavorisRouteImport.update({
+  id: '/favoris',
+  path: '/favoris',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalerieRoute = GalerieRouteImport.update({
+  id: '/galerie',
+  path: '/galerie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaMaisonRoute = LaMaisonRouteImport.update({
+  id: '/la-maison',
+  path: '/la-maison',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LivraisonRoute = LivraisonRouteImport.update({
+  id: '/livraison',
+  path: '/livraison',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonCompteRoute = MonCompteRouteImport.update({
+  id: '/mon-compte',
+  path: '/mon-compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OffreProfessionnelleRoute = OffreProfessionnelleRouteImport.update({
+  id: '/offre-professionnelle',
+  path: '/offre-professionnelle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PanierRoute = PanierRouteImport.update({
+  id: '/panier',
+  path: '/panier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParrainageRoute = ParrainageRouteImport.update({
+  id: '/parrainage',
+  path: '/parrainage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatisserieRoute = PatisserieRouteImport.update({
+  id: '/patisserie',
+  path: '/patisserie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RemboursementRoute = RemboursementRouteImport.update({
+  id: '/remboursement',
+  path: '/remboursement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurMesureRoute = SurMesureRouteImport.update({
+  id: '/sur-mesure',
+  path: '/sur-mesure',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadeauxSlugRoute = CadeauxSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CadeauxRoute,
 } as any)
 const EvenementsIndexRoute = EvenementsIndexRouteImport.update({
   id: '/evenements/',
   path: '/evenements/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SaleMariageRoute = SaleMariageRouteImport.update({
-  id: '/sale/mariage',
-  path: '/sale/mariage',
+const EvenementsSlugRoute = EvenementsSlugRouteImport.update({
+  id: '/evenements/$slug',
+  path: '/evenements/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SaleFiancaillesRoute = SaleFiancaillesRouteImport.update({
-  id: '/sale/fiancailles',
-  path: '/sale/fiancailles',
+const EvenementsAidRoute = EvenementsAidRouteImport.update({
+  id: '/evenements/aid',
+  path: '/evenements/aid',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProduitsSlugRoute = ProduitsSlugRouteImport.update({
-  id: '/produits/$slug',
-  path: '/produits/$slug',
+const EvenementsAnniversaireRoute = EvenementsAnniversaireRouteImport.update({
+  id: '/evenements/anniversaire',
+  path: '/evenements/anniversaire',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PatisserieTraditionRoute = PatisserieTraditionRouteImport.update({
-  id: '/tradition',
-  path: '/tradition',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const PatisserieRamadanRoute = PatisserieRamadanRouteImport.update({
-  id: '/ramadan',
-  path: '/ramadan',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const PatisseriePistacheMachmoumPignonRoute =
-  PatisseriePistacheMachmoumPignonRouteImport.update({
-    id: '/pistache-machmoum-pignon',
-    path: '/pistache-machmoum-pignon',
-    getParentRoute: () => PatisserieRoute,
-  } as any)
-const PatisseriePerlesRoute = PatisseriePerlesRouteImport.update({
-  id: '/perles',
-  path: '/perles',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const PatisserieAmandesRoute = PatisserieAmandesRouteImport.update({
-  id: '/amandes',
-  path: '/amandes',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const PatisserieAidRoute = PatisserieAidRouteImport.update({
-  id: '/aid',
-  path: '/aid',
-  getParentRoute: () => PatisserieRoute,
-} as any)
-const PacksMariageRoute = PacksMariageRouteImport.update({
-  id: '/packs/mariage',
-  path: '/packs/mariage',
+const EvenementsBabyShowerRoute = EvenementsBabyShowerRouteImport.update({
+  id: '/evenements/baby-shower',
+  path: '/evenements/baby-shower',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PacksFiancaillesRoute = PacksFiancaillesRouteImport.update({
-  id: '/packs/fiancailles',
-  path: '/packs/fiancailles',
+const EvenementsEntrepriseRoute = EvenementsEntrepriseRouteImport.update({
+  id: '/evenements/entreprise',
+  path: '/evenements/entreprise',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PacksCirconcisionRoute = PacksCirconcisionRouteImport.update({
-  id: '/packs/circoncision',
-  path: '/packs/circoncision',
+const EvenementsFiancaillesRoute = EvenementsFiancaillesRouteImport.update({
+  id: '/evenements/fiancailles',
+  path: '/evenements/fiancailles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxWeddingCakesRoute = GateauxWeddingCakesRouteImport.update({
-  id: '/gateaux/wedding-cakes',
-  path: '/gateaux/wedding-cakes',
+const EvenementsGenderRevealRoute = EvenementsGenderRevealRouteImport.update({
+  id: '/evenements/gender-reveal',
+  path: '/evenements/gender-reveal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxVoyageRoute = GateauxVoyageRouteImport.update({
-  id: '/gateaux/voyage',
-  path: '/gateaux/voyage',
+const EvenementsMariageRoute = EvenementsMariageRouteImport.update({
+  id: '/evenements/mariage',
+  path: '/evenements/mariage',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxVerrinesRoute = GateauxVerrinesRouteImport.update({
-  id: '/gateaux/verrines',
-  path: '/gateaux/verrines',
+const EvenementsPresentationsRoute = EvenementsPresentationsRouteImport.update({
+  id: '/evenements/presentations',
+  path: '/evenements/presentations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxTiramisuRoute = GateauxTiramisuRouteImport.update({
-  id: '/gateaux/tiramisu',
-  path: '/gateaux/tiramisu',
+const EvenementsRamadanRoute = EvenementsRamadanRouteImport.update({
+  id: '/evenements/ramadan',
+  path: '/evenements/ramadan',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxTartesRoute = GateauxTartesRouteImport.update({
-  id: '/gateaux/tartes',
-  path: '/gateaux/tartes',
+const GateauxIndexRoute = GateauxIndexRouteImport.update({
+  id: '/gateaux/',
+  path: '/gateaux/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxPiecesMonteesRoute = GateauxPiecesMonteesRouteImport.update({
-  id: '/gateaux/pieces-montees',
-  path: '/gateaux/pieces-montees',
+const GateauxBentoRoute = GateauxBentoRouteImport.update({
+  id: '/gateaux/bento',
+  path: '/gateaux/bento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxCakeDeVoyageRoute = GateauxCakeDeVoyageRouteImport.update({
+  id: '/gateaux/cake-de-voyage',
+  path: '/gateaux/cake-de-voyage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxCakesRoute = GateauxCakesRouteImport.update({
+  id: '/gateaux/cakes',
+  path: '/gateaux/cakes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxCheesecakeRoute = GateauxCheesecakeRouteImport.update({
+  id: '/gateaux/cheesecake',
+  path: '/gateaux/cheesecake',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxConfigurerRoute = GateauxConfigurerRouteImport.update({
+  id: '/gateaux/configurer',
+  path: '/gateaux/configurer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxCookiesRoute = GateauxCookiesRouteImport.update({
+  id: '/gateaux/cookies',
+  path: '/gateaux/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxCupcakesRoute = GateauxCupcakesRouteImport.update({
+  id: '/gateaux/cupcakes',
+  path: '/gateaux/cupcakes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxEntremetsRoute = GateauxEntremetsRouteImport.update({
+  id: '/gateaux/entremets',
+  path: '/gateaux/entremets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxFinAnneeRoute = GateauxFinAnneeRouteImport.update({
+  id: '/gateaux/fin-annee',
+  path: '/gateaux/fin-annee',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxFondantsRoute = GateauxFondantsRouteImport.update({
+  id: '/gateaux/fondants',
+  path: '/gateaux/fondants',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxFraisierRoute = GateauxFraisierRouteImport.update({
+  id: '/gateaux/fraisier',
+  path: '/gateaux/fraisier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxGateauxDeVoyageRoute = GateauxGateauxDeVoyageRouteImport.update({
+  id: '/gateaux/gateaux-de-voyage',
+  path: '/gateaux/gateaux-de-voyage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxGenderRevealRoute = GateauxGenderRevealRouteImport.update({
+  id: '/gateaux/gender-reveal',
+  path: '/gateaux/gender-reveal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateauxMariageRoute = GateauxMariageRouteImport.update({
+  id: '/gateaux/mariage',
+  path: '/gateaux/mariage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GateauxMariagePieceMonteeRoute =
@@ -322,130 +346,106 @@ const GateauxMariagePieceMonteeRoute =
     path: '/gateaux/mariage-piece-montee',
     getParentRoute: () => rootRouteImport,
   } as any)
-const GateauxMariageRoute = GateauxMariageRouteImport.update({
-  id: '/gateaux/mariage',
-  path: '/gateaux/mariage',
+const GateauxPiecesMonteesRoute = GateauxPiecesMonteesRouteImport.update({
+  id: '/gateaux/pieces-montees',
+  path: '/gateaux/pieces-montees',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxGenderRevealRoute = GateauxGenderRevealRouteImport.update({
-  id: '/gateaux/gender-reveal',
-  path: '/gateaux/gender-reveal',
+const GateauxTartesRoute = GateauxTartesRouteImport.update({
+  id: '/gateaux/tartes',
+  path: '/gateaux/tartes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxGateauxDeVoyageRoute = GateauxGateauxDeVoyageRouteImport.update({
-  id: '/gateaux/gateaux-de-voyage',
-  path: '/gateaux/gateaux-de-voyage',
+const GateauxTiramisuRoute = GateauxTiramisuRouteImport.update({
+  id: '/gateaux/tiramisu',
+  path: '/gateaux/tiramisu',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxFraisierRoute = GateauxFraisierRouteImport.update({
-  id: '/gateaux/fraisier',
-  path: '/gateaux/fraisier',
+const GateauxVerrinesRoute = GateauxVerrinesRouteImport.update({
+  id: '/gateaux/verrines',
+  path: '/gateaux/verrines',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxFondantsRoute = GateauxFondantsRouteImport.update({
-  id: '/gateaux/fondants',
-  path: '/gateaux/fondants',
+const GateauxVoyageRoute = GateauxVoyageRouteImport.update({
+  id: '/gateaux/voyage',
+  path: '/gateaux/voyage',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxFinAnneeRoute = GateauxFinAnneeRouteImport.update({
-  id: '/gateaux/fin-annee',
-  path: '/gateaux/fin-annee',
+const GateauxWeddingCakesRoute = GateauxWeddingCakesRouteImport.update({
+  id: '/gateaux/wedding-cakes',
+  path: '/gateaux/wedding-cakes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxEntremetsRoute = GateauxEntremetsRouteImport.update({
-  id: '/gateaux/entremets',
-  path: '/gateaux/entremets',
+const PacksCirconcisionRoute = PacksCirconcisionRouteImport.update({
+  id: '/packs/circoncision',
+  path: '/packs/circoncision',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxCupcakesRoute = GateauxCupcakesRouteImport.update({
-  id: '/gateaux/cupcakes',
-  path: '/gateaux/cupcakes',
+const PacksFiancaillesRoute = PacksFiancaillesRouteImport.update({
+  id: '/packs/fiancailles',
+  path: '/packs/fiancailles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxCookiesRoute = GateauxCookiesRouteImport.update({
-  id: '/gateaux/cookies',
-  path: '/gateaux/cookies',
+const PacksMariageRoute = PacksMariageRouteImport.update({
+  id: '/packs/mariage',
+  path: '/packs/mariage',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxConfigurerRoute = GateauxConfigurerRouteImport.update({
-  id: '/gateaux/configurer',
-  path: '/gateaux/configurer',
+const PatisserieIndexRoute = PatisserieIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const PatisserieAidRoute = PatisserieAidRouteImport.update({
+  id: '/aid',
+  path: '/aid',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const PatisserieAmandesRoute = PatisserieAmandesRouteImport.update({
+  id: '/amandes',
+  path: '/amandes',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const PatisseriePerlesRoute = PatisseriePerlesRouteImport.update({
+  id: '/perles',
+  path: '/perles',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const PatisseriePistacheMachmoumPignonRoute =
+  PatisseriePistacheMachmoumPignonRouteImport.update({
+    id: '/pistache-machmoum-pignon',
+    path: '/pistache-machmoum-pignon',
+    getParentRoute: () => PatisserieRoute,
+  } as any)
+const PatisserieRamadanRoute = PatisserieRamadanRouteImport.update({
+  id: '/ramadan',
+  path: '/ramadan',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const PatisserieTraditionRoute = PatisserieTraditionRouteImport.update({
+  id: '/tradition',
+  path: '/tradition',
+  getParentRoute: () => PatisserieRoute,
+} as any)
+const ProduitsSlugRoute = ProduitsSlugRouteImport.update({
+  id: '/produits/$slug',
+  path: '/produits/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxCheesecakeRoute = GateauxCheesecakeRouteImport.update({
-  id: '/gateaux/cheesecake',
-  path: '/gateaux/cheesecake',
+const SaleIndexRoute = SaleIndexRouteImport.update({
+  id: '/sale/',
+  path: '/sale/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxCakesRoute = GateauxCakesRouteImport.update({
-  id: '/gateaux/cakes',
-  path: '/gateaux/cakes',
+const SaleFiancaillesRoute = SaleFiancaillesRouteImport.update({
+  id: '/sale/fiancailles',
+  path: '/sale/fiancailles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GateauxCakeDeVoyageRoute = GateauxCakeDeVoyageRouteImport.update({
-  id: '/gateaux/cake-de-voyage',
-  path: '/gateaux/cake-de-voyage',
+const SaleMariageRoute = SaleMariageRouteImport.update({
+  id: '/sale/mariage',
+  path: '/sale/mariage',
   getParentRoute: () => rootRouteImport,
-} as any)
-const GateauxBentoRoute = GateauxBentoRouteImport.update({
-  id: '/gateaux/bento',
-  path: '/gateaux/bento',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsRamadanRoute = EvenementsRamadanRouteImport.update({
-  id: '/evenements/ramadan',
-  path: '/evenements/ramadan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsPresentationsRoute = EvenementsPresentationsRouteImport.update({
-  id: '/evenements/presentations',
-  path: '/evenements/presentations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsMariageRoute = EvenementsMariageRouteImport.update({
-  id: '/evenements/mariage',
-  path: '/evenements/mariage',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsGenderRevealRoute = EvenementsGenderRevealRouteImport.update({
-  id: '/evenements/gender-reveal',
-  path: '/evenements/gender-reveal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsFiancaillesRoute = EvenementsFiancaillesRouteImport.update({
-  id: '/evenements/fiancailles',
-  path: '/evenements/fiancailles',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsEntrepriseRoute = EvenementsEntrepriseRouteImport.update({
-  id: '/evenements/entreprise',
-  path: '/evenements/entreprise',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsBabyShowerRoute = EvenementsBabyShowerRouteImport.update({
-  id: '/evenements/baby-shower',
-  path: '/evenements/baby-shower',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsAnniversaireRoute = EvenementsAnniversaireRouteImport.update({
-  id: '/evenements/anniversaire',
-  path: '/evenements/anniversaire',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsAidRoute = EvenementsAidRouteImport.update({
-  id: '/evenements/aid',
-  path: '/evenements/aid',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvenementsSlugRoute = EvenementsSlugRouteImport.update({
-  id: '/evenements/$slug',
-  path: '/evenements/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadeauxSlugRoute = CadeauxSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => CadeauxRoute,
 } as any)
 const GateauxAnniversaireIndexRoute =
   GateauxAnniversaireIndexRouteImport.update({
@@ -453,16 +453,16 @@ const GateauxAnniversaireIndexRoute =
     path: '/gateaux/anniversaire/',
     getParentRoute: () => rootRouteImport,
   } as any)
-const GateauxAnniversairePersonnaliserRoute =
-  GateauxAnniversairePersonnaliserRouteImport.update({
-    id: '/gateaux/anniversaire/personnaliser',
-    path: '/gateaux/anniversaire/personnaliser',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const GateauxAnniversaireThemeRoute =
   GateauxAnniversaireThemeRouteImport.update({
     id: '/gateaux/anniversaire/$theme',
     path: '/gateaux/anniversaire/$theme',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const GateauxAnniversairePersonnaliserRoute =
+  GateauxAnniversairePersonnaliserRouteImport.update({
+    id: '/gateaux/anniversaire/personnaliser',
+    path: '/gateaux/anniversaire/personnaliser',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -1002,158 +1002,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sur-mesure': {
-      id: '/sur-mesure'
-      path: '/sur-mesure'
-      fullPath: '/sur-mesure'
-      preLoaderRoute: typeof SurMesureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/remboursement': {
-      id: '/remboursement'
-      path: '/remboursement'
-      fullPath: '/remboursement'
-      preLoaderRoute: typeof RemboursementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patisserie': {
-      id: '/patisserie'
-      path: '/patisserie'
-      fullPath: '/patisserie'
-      preLoaderRoute: typeof PatisserieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parrainage': {
-      id: '/parrainage'
-      path: '/parrainage'
-      fullPath: '/parrainage'
-      preLoaderRoute: typeof ParrainageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/panier': {
-      id: '/panier'
-      path: '/panier'
-      fullPath: '/panier'
-      preLoaderRoute: typeof PanierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/offre-professionnelle': {
-      id: '/offre-professionnelle'
-      path: '/offre-professionnelle'
-      fullPath: '/offre-professionnelle'
-      preLoaderRoute: typeof OffreProfessionnelleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mon-compte': {
-      id: '/mon-compte'
-      path: '/mon-compte'
-      fullPath: '/mon-compte'
-      preLoaderRoute: typeof MonCompteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/livraison': {
-      id: '/livraison'
-      path: '/livraison'
-      fullPath: '/livraison'
-      preLoaderRoute: typeof LivraisonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/la-maison': {
-      id: '/la-maison'
-      path: '/la-maison'
-      fullPath: '/la-maison'
-      preLoaderRoute: typeof LaMaisonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/galerie': {
-      id: '/galerie'
-      path: '/galerie'
-      fullPath: '/galerie'
-      preLoaderRoute: typeof GalerieRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/favoris': {
-      id: '/favoris'
-      path: '/favoris'
-      fullPath: '/favoris'
-      preLoaderRoute: typeof FavorisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/faq': {
-      id: '/faq'
-      path: '/faq'
-      fullPath: '/faq'
-      preLoaderRoute: typeof FaqRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/epicerie-salee': {
-      id: '/epicerie-salee'
-      path: '/epicerie-salee'
-      fullPath: '/epicerie-salee'
-      preLoaderRoute: typeof EpicerieSaleeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/devis': {
-      id: '/devis'
-      path: '/devis'
-      fullPath: '/devis'
-      preLoaderRoute: typeof DevisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/creation-sur-mesure': {
-      id: '/creation-sur-mesure'
-      path: '/creation-sur-mesure'
-      fullPath: '/creation-sur-mesure'
-      preLoaderRoute: typeof CreationSurMesureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cookies': {
-      id: '/cookies'
-      path: '/cookies'
-      fullPath: '/cookies'
-      preLoaderRoute: typeof CookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/confidentialite': {
-      id: '/confidentialite'
-      path: '/confidentialite'
-      fullPath: '/confidentialite'
-      preLoaderRoute: typeof ConfidentialiteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/composer': {
-      id: '/composer'
-      path: '/composer'
-      fullPath: '/composer'
-      preLoaderRoute: typeof ComposerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cgv': {
-      id: '/cgv'
-      path: '/cgv'
-      fullPath: '/cgv'
-      preLoaderRoute: typeof CgvRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadeaux': {
-      id: '/cadeaux'
-      path: '/cadeaux'
-      fullPath: '/cadeaux'
-      preLoaderRoute: typeof CadeauxRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1163,340 +1016,158 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/cadeaux': {
+      id: '/cadeaux'
+      path: '/cadeaux'
+      fullPath: '/cadeaux'
+      preLoaderRoute: typeof CadeauxRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sale/': {
-      id: '/sale/'
-      path: '/sale'
-      fullPath: '/sale/'
-      preLoaderRoute: typeof SaleIndexRouteImport
+    '/cgv': {
+      id: '/cgv'
+      path: '/cgv'
+      fullPath: '/cgv'
+      preLoaderRoute: typeof CgvRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/patisserie/': {
-      id: '/patisserie/'
-      path: '/'
-      fullPath: '/patisserie/'
-      preLoaderRoute: typeof PatisserieIndexRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/gateaux/': {
-      id: '/gateaux/'
-      path: '/gateaux'
-      fullPath: '/gateaux/'
-      preLoaderRoute: typeof GateauxIndexRouteImport
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/evenements/': {
-      id: '/evenements/'
-      path: '/evenements'
-      fullPath: '/evenements/'
-      preLoaderRoute: typeof EvenementsIndexRouteImport
+    '/composer': {
+      id: '/composer'
+      path: '/composer'
+      fullPath: '/composer'
+      preLoaderRoute: typeof ComposerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sale/mariage': {
-      id: '/sale/mariage'
-      path: '/sale/mariage'
-      fullPath: '/sale/mariage'
-      preLoaderRoute: typeof SaleMariageRouteImport
+    '/confidentialite': {
+      id: '/confidentialite'
+      path: '/confidentialite'
+      fullPath: '/confidentialite'
+      preLoaderRoute: typeof ConfidentialiteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sale/fiancailles': {
-      id: '/sale/fiancailles'
-      path: '/sale/fiancailles'
-      fullPath: '/sale/fiancailles'
-      preLoaderRoute: typeof SaleFiancaillesRouteImport
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/produits/$slug': {
-      id: '/produits/$slug'
-      path: '/produits/$slug'
-      fullPath: '/produits/$slug'
-      preLoaderRoute: typeof ProduitsSlugRouteImport
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/patisserie/tradition': {
-      id: '/patisserie/tradition'
-      path: '/tradition'
-      fullPath: '/patisserie/tradition'
-      preLoaderRoute: typeof PatisserieTraditionRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/patisserie/ramadan': {
-      id: '/patisserie/ramadan'
-      path: '/ramadan'
-      fullPath: '/patisserie/ramadan'
-      preLoaderRoute: typeof PatisserieRamadanRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/patisserie/pistache-machmoum-pignon': {
-      id: '/patisserie/pistache-machmoum-pignon'
-      path: '/pistache-machmoum-pignon'
-      fullPath: '/patisserie/pistache-machmoum-pignon'
-      preLoaderRoute: typeof PatisseriePistacheMachmoumPignonRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/patisserie/perles': {
-      id: '/patisserie/perles'
-      path: '/perles'
-      fullPath: '/patisserie/perles'
-      preLoaderRoute: typeof PatisseriePerlesRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/patisserie/amandes': {
-      id: '/patisserie/amandes'
-      path: '/amandes'
-      fullPath: '/patisserie/amandes'
-      preLoaderRoute: typeof PatisserieAmandesRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/patisserie/aid': {
-      id: '/patisserie/aid'
-      path: '/aid'
-      fullPath: '/patisserie/aid'
-      preLoaderRoute: typeof PatisserieAidRouteImport
-      parentRoute: typeof PatisserieRoute
-    }
-    '/packs/mariage': {
-      id: '/packs/mariage'
-      path: '/packs/mariage'
-      fullPath: '/packs/mariage'
-      preLoaderRoute: typeof PacksMariageRouteImport
+    '/creation-sur-mesure': {
+      id: '/creation-sur-mesure'
+      path: '/creation-sur-mesure'
+      fullPath: '/creation-sur-mesure'
+      preLoaderRoute: typeof CreationSurMesureRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/packs/fiancailles': {
-      id: '/packs/fiancailles'
-      path: '/packs/fiancailles'
-      fullPath: '/packs/fiancailles'
-      preLoaderRoute: typeof PacksFiancaillesRouteImport
+    '/devis': {
+      id: '/devis'
+      path: '/devis'
+      fullPath: '/devis'
+      preLoaderRoute: typeof DevisRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/packs/circoncision': {
-      id: '/packs/circoncision'
-      path: '/packs/circoncision'
-      fullPath: '/packs/circoncision'
-      preLoaderRoute: typeof PacksCirconcisionRouteImport
+    '/epicerie-salee': {
+      id: '/epicerie-salee'
+      path: '/epicerie-salee'
+      fullPath: '/epicerie-salee'
+      preLoaderRoute: typeof EpicerieSaleeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/wedding-cakes': {
-      id: '/gateaux/wedding-cakes'
-      path: '/gateaux/wedding-cakes'
-      fullPath: '/gateaux/wedding-cakes'
-      preLoaderRoute: typeof GateauxWeddingCakesRouteImport
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/voyage': {
-      id: '/gateaux/voyage'
-      path: '/gateaux/voyage'
-      fullPath: '/gateaux/voyage'
-      preLoaderRoute: typeof GateauxVoyageRouteImport
+    '/favoris': {
+      id: '/favoris'
+      path: '/favoris'
+      fullPath: '/favoris'
+      preLoaderRoute: typeof FavorisRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/verrines': {
-      id: '/gateaux/verrines'
-      path: '/gateaux/verrines'
-      fullPath: '/gateaux/verrines'
-      preLoaderRoute: typeof GateauxVerrinesRouteImport
+    '/galerie': {
+      id: '/galerie'
+      path: '/galerie'
+      fullPath: '/galerie'
+      preLoaderRoute: typeof GalerieRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/tiramisu': {
-      id: '/gateaux/tiramisu'
-      path: '/gateaux/tiramisu'
-      fullPath: '/gateaux/tiramisu'
-      preLoaderRoute: typeof GateauxTiramisuRouteImport
+    '/la-maison': {
+      id: '/la-maison'
+      path: '/la-maison'
+      fullPath: '/la-maison'
+      preLoaderRoute: typeof LaMaisonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/tartes': {
-      id: '/gateaux/tartes'
-      path: '/gateaux/tartes'
-      fullPath: '/gateaux/tartes'
-      preLoaderRoute: typeof GateauxTartesRouteImport
+    '/livraison': {
+      id: '/livraison'
+      path: '/livraison'
+      fullPath: '/livraison'
+      preLoaderRoute: typeof LivraisonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/pieces-montees': {
-      id: '/gateaux/pieces-montees'
-      path: '/gateaux/pieces-montees'
-      fullPath: '/gateaux/pieces-montees'
-      preLoaderRoute: typeof GateauxPiecesMonteesRouteImport
+    '/mon-compte': {
+      id: '/mon-compte'
+      path: '/mon-compte'
+      fullPath: '/mon-compte'
+      preLoaderRoute: typeof MonCompteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/mariage-piece-montee': {
-      id: '/gateaux/mariage-piece-montee'
-      path: '/gateaux/mariage-piece-montee'
-      fullPath: '/gateaux/mariage-piece-montee'
-      preLoaderRoute: typeof GateauxMariagePieceMonteeRouteImport
+    '/offre-professionnelle': {
+      id: '/offre-professionnelle'
+      path: '/offre-professionnelle'
+      fullPath: '/offre-professionnelle'
+      preLoaderRoute: typeof OffreProfessionnelleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/mariage': {
-      id: '/gateaux/mariage'
-      path: '/gateaux/mariage'
-      fullPath: '/gateaux/mariage'
-      preLoaderRoute: typeof GateauxMariageRouteImport
+    '/panier': {
+      id: '/panier'
+      path: '/panier'
+      fullPath: '/panier'
+      preLoaderRoute: typeof PanierRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/gender-reveal': {
-      id: '/gateaux/gender-reveal'
-      path: '/gateaux/gender-reveal'
-      fullPath: '/gateaux/gender-reveal'
-      preLoaderRoute: typeof GateauxGenderRevealRouteImport
+    '/parrainage': {
+      id: '/parrainage'
+      path: '/parrainage'
+      fullPath: '/parrainage'
+      preLoaderRoute: typeof ParrainageRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/gateaux-de-voyage': {
-      id: '/gateaux/gateaux-de-voyage'
-      path: '/gateaux/gateaux-de-voyage'
-      fullPath: '/gateaux/gateaux-de-voyage'
-      preLoaderRoute: typeof GateauxGateauxDeVoyageRouteImport
+    '/patisserie': {
+      id: '/patisserie'
+      path: '/patisserie'
+      fullPath: '/patisserie'
+      preLoaderRoute: typeof PatisserieRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/fraisier': {
-      id: '/gateaux/fraisier'
-      path: '/gateaux/fraisier'
-      fullPath: '/gateaux/fraisier'
-      preLoaderRoute: typeof GateauxFraisierRouteImport
+    '/remboursement': {
+      id: '/remboursement'
+      path: '/remboursement'
+      fullPath: '/remboursement'
+      preLoaderRoute: typeof RemboursementRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/fondants': {
-      id: '/gateaux/fondants'
-      path: '/gateaux/fondants'
-      fullPath: '/gateaux/fondants'
-      preLoaderRoute: typeof GateauxFondantsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/fin-annee': {
-      id: '/gateaux/fin-annee'
-      path: '/gateaux/fin-annee'
-      fullPath: '/gateaux/fin-annee'
-      preLoaderRoute: typeof GateauxFinAnneeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/entremets': {
-      id: '/gateaux/entremets'
-      path: '/gateaux/entremets'
-      fullPath: '/gateaux/entremets'
-      preLoaderRoute: typeof GateauxEntremetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/cupcakes': {
-      id: '/gateaux/cupcakes'
-      path: '/gateaux/cupcakes'
-      fullPath: '/gateaux/cupcakes'
-      preLoaderRoute: typeof GateauxCupcakesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/cookies': {
-      id: '/gateaux/cookies'
-      path: '/gateaux/cookies'
-      fullPath: '/gateaux/cookies'
-      preLoaderRoute: typeof GateauxCookiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/configurer': {
-      id: '/gateaux/configurer'
-      path: '/gateaux/configurer'
-      fullPath: '/gateaux/configurer'
-      preLoaderRoute: typeof GateauxConfigurerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/cheesecake': {
-      id: '/gateaux/cheesecake'
-      path: '/gateaux/cheesecake'
-      fullPath: '/gateaux/cheesecake'
-      preLoaderRoute: typeof GateauxCheesecakeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/cakes': {
-      id: '/gateaux/cakes'
-      path: '/gateaux/cakes'
-      fullPath: '/gateaux/cakes'
-      preLoaderRoute: typeof GateauxCakesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/cake-de-voyage': {
-      id: '/gateaux/cake-de-voyage'
-      path: '/gateaux/cake-de-voyage'
-      fullPath: '/gateaux/cake-de-voyage'
-      preLoaderRoute: typeof GateauxCakeDeVoyageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gateaux/bento': {
-      id: '/gateaux/bento'
-      path: '/gateaux/bento'
-      fullPath: '/gateaux/bento'
-      preLoaderRoute: typeof GateauxBentoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/ramadan': {
-      id: '/evenements/ramadan'
-      path: '/evenements/ramadan'
-      fullPath: '/evenements/ramadan'
-      preLoaderRoute: typeof EvenementsRamadanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/presentations': {
-      id: '/evenements/presentations'
-      path: '/evenements/presentations'
-      fullPath: '/evenements/presentations'
-      preLoaderRoute: typeof EvenementsPresentationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/mariage': {
-      id: '/evenements/mariage'
-      path: '/evenements/mariage'
-      fullPath: '/evenements/mariage'
-      preLoaderRoute: typeof EvenementsMariageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/gender-reveal': {
-      id: '/evenements/gender-reveal'
-      path: '/evenements/gender-reveal'
-      fullPath: '/evenements/gender-reveal'
-      preLoaderRoute: typeof EvenementsGenderRevealRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/fiancailles': {
-      id: '/evenements/fiancailles'
-      path: '/evenements/fiancailles'
-      fullPath: '/evenements/fiancailles'
-      preLoaderRoute: typeof EvenementsFiancaillesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/entreprise': {
-      id: '/evenements/entreprise'
-      path: '/evenements/entreprise'
-      fullPath: '/evenements/entreprise'
-      preLoaderRoute: typeof EvenementsEntrepriseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/baby-shower': {
-      id: '/evenements/baby-shower'
-      path: '/evenements/baby-shower'
-      fullPath: '/evenements/baby-shower'
-      preLoaderRoute: typeof EvenementsBabyShowerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/anniversaire': {
-      id: '/evenements/anniversaire'
-      path: '/evenements/anniversaire'
-      fullPath: '/evenements/anniversaire'
-      preLoaderRoute: typeof EvenementsAnniversaireRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/aid': {
-      id: '/evenements/aid'
-      path: '/evenements/aid'
-      fullPath: '/evenements/aid'
-      preLoaderRoute: typeof EvenementsAidRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evenements/$slug': {
-      id: '/evenements/$slug'
-      path: '/evenements/$slug'
-      fullPath: '/evenements/$slug'
-      preLoaderRoute: typeof EvenementsSlugRouteImport
+    '/sur-mesure': {
+      id: '/sur-mesure'
+      path: '/sur-mesure'
+      fullPath: '/sur-mesure'
+      preLoaderRoute: typeof SurMesureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadeaux/$slug': {
@@ -1506,6 +1177,335 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadeauxSlugRouteImport
       parentRoute: typeof CadeauxRoute
     }
+    '/evenements/': {
+      id: '/evenements/'
+      path: '/evenements'
+      fullPath: '/evenements/'
+      preLoaderRoute: typeof EvenementsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/$slug': {
+      id: '/evenements/$slug'
+      path: '/evenements/$slug'
+      fullPath: '/evenements/$slug'
+      preLoaderRoute: typeof EvenementsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/aid': {
+      id: '/evenements/aid'
+      path: '/evenements/aid'
+      fullPath: '/evenements/aid'
+      preLoaderRoute: typeof EvenementsAidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/anniversaire': {
+      id: '/evenements/anniversaire'
+      path: '/evenements/anniversaire'
+      fullPath: '/evenements/anniversaire'
+      preLoaderRoute: typeof EvenementsAnniversaireRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/baby-shower': {
+      id: '/evenements/baby-shower'
+      path: '/evenements/baby-shower'
+      fullPath: '/evenements/baby-shower'
+      preLoaderRoute: typeof EvenementsBabyShowerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/entreprise': {
+      id: '/evenements/entreprise'
+      path: '/evenements/entreprise'
+      fullPath: '/evenements/entreprise'
+      preLoaderRoute: typeof EvenementsEntrepriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/fiancailles': {
+      id: '/evenements/fiancailles'
+      path: '/evenements/fiancailles'
+      fullPath: '/evenements/fiancailles'
+      preLoaderRoute: typeof EvenementsFiancaillesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/gender-reveal': {
+      id: '/evenements/gender-reveal'
+      path: '/evenements/gender-reveal'
+      fullPath: '/evenements/gender-reveal'
+      preLoaderRoute: typeof EvenementsGenderRevealRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/mariage': {
+      id: '/evenements/mariage'
+      path: '/evenements/mariage'
+      fullPath: '/evenements/mariage'
+      preLoaderRoute: typeof EvenementsMariageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/presentations': {
+      id: '/evenements/presentations'
+      path: '/evenements/presentations'
+      fullPath: '/evenements/presentations'
+      preLoaderRoute: typeof EvenementsPresentationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evenements/ramadan': {
+      id: '/evenements/ramadan'
+      path: '/evenements/ramadan'
+      fullPath: '/evenements/ramadan'
+      preLoaderRoute: typeof EvenementsRamadanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/': {
+      id: '/gateaux/'
+      path: '/gateaux'
+      fullPath: '/gateaux/'
+      preLoaderRoute: typeof GateauxIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/bento': {
+      id: '/gateaux/bento'
+      path: '/gateaux/bento'
+      fullPath: '/gateaux/bento'
+      preLoaderRoute: typeof GateauxBentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/cake-de-voyage': {
+      id: '/gateaux/cake-de-voyage'
+      path: '/gateaux/cake-de-voyage'
+      fullPath: '/gateaux/cake-de-voyage'
+      preLoaderRoute: typeof GateauxCakeDeVoyageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/cakes': {
+      id: '/gateaux/cakes'
+      path: '/gateaux/cakes'
+      fullPath: '/gateaux/cakes'
+      preLoaderRoute: typeof GateauxCakesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/cheesecake': {
+      id: '/gateaux/cheesecake'
+      path: '/gateaux/cheesecake'
+      fullPath: '/gateaux/cheesecake'
+      preLoaderRoute: typeof GateauxCheesecakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/configurer': {
+      id: '/gateaux/configurer'
+      path: '/gateaux/configurer'
+      fullPath: '/gateaux/configurer'
+      preLoaderRoute: typeof GateauxConfigurerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/cookies': {
+      id: '/gateaux/cookies'
+      path: '/gateaux/cookies'
+      fullPath: '/gateaux/cookies'
+      preLoaderRoute: typeof GateauxCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/cupcakes': {
+      id: '/gateaux/cupcakes'
+      path: '/gateaux/cupcakes'
+      fullPath: '/gateaux/cupcakes'
+      preLoaderRoute: typeof GateauxCupcakesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/entremets': {
+      id: '/gateaux/entremets'
+      path: '/gateaux/entremets'
+      fullPath: '/gateaux/entremets'
+      preLoaderRoute: typeof GateauxEntremetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/fin-annee': {
+      id: '/gateaux/fin-annee'
+      path: '/gateaux/fin-annee'
+      fullPath: '/gateaux/fin-annee'
+      preLoaderRoute: typeof GateauxFinAnneeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/fondants': {
+      id: '/gateaux/fondants'
+      path: '/gateaux/fondants'
+      fullPath: '/gateaux/fondants'
+      preLoaderRoute: typeof GateauxFondantsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/fraisier': {
+      id: '/gateaux/fraisier'
+      path: '/gateaux/fraisier'
+      fullPath: '/gateaux/fraisier'
+      preLoaderRoute: typeof GateauxFraisierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/gateaux-de-voyage': {
+      id: '/gateaux/gateaux-de-voyage'
+      path: '/gateaux/gateaux-de-voyage'
+      fullPath: '/gateaux/gateaux-de-voyage'
+      preLoaderRoute: typeof GateauxGateauxDeVoyageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/gender-reveal': {
+      id: '/gateaux/gender-reveal'
+      path: '/gateaux/gender-reveal'
+      fullPath: '/gateaux/gender-reveal'
+      preLoaderRoute: typeof GateauxGenderRevealRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/mariage': {
+      id: '/gateaux/mariage'
+      path: '/gateaux/mariage'
+      fullPath: '/gateaux/mariage'
+      preLoaderRoute: typeof GateauxMariageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/mariage-piece-montee': {
+      id: '/gateaux/mariage-piece-montee'
+      path: '/gateaux/mariage-piece-montee'
+      fullPath: '/gateaux/mariage-piece-montee'
+      preLoaderRoute: typeof GateauxMariagePieceMonteeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/pieces-montees': {
+      id: '/gateaux/pieces-montees'
+      path: '/gateaux/pieces-montees'
+      fullPath: '/gateaux/pieces-montees'
+      preLoaderRoute: typeof GateauxPiecesMonteesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/tartes': {
+      id: '/gateaux/tartes'
+      path: '/gateaux/tartes'
+      fullPath: '/gateaux/tartes'
+      preLoaderRoute: typeof GateauxTartesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/tiramisu': {
+      id: '/gateaux/tiramisu'
+      path: '/gateaux/tiramisu'
+      fullPath: '/gateaux/tiramisu'
+      preLoaderRoute: typeof GateauxTiramisuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/verrines': {
+      id: '/gateaux/verrines'
+      path: '/gateaux/verrines'
+      fullPath: '/gateaux/verrines'
+      preLoaderRoute: typeof GateauxVerrinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/voyage': {
+      id: '/gateaux/voyage'
+      path: '/gateaux/voyage'
+      fullPath: '/gateaux/voyage'
+      preLoaderRoute: typeof GateauxVoyageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/wedding-cakes': {
+      id: '/gateaux/wedding-cakes'
+      path: '/gateaux/wedding-cakes'
+      fullPath: '/gateaux/wedding-cakes'
+      preLoaderRoute: typeof GateauxWeddingCakesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs/circoncision': {
+      id: '/packs/circoncision'
+      path: '/packs/circoncision'
+      fullPath: '/packs/circoncision'
+      preLoaderRoute: typeof PacksCirconcisionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs/fiancailles': {
+      id: '/packs/fiancailles'
+      path: '/packs/fiancailles'
+      fullPath: '/packs/fiancailles'
+      preLoaderRoute: typeof PacksFiancaillesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs/mariage': {
+      id: '/packs/mariage'
+      path: '/packs/mariage'
+      fullPath: '/packs/mariage'
+      preLoaderRoute: typeof PacksMariageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patisserie/': {
+      id: '/patisserie/'
+      path: '/'
+      fullPath: '/patisserie/'
+      preLoaderRoute: typeof PatisserieIndexRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/aid': {
+      id: '/patisserie/aid'
+      path: '/aid'
+      fullPath: '/patisserie/aid'
+      preLoaderRoute: typeof PatisserieAidRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/amandes': {
+      id: '/patisserie/amandes'
+      path: '/amandes'
+      fullPath: '/patisserie/amandes'
+      preLoaderRoute: typeof PatisserieAmandesRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/perles': {
+      id: '/patisserie/perles'
+      path: '/perles'
+      fullPath: '/patisserie/perles'
+      preLoaderRoute: typeof PatisseriePerlesRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/pistache-machmoum-pignon': {
+      id: '/patisserie/pistache-machmoum-pignon'
+      path: '/pistache-machmoum-pignon'
+      fullPath: '/patisserie/pistache-machmoum-pignon'
+      preLoaderRoute: typeof PatisseriePistacheMachmoumPignonRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/ramadan': {
+      id: '/patisserie/ramadan'
+      path: '/ramadan'
+      fullPath: '/patisserie/ramadan'
+      preLoaderRoute: typeof PatisserieRamadanRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/patisserie/tradition': {
+      id: '/patisserie/tradition'
+      path: '/tradition'
+      fullPath: '/patisserie/tradition'
+      preLoaderRoute: typeof PatisserieTraditionRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
+    '/produits/$slug': {
+      id: '/produits/$slug'
+      path: '/produits/$slug'
+      fullPath: '/produits/$slug'
+      preLoaderRoute: typeof ProduitsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sale/': {
+      id: '/sale/'
+      path: '/sale'
+      fullPath: '/sale/'
+      preLoaderRoute: typeof SaleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sale/fiancailles': {
+      id: '/sale/fiancailles'
+      path: '/sale/fiancailles'
+      fullPath: '/sale/fiancailles'
+      preLoaderRoute: typeof SaleFiancaillesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sale/mariage': {
+      id: '/sale/mariage'
+      path: '/sale/mariage'
+      fullPath: '/sale/mariage'
+      preLoaderRoute: typeof SaleMariageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gateaux/anniversaire/': {
       id: '/gateaux/anniversaire/'
       path: '/gateaux/anniversaire'
@@ -1513,18 +1513,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GateauxAnniversaireIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gateaux/anniversaire/personnaliser': {
-      id: '/gateaux/anniversaire/personnaliser'
-      path: '/gateaux/anniversaire/personnaliser'
-      fullPath: '/gateaux/anniversaire/personnaliser'
-      preLoaderRoute: typeof GateauxAnniversairePersonnaliserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/gateaux/anniversaire/$theme': {
       id: '/gateaux/anniversaire/$theme'
       path: '/gateaux/anniversaire/$theme'
       fullPath: '/gateaux/anniversaire/$theme'
       preLoaderRoute: typeof GateauxAnniversaireThemeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gateaux/anniversaire/personnaliser': {
+      id: '/gateaux/anniversaire/personnaliser'
+      path: '/gateaux/anniversaire/personnaliser'
+      fullPath: '/gateaux/anniversaire/personnaliser'
+      preLoaderRoute: typeof GateauxAnniversairePersonnaliserRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
