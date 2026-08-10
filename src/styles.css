@@ -5,9 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =========================================================
-   Ö' SWEETS — Design System
-   Or doux #A89152 · Ivoire #FAF9F6 · Beige #EDE5D8
-   Charbon #2C2C2C · Or clair #C9A96E · Sable #F5F0E8
+   Ö' SWEETS — Design System (aligné sur la référence base44)
+   Or #A79152 · Ivoire #FCFAF8 · Beige/bordures #E7DED0
+   Charbon #29221F · Sable #F4EFE6 · Gris (charbon-soft) #6B5F57
    ========================================================= */
 
 @theme inline {
@@ -61,19 +61,19 @@
 :root {
   --radius: 0.5rem;
 
-  /* Brand palette — Ö' Sweets editorial luxury */
-  --gold: #A89152;                   /* Or doux */
+  /* Brand palette — Ö' Sweets editorial luxury (valeurs alignées base44) */
+  --gold: #A79152;                   /* Or doux */
   --gold-light: #C3AE78;             /* Or clair */
   --gold-dark: #8C7840;              /* Or profond */
   --gold-faint: #E4D5B0;             /* Or très clair (placeholders) */
-  --ivory: #FCFAF6;                  /* Fond principal */
-  --beige: #FCFAF6;                  /* alias fond (compat) */
-  --sand: #F2EDE4;                   /* Bandeaux / surfaces */
-  --sable: #F2EDE4;                  /* alias sable (compat) */
-  --line: #E9E2D6;                   /* Bordures fines */
-  --charbon: #2A2320;                /* Texte principal */
-  --charbon-soft: #6B6058;           /* Texte secondaire */
-  --noir: #2A2320;                   /* Boutons pleins / footer */
+  --ivory: #FCFAF8;                  /* Fond principal */
+  --beige: #E7DED0;                  /* Bordures / fonds beige (collections, badges) */
+  --sand: #F4EFE6;                   /* Bandeaux / surfaces */
+  --sable: #F4EFE6;                  /* alias sable (compat) */
+  --line: #E7DED0;                   /* Bordures fines */
+  --charbon: #29221F;                /* Texte principal */
+  --charbon-soft: #6B5F57;           /* Texte secondaire (gris) */
+  --noir: #29221F;                   /* Boutons pleins / footer */
   --favorite: #A83D3D;
   --terracotta: #B5623B;
   --gold-border: #E7DED0;
@@ -131,7 +131,8 @@
 
 @layer components {
   .container-os { @apply mx-auto w-full max-w-7xl px-5 md:px-10; }
-  .section-y { @apply py-16 md:py-24 lg:py-28; }
+  .section-y { @apply py-20 md:py-24 lg:py-32; }
+  .section-y-lg { @apply py-24 lg:py-36; }
 
   .eyebrow {
     font-family: var(--font-body);
@@ -215,6 +216,17 @@
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Reveal — apparition au scroll (voir components/Reveal.tsx) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .text-gold { color: var(--gold); }
@@ -305,4 +317,3 @@
     }
   }
 }
-

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag, User, Menu, X, ChevronDown } from "lucide-react";
+import { Heart, ShoppingBag, User, Menu, X, ChevronDown, ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useShop } from "@/lib/shop-store";
@@ -55,9 +55,6 @@ const patisserieCols: MegaCol[] = [
   },
 ];
 
-
-
-
 // ─────────────────────────────────────────────────────────────
 // Menu 2 — Gâteaux
 // COOKIES_LOCATION contrôle l'emplacement de Cookies (voir config/site.ts)
@@ -99,7 +96,6 @@ const gateauxCols: MegaCol[] = [
   },
 ];
 
-
 // ─────────────────────────────────────────────────────────────
 // Menu 3 — Coffrets (un seul configurateur derrière CTA)
 // ─────────────────────────────────────────────────────────────
@@ -107,18 +103,18 @@ const coffretsCols: MegaCol[] = [
   {
     title: "Petits formats",
     items: [
-      { to: '/composer?size=%226%22', label: "Coffret Dégustation · 6 pièces" },
-      { to: '/composer?size=%2212%22', label: "Coffret Découverte · 12 pièces" },
+      { to: "/composer?size=%226%22", label: "Coffret Dégustation · 6 pièces" },
+      { to: "/composer?size=%2212%22", label: "Coffret Découverte · 12 pièces" },
       { to: "/composer", label: "Voir les petits coffrets →", highlight: true },
     ],
   },
   {
     title: "Coffrets Signature",
     items: [
-      { to: '/composer?size=%2218%22', label: "Coffret Partage · 18 pièces" },
-      { to: '/composer?size=%2224%22', label: "Coffret Prestige · 24 pièces" },
-      { to: '/composer?size=%2236%22', label: "Coffret Réception · 36 pièces" },
-      { to: '/composer?size=%2248%22', label: "Coffret Royal · 48 pièces" },
+      { to: "/composer?size=%2218%22", label: "Coffret Partage · 18 pièces" },
+      { to: "/composer?size=%2224%22", label: "Coffret Prestige · 24 pièces" },
+      { to: "/composer?size=%2236%22", label: "Coffret Réception · 36 pièces" },
+      { to: "/composer?size=%2248%22", label: "Coffret Royal · 48 pièces" },
       { to: "/composer", label: "Découvrir les coffrets Signature →", highlight: true },
     ],
   },
@@ -128,12 +124,13 @@ const coffretsCols: MegaCol[] = [
       { to: "/composer", label: "Coffrets assortis" },
       { to: "/composer", label: "Choisir le format" },
       { to: "/composer", label: "Choisir les variétés" },
-      ...(FEATURES.giftMessage ? [{ to: "/composer", label: "Ajouter un message personnalisé" }] : []),
+      ...(FEATURES.giftMessage
+        ? [{ to: "/composer", label: "Ajouter un message personnalisé" }]
+        : []),
       { to: "/composer", label: "Composer mon coffret →", highlight: true },
     ],
   },
 ];
-
 
 // ─────────────────────────────────────────────────────────────
 // Menu 4 — Salé
@@ -189,7 +186,11 @@ const cadeauxCols: MegaCol[] = [
     items: [
       { to: "/evenements/entreprise", label: "Cadeaux d'entreprise" },
       { to: "/composer", label: "Coffrets personnalisés" },
-      { to: "/offre-professionnelle", label: "Demander une offre professionnelle →", highlight: true },
+      {
+        to: "/offre-professionnelle",
+        label: "Demander une offre professionnelle →",
+        highlight: true,
+      },
     ],
   },
 ];
@@ -230,14 +231,15 @@ const evenementsCols: MegaCol[] = [
       { to: "/packs/mariage", label: "Pack Mariage" },
       { to: "/packs/fiancailles", label: "Pack Fiançailles" },
       { to: "/packs/circoncision", label: "Pack Circoncision / Thour" },
-
     ],
   },
   {
     title: "Naissance & célébrations",
     items: [
       { to: "/evenements/baby-shower", label: "Baby Shower" },
-      ...(FEATURES.genderReveal ? [{ to: "/evenements/gender-reveal", label: "Gender Reveal" }] : []),
+      ...(FEATURES.genderReveal
+        ? [{ to: "/evenements/gender-reveal", label: "Gender Reveal" }]
+        : []),
     ],
   },
   {
@@ -354,7 +356,9 @@ export function Header() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -401,15 +405,25 @@ export function Header() {
       onMouseLeave={scheduleClose}
     >
       {/* Top row : tagline left · logo center · icons right */}
-      <div className={`container-os grid grid-cols-3 items-center transition-all ${scrolled ? "py-2.5" : "py-4"}`}>
+      <div
+        className={`container-os grid grid-cols-3 items-center transition-all ${scrolled ? "py-2.5" : "py-4"}`}
+      >
         {/* Left — hamburger (mobile) + tagline (desktop) */}
         <div className="flex items-center gap-3 justify-start">
-          <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 -ml-2" aria-label="Ouvrir le menu">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden p-2 -ml-2"
+            aria-label="Ouvrir le menu"
+          >
             <Menu className="h-5 w-5" />
           </button>
           <span
             className="hidden lg:inline-block text-[10px] tracking-[0.32em] uppercase text-charbon/70 font-medium"
-            title={PICKUP_BY_APPOINTMENT_ENABLED ? "Retrait sur rendez-vous à Évry-Courcouronnes" : undefined}
+            title={
+              PICKUP_BY_APPOINTMENT_ENABLED
+                ? "Retrait sur rendez-vous à Évry-Courcouronnes"
+                : undefined
+            }
           >
             Pâtisserie · Évry-Courcouronnes
           </span>
@@ -418,7 +432,11 @@ export function Header() {
         {/* Center — logo */}
         <div className="flex justify-center">
           <Link to="/" className="flex flex-col items-center leading-none">
-            <span className={`font-display tracking-[0.04em] text-charbon transition-all ${scrolled ? "text-2xl md:text-3xl" : "text-3xl md:text-[36px]"}`}>Ö' Sweets</span>
+            <span
+              className={`font-display tracking-[0.04em] text-charbon transition-all ${scrolled ? "text-2xl md:text-3xl" : "text-3xl md:text-[36px]"}`}
+            >
+              Ö' Sweets
+            </span>
             <span className="hidden sm:flex items-center gap-2 mt-1.5 text-[9px] tracking-[0.4em] uppercase text-gold font-medium">
               <span className="h-px w-4 bg-gold" />
               Pâtisserie
@@ -427,28 +445,40 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Right — icons */}
+        {/* Right — icons (ordre : compte → favoris → panier) */}
         <div className="flex items-center justify-end gap-1 md:gap-2">
+          <Link
+            to="/mon-compte"
+            className="hidden p-2.5 text-charbon transition-colors hover:text-gold md:inline-flex"
+            aria-label="Mon compte"
+          >
+            <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          </Link>
           {FEATURES.favorites && (
-            <Link to="/favoris" className="relative p-2 transition hover:opacity-60" aria-label="Favoris">
-              <Heart className="h-[18px] w-[18px]" />
+            <Link
+              to="/favoris"
+              className="relative p-2.5 text-charbon transition-colors hover:text-gold"
+              aria-label="Favoris"
+            >
+              <Heart className="h-[18px] w-[18px]" strokeWidth={1.5} />
               {favorites.length > 0 && (
-                <span className="absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-full bg-charbon text-[10px] font-medium text-ivory">{favorites.length}</span>
+                <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-gold text-[10px] font-medium text-white">
+                  {favorites.length}
+                </span>
               )}
             </Link>
           )}
-          <Link to="/mon-compte" className="hidden p-2 transition hover:opacity-60 md:inline-flex" aria-label="Mon compte">
-            <User className="h-[18px] w-[18px]" />
-          </Link>
           <button
             type="button"
             onClick={openCart}
-            className="relative p-2 transition hover:opacity-60"
+            className="relative p-2.5 text-charbon transition-colors hover:text-gold"
             aria-label="Panier"
           >
-            <ShoppingBag className="h-[18px] w-[18px]" />
+            <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
             {cartCount > 0 && (
-              <span className="absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-full bg-charbon text-[10px] font-medium text-ivory">{cartCount}</span>
+              <span className="absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-gold text-[10px] font-medium text-white">
+                {cartCount}
+              </span>
             )}
           </button>
         </div>
@@ -469,7 +499,9 @@ export function Header() {
                   {item.label}
                   {item.cols && <ChevronDown className="h-3 w-3 opacity-60" />}
 
-                  <span className={`absolute left-0 right-0 -bottom-0.5 h-px bg-gold origin-center transition-transform ${active ? "scale-x-100" : "scale-x-0"}`} />
+                  <span
+                    className={`absolute left-0 right-0 -bottom-0.5 h-px bg-gold origin-center transition-transform ${active ? "scale-x-100" : "scale-x-0"}`}
+                  />
                 </Link>
               </li>
             );
@@ -477,338 +509,366 @@ export function Header() {
         </ul>
       </nav>
 
-
-      {/* Mega menu overlay */}
+      {/* Mega menu overlay — carte flottante centrée */}
       {current?.cols && (
         <div
           onMouseEnter={() => openMega(current.label)}
           onMouseLeave={scheduleClose}
-          className={`hidden lg:block absolute top-full bg-white shadow-xl border-t border-border z-30 animate-in fade-in duration-150 ${
-            current.label === "Pâtisserie Tunisienne" ? "left-0 w-[780px] max-w-full" : "left-0 right-0"
-          }`}
-
+          className="hidden lg:block absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3"
         >
-          {current.label === "Pâtisserie Tunisienne" ? (
-            // ─── Panneau compact 780px : 2 colonnes + photo décorative ───
-            <div className="px-11 py-9" style={{ maxWidth: 780 }}>
-              <div className="grid gap-10" style={{ gridTemplateColumns: "1fr 1fr 0.9fr" }}>
-                {current.cols.map((col, i) => (
-                  <div
-                    key={col.title}
-                    className={i > 0 ? "border-l border-charbon/10 pl-10" : undefined}
-                  >
-                    <h4 className="text-[11px] tracking-[0.22em] uppercase text-gold mb-4 font-display">
-                      {col.title}
-                    </h4>
-                    <ul className="space-y-[14px]">
-                      {col.items.map((l) => (
-                        <li key={l.to + l.label}>
-                          <Link
-                            to={l.to}
-                            onClick={() => setHovered(null)}
-                            className="text-[14.5px] normal-case tracking-normal text-charbon/80 hover:text-gold transition"
-                          >
-                            {l.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-
-                {/* Photo décorative — non cliquable */}
-                {current.card?.image && (
-                  <div
-                    className="relative overflow-hidden self-start"
-                    style={{ aspectRatio: "3 / 4" }}
-                    aria-hidden="true"
-                  >
-                    <img
-                      src={current.card.image}
-                      alt=""
-                      loading="lazy"
-                      className="absolute inset-0 h-full w-full object-cover object-center"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* CTA compact sous les colonnes */}
-              {current.bottomCta && (
-                <div className="mt-6 pt-4 border-t border-charbon/10">
-                  <Link
-                    to={current.bottomCta.to}
-                    onClick={() => setHovered(null)}
-                    className="inline-flex items-center min-h-11 text-[12px] tracking-[0.2em] uppercase text-gold hover:text-charbon transition"
-                  >
-                    {current.bottomCta.label}
-                  </Link>
-                </div>
-              )}
-            </div>
-
-          ) : (
-            // ─── Layout standard (autres menus, inchangé) ───
-            <>
-              <div className="container-os grid grid-cols-12 gap-8 py-10">
-                <div className={`grid gap-8 ${current.card || current.extraBlock ? "col-span-8" : "col-span-12"} ${({1:"grid-cols-1",2:"grid-cols-2",3:"grid-cols-3",4:"grid-cols-4"} as Record<number,string>)[Math.min(Math.max(current.cols.length,1),4)]}`}>
-                  {current.cols.map((col) => (
-                    <div key={col.title}>
-                      <h4 className="text-[11px] tracking-[0.22em] uppercase text-gold mb-4 font-display">{col.title}</h4>
-                      <ul className="space-y-2.5">
+          <div
+            className="max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-beige bg-white shadow-[0_30px_70px_-25px_rgba(42,35,32,0.28)] animate-in fade-in duration-150"
+            style={{ width: 780 }}
+          >
+            {current.label === "Pâtisserie Tunisienne" ? (
+              // ─── Panneau compact : 2 colonnes + photo décorative ───
+              <div className="px-11 py-9">
+                <div className="grid gap-10" style={{ gridTemplateColumns: "1fr 1fr 0.9fr" }}>
+                  {current.cols.map((col, i) => (
+                    <div
+                      key={col.title}
+                      className={i > 0 ? "border-l border-beige pl-10" : undefined}
+                    >
+                      <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
+                        {col.title}
+                      </h4>
+                      <ul className="space-y-[6px]">
                         {col.items.map((l) => (
                           <li key={l.to + l.label}>
                             <Link
                               to={l.to}
                               onClick={() => setHovered(null)}
-                              className={`text-sm normal-case tracking-normal transition ${l.highlight ? "text-gold font-medium border-b border-gold/40 pb-0.5" : "text-charbon/80 hover:text-gold"}`}
+                              className="group flex items-center justify-between gap-2 py-2.5 text-[15px] normal-case tracking-normal text-charbon transition hover:text-gold"
                             >
                               {l.label}
+                              <ArrowUpRight className="h-4 w-4 shrink-0 text-charbon-soft/40 transition-colors group-hover:text-gold" />
                             </Link>
                           </li>
                         ))}
                       </ul>
                     </div>
                   ))}
+
+                  {/* Photo décorative — non cliquable */}
+                  {current.card?.image && (
+                    <div
+                      className="relative overflow-hidden self-start"
+                      style={{ aspectRatio: "3 / 4" }}
+                      aria-hidden="true"
+                    >
+                      <img
+                        src={current.card.image}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover object-center"
+                      />
+                    </div>
+                  )}
                 </div>
 
-                {(current.card || current.extraBlock) && (
-                  <div className="col-span-4 space-y-4">
-                    {current.card && (
-                      <Link to={current.card.to} onClick={() => setHovered(null)} className="block group">
-                        <div className="relative aspect-[4/3] overflow-hidden bg-sable">
-                          {current.card.image ? (
-                            <img
-                              src={current.card.image}
-                              alt={current.card.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="w-full h-full grid place-items-center text-[11px] uppercase tracking-[0.25em] text-charbon/40 text-center px-6">
-                              Photo à venir
-                            </div>
-                          )}
-                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charbon/70 to-transparent p-4">
-                            <div className="font-display text-white text-lg leading-tight">{current.card.title}</div>
-                            {current.card.text && <p className="text-white/80 text-xs mt-1 font-light">{current.card.text}</p>}
-                            <span className="mt-2 inline-block text-[10px] tracking-[0.3em] uppercase text-gold-light border-b border-gold-light/60 pb-0.5">
-                              {current.card.cta} →
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    )}
-                    {current.extraBlock && (
-                      <div className="bg-beige border border-gold/30 p-5">
-                        <div className="font-display text-lg leading-tight">{current.extraBlock.title}</div>
-                        <p className="mt-1.5 text-xs text-charbon/70 font-light">{current.extraBlock.text}</p>
-                        <Link
-                          to={current.extraBlock.to}
-                          onClick={() => setHovered(null)}
-                          className="mt-3 inline-block text-[10px] tracking-[0.3em] uppercase text-gold border-b border-gold/60 pb-0.5"
-                        >
-                          {current.extraBlock.ctaLabel}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              {current.bottomCta && (
-                <div className="border-t border-charbon/10 bg-ivory/60">
-                  <div className="container-os py-3 flex justify-end">
+                {/* CTA compact sous les colonnes */}
+                {current.bottomCta && (
+                  <div className="mt-6 pt-4 border-t border-beige">
                     <Link
                       to={current.bottomCta.to}
                       onClick={() => setHovered(null)}
-                      className="text-[11px] tracking-[0.28em] uppercase text-gold hover:text-charbon transition"
+                      className="inline-flex items-center min-h-11 text-[12px] tracking-[0.2em] uppercase text-gold hover:text-charbon transition"
                     >
                       {current.bottomCta.label}
                     </Link>
                   </div>
+                )}
+              </div>
+            ) : (
+              // ─── Layout standard (autres menus) ───
+              <>
+                <div className="grid grid-cols-12 gap-8 p-8">
+                  <div
+                    className={`grid gap-8 ${current.card || current.extraBlock ? "col-span-8" : "col-span-12"} ${({ 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" } as Record<number, string>)[Math.min(Math.max(current.cols.length, 1), 4)]}`}
+                  >
+                    {current.cols.map((col) => (
+                      <div key={col.title}>
+                        <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
+                          {col.title}
+                        </h4>
+                        <ul className="space-y-2.5">
+                          {col.items.map((l) => (
+                            <li key={l.to + l.label}>
+                              <Link
+                                to={l.to}
+                                onClick={() => setHovered(null)}
+                                className={`text-sm normal-case tracking-normal transition ${l.highlight ? "text-gold font-medium border-b border-gold/40 pb-0.5" : "text-charbon/80 hover:text-gold"}`}
+                              >
+                                {l.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+
+                  {(current.card || current.extraBlock) && (
+                    <div className="col-span-4 space-y-4">
+                      {current.card && (
+                        <Link
+                          to={current.card.to}
+                          onClick={() => setHovered(null)}
+                          className="block group"
+                        >
+                          <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sable">
+                            {current.card.image ? (
+                              <img
+                                src={current.card.image}
+                                alt={current.card.title}
+                                loading="lazy"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-full h-full grid place-items-center text-[11px] uppercase tracking-[0.25em] text-charbon/40 text-center px-6">
+                                Photo à venir
+                              </div>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charbon/70 to-transparent p-4">
+                              <div className="font-display text-white text-lg leading-tight">
+                                {current.card.title}
+                              </div>
+                              {current.card.text && (
+                                <p className="text-white/80 text-xs mt-1 font-light">
+                                  {current.card.text}
+                                </p>
+                              )}
+                              <span className="mt-2 inline-block text-[10px] tracking-[0.3em] uppercase text-gold-light border-b border-gold-light/60 pb-0.5">
+                                {current.card.cta} →
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      )}
+                      {current.extraBlock && (
+                        <div className="rounded-xl bg-beige border border-gold/30 p-5">
+                          <div className="font-display text-lg leading-tight">
+                            {current.extraBlock.title}
+                          </div>
+                          <p className="mt-1.5 text-xs text-charbon/70 font-light">
+                            {current.extraBlock.text}
+                          </p>
+                          <Link
+                            to={current.extraBlock.to}
+                            onClick={() => setHovered(null)}
+                            className="mt-3 inline-block text-[10px] tracking-[0.3em] uppercase text-gold border-b border-gold/60 pb-0.5"
+                          >
+                            {current.extraBlock.ctaLabel}
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
-          )}
+                {current.bottomCta && (
+                  <div className="border-t border-beige bg-sand/40">
+                    <div className="px-8 py-3 flex justify-end">
+                      <Link
+                        to={current.bottomCta.to}
+                        onClick={() => setHovered(null)}
+                        className="text-[11px] tracking-[0.28em] uppercase text-gold hover:text-charbon transition"
+                      >
+                        {current.bottomCta.label}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
-
-
       {/* Mobile drawer — rendered via portal to escape header's backdrop-filter containing block */}
-      {mounted && createPortal(
-        <div
-          className={`lg:hidden fixed inset-0 z-[80] transition-opacity duration-300 ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        aria-hidden={!mobileOpen}
-      >
-        {/* Backdrop */}
-        <button
-          type="button"
-          aria-label="Fermer le menu"
-          onClick={() => setMobileOpen(false)}
-          className="absolute inset-0 bg-charbon/50 backdrop-blur-[2px]"
-        />
-
-        {/* Panel */}
-        <aside
-          className={`absolute inset-y-0 left-0 w-[88%] max-w-[380px] bg-ivory shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-          role="dialog"
-          aria-label="Menu principal"
-        >
-          {/* Sticky header */}
-          <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-border bg-ivory">
-            <Link to="/" onClick={() => setMobileOpen(false)} className="flex flex-col leading-none">
-              <span className="font-display text-2xl tracking-[0.04em]">Ö' Sweets</span>
-              <span className="text-[9px] tracking-[0.4em] uppercase text-gold mt-1">Pâtisserie</span>
-            </Link>
-            <button onClick={() => setMobileOpen(false)} aria-label="Fermer" className="p-2 -mr-2">
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Scrollable body */}
-          <nav
-            className="flex-1 overflow-y-auto overscroll-contain px-5 py-4"
-            style={{ WebkitOverflowScrolling: "touch" }}
+      {mounted &&
+        createPortal(
+          <div
+            className={`lg:hidden fixed inset-0 z-[80] transition-opacity duration-300 ${
+              mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            }`}
+            aria-hidden={!mobileOpen}
           >
-            <ul className="divide-y divide-border">
-              {NAV.map((item) => {
-                const expanded = mobileExpanded === item.label;
-                const hasChildren = !!item.cols?.length;
-                return (
-                  <li key={item.label}>
-                    {hasChildren ? (
-                      <button
-                        type="button"
-                        onClick={() => setMobileExpanded(expanded ? null : item.label)}
-                        aria-expanded={expanded}
-                        className="w-full flex items-center justify-between py-4 tracking-[0.2em] uppercase text-sm text-charbon text-left"
-                      >
-                        <span>{item.label}</span>
-                        <ChevronDown
-                          className={`h-4 w-4 shrink-0 transition-transform ${
-                            expanded ? "rotate-180 text-gold" : ""
-                          }`}
-                        />
-                      </button>
-                    ) : (
-                      <Link
-                        to={item.to}
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center justify-between py-4 tracking-[0.2em] uppercase text-sm text-charbon"
-                      >
-                        {item.label}
-                      </Link>
-                    )}
+            {/* Backdrop */}
+            <button
+              type="button"
+              aria-label="Fermer le menu"
+              onClick={() => setMobileOpen(false)}
+              className="absolute inset-0 bg-charbon/50 backdrop-blur-[2px]"
+            />
 
-                    {hasChildren && (
-                      <div
-                        className={`grid transition-all duration-300 ease-out ${
-                          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                        }`}
-                      >
-                        <div className="overflow-hidden">
-                          <div className="pb-4 space-y-4">
-                            <Link
-                              to={item.to}
-                              onClick={() => setMobileOpen(false)}
-                              className="block text-[11px] tracking-[0.22em] uppercase text-gold"
-                            >
-                              → Voir tout {item.label}
-                            </Link>
-                            {item.cols!.map((col) => (
-                              <div key={col.title}>
-                                <div className="text-[10px] tracking-[0.28em] uppercase text-charbon/50 mb-2">
-                                  {col.title}
-                                </div>
-                                <ul className="space-y-1">
-                                  {col.items.map((l) => (
-                                    <li key={l.to + l.label}>
-                                      <Link
-                                        to={l.to}
-                                        onClick={() => setMobileOpen(false)}
-                                        className={`block py-2 text-sm ${
-                                          l.highlight
-                                            ? "text-gold font-medium"
-                                            : "text-charbon/80"
-                                        }`}
-                                      >
-                                        {l.label}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-              <li>
+            {/* Panel */}
+            <aside
+              className={`absolute inset-y-0 left-0 w-[88%] max-w-[380px] bg-ivory shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+                mobileOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
+              role="dialog"
+              aria-label="Menu principal"
+            >
+              {/* Sticky header */}
+              <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-border bg-ivory">
                 <Link
-                  to="/contact"
+                  to="/"
                   onClick={() => setMobileOpen(false)}
-                  className="block py-4 tracking-[0.2em] uppercase text-sm text-charbon"
+                  className="flex flex-col leading-none"
                 >
-                  Contact & Informations
+                  <span className="font-display text-2xl tracking-[0.04em]">Ö' Sweets</span>
+                  <span className="text-[9px] tracking-[0.4em] uppercase text-gold mt-1">
+                    Pâtisserie
+                  </span>
                 </Link>
-              </li>
-            </ul>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  aria-label="Fermer"
+                  className="p-2 -mr-2"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
 
-            <div className="mt-6 pt-6 border-t border-border flex flex-wrap items-center gap-4 text-sm text-charbon/70">
-              <Link
-                to="/mon-compte"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex items-center gap-2"
+              {/* Scrollable body */}
+              <nav
+                className="flex-1 overflow-y-auto overscroll-contain px-5 py-4"
+                style={{ WebkitOverflowScrolling: "touch" }}
               >
-                <User className="h-4 w-4" /> Mon compte
-              </Link>
-              {FEATURES.favorites && (
+                <ul className="divide-y divide-border">
+                  {NAV.map((item) => {
+                    const expanded = mobileExpanded === item.label;
+                    const hasChildren = !!item.cols?.length;
+                    return (
+                      <li key={item.label}>
+                        {hasChildren ? (
+                          <button
+                            type="button"
+                            onClick={() => setMobileExpanded(expanded ? null : item.label)}
+                            aria-expanded={expanded}
+                            className="w-full flex items-center justify-between py-4 tracking-[0.2em] uppercase text-sm text-charbon text-left"
+                          >
+                            <span>{item.label}</span>
+                            <ChevronDown
+                              className={`h-4 w-4 shrink-0 transition-transform ${
+                                expanded ? "rotate-180 text-gold" : ""
+                              }`}
+                            />
+                          </button>
+                        ) : (
+                          <Link
+                            to={item.to}
+                            onClick={() => setMobileOpen(false)}
+                            className="flex items-center justify-between py-4 tracking-[0.2em] uppercase text-sm text-charbon"
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+
+                        {hasChildren && (
+                          <div
+                            className={`grid transition-all duration-300 ease-out ${
+                              expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                            }`}
+                          >
+                            <div className="overflow-hidden">
+                              <div className="pb-4 space-y-4">
+                                <Link
+                                  to={item.to}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="block text-[11px] tracking-[0.22em] uppercase text-gold"
+                                >
+                                  → Voir tout {item.label}
+                                </Link>
+                                {item.cols!.map((col) => (
+                                  <div key={col.title}>
+                                    <div className="text-[10px] tracking-[0.28em] uppercase text-charbon/50 mb-2">
+                                      {col.title}
+                                    </div>
+                                    <ul className="space-y-1">
+                                      {col.items.map((l) => (
+                                        <li key={l.to + l.label}>
+                                          <Link
+                                            to={l.to}
+                                            onClick={() => setMobileOpen(false)}
+                                            className={`block py-2 text-sm ${
+                                              l.highlight
+                                                ? "text-gold font-medium"
+                                                : "text-charbon/80"
+                                            }`}
+                                          >
+                                            {l.label}
+                                          </Link>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                  <li>
+                    <Link
+                      to="/contact"
+                      onClick={() => setMobileOpen(false)}
+                      className="block py-4 tracking-[0.2em] uppercase text-sm text-charbon"
+                    >
+                      Contact & Informations
+                    </Link>
+                  </li>
+                </ul>
+
+                <div className="mt-6 pt-6 border-t border-border flex flex-wrap items-center gap-4 text-sm text-charbon/70">
+                  <Link
+                    to="/mon-compte"
+                    onClick={() => setMobileOpen(false)}
+                    className="inline-flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" /> Mon compte
+                  </Link>
+                  {FEATURES.favorites && (
+                    <Link
+                      to="/favoris"
+                      onClick={() => setMobileOpen(false)}
+                      className="inline-flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4" /> Favoris
+                    </Link>
+                  )}
+                </div>
+
+                <div className="mt-6 text-[11px] text-charbon/55 leading-relaxed">
+                  Pâtisserie · Évry-Courcouronnes
+                  <br />
+                  Retrait sur rendez-vous
+                </div>
+              </nav>
+
+              {/* Sticky bottom CTAs */}
+              <div className="shrink-0 border-t border-border bg-ivory px-5 py-4 grid gap-2.5">
                 <Link
-                  to="/favoris"
+                  to="/composer"
                   onClick={() => setMobileOpen(false)}
-                  className="inline-flex items-center gap-2"
+                  className="btn btn-gold justify-center"
                 >
-                  <Heart className="h-4 w-4" /> Favoris
+                  Composer mon coffret
                 </Link>
-              )}
-            </div>
-
-            <div className="mt-6 text-[11px] text-charbon/55 leading-relaxed">
-              Pâtisserie · Évry-Courcouronnes
-              <br />
-              Retrait sur rendez-vous
-            </div>
-          </nav>
-
-          {/* Sticky bottom CTAs */}
-          <div className="shrink-0 border-t border-border bg-ivory px-5 py-4 grid gap-2.5">
-            <Link
-              to="/composer"
-              onClick={() => setMobileOpen(false)}
-              className="btn btn-gold justify-center"
-            >
-              Composer mon coffret
-            </Link>
-            <Link
-              to="/devis"
-              onClick={() => setMobileOpen(false)}
-              className="btn btn-outline-gold justify-center"
-            >
-              Demander un devis
-            </Link>
-          </div>
-        </aside>
-        </div>,
-        document.body
-      )}
+                <Link
+                  to="/devis"
+                  onClick={() => setMobileOpen(false)}
+                  className="btn btn-outline-gold justify-center"
+                >
+                  Demander un devis
+                </Link>
+              </div>
+            </aside>
+          </div>,
+          document.body,
+        )}
     </header>
   );
 }

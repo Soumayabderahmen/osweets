@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import type { Product, Allergen } from "@/data/products";
 import { allergenLabels } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, ChevronRight } from "lucide-react";
+import { Reveal } from "@/components/Reveal";
 import { FiltersSidebar, type Section } from "@/components/filters/FiltersSidebar";
 import { itemListJsonLd } from "@/lib/seo";
 import { isProductAvailableNow } from "@/lib/season";
@@ -44,7 +45,7 @@ export interface CategoryPageProps {
 
 const allAllergens: Allergen[] = ["gluten", "lait", "oeuf", "fruits-coque", "sesame"];
 
-/** Bandeau collection éditorial : bande sable pleine largeur, texte à gauche, photo arrondie à droite. */
+/** Bandeau collection éditorial : photo plein cadre, texte incrusté en bas à gauche. */
 function CollectionBanner({
   title,
   subtitle,
@@ -55,26 +56,17 @@ function CollectionBanner({
   image: string;
 }) {
   return (
-    <section className="mb-12 rounded-2xl bg-sand px-7 py-10 md:px-12 md:py-14">
-      <div className="grid items-center gap-8 md:grid-cols-[1fr_1fr] md:gap-14">
-        <div className="flex flex-col justify-center">
-          <span className="text-[10px] uppercase tracking-[0.28em] text-gold">Collection</span>
-          <h1 className="mt-4 font-display text-[34px] leading-[1.1] text-charbon md:text-[44px]">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-charbon-soft">{subtitle}</p>
-          )}
-        </div>
-        <div className="relative aspect-[16/9] overflow-hidden rounded-xl md:aspect-[16/10]">
-          <img src={image} alt={title} className="absolute inset-0 h-full w-full object-cover" />
-        </div>
+    <section className="relative mb-12 h-[260px] overflow-hidden rounded-2xl md:h-[340px]">
+      <img src={image} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-charbon/75 via-charbon/25 to-transparent" />
+      <div className="absolute bottom-0 left-0 max-w-xl p-8 text-ivory md:p-12">
+        <span className="text-[11px] uppercase tracking-[0.25em] text-gold">Collection</span>
+        <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-4 max-w-md leading-relaxed text-ivory/80">{subtitle}</p>}
       </div>
     </section>
   );
 }
-
-
 
 function matchesGroup(p: Product, g: ExtraFilterGroup, selection: string | string[]): boolean {
   const productVal = g.get(p);
@@ -163,8 +155,7 @@ export function CategoryPage({
     if (filters.stock && stockOnly) list = list.filter((p) => p.inStock);
     if (filters.allergens && exclude.length)
       list = list.filter((p) => !p.allergens.some((a) => exclude.includes(a)));
-    if (filters.price)
-      list = list.filter((p) => p.price >= priceMin && p.price <= priceMax);
+    if (filters.price) list = list.filter((p) => p.price >= priceMin && p.price <= priceMax);
     for (const g of extraFilters) {
       const v = extraValues[g.id];
       if (v !== undefined) list = list.filter((p) => matchesGroup(p, g, v));
@@ -180,8 +171,7 @@ export function CategoryPage({
   const inStockCount = products.filter((p) => p.inStock).length;
   const outStockCount = products.length - inStockCount;
 
-  const hasSidebar =
-    filters.stock || filters.price || filters.allergens || extraFilters.length > 0;
+  const hasSidebar = filters.stock || filters.price || filters.allergens || extraFilters.length > 0;
 
   const hasActiveFilters =
     stockOnly ||
@@ -290,7 +280,9 @@ export function CategoryPage({
     <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />
   ) : (
     <header className="mb-10 max-w-2xl">
-      <h1 className="font-display text-[34px] leading-tight text-charbon md:text-[44px]">{title}</h1>
+      <h1 className="font-display text-[34px] leading-tight text-charbon md:text-[44px]">
+        {title}
+      </h1>
       {subtitle && <p className="mt-3 text-sm leading-relaxed text-charbon-soft">{subtitle}</p>}
     </header>
   );
@@ -336,7 +328,6 @@ export function CategoryPage({
         </label>
       </div>
 
-
       {visible.length === 0 ? (
         <div className="py-20 text-center text-charbon-soft">
           <p>Aucun produit ne correspond à ces filtres.</p>
@@ -363,9 +354,11 @@ export function CategoryPage({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-16">
-          {visible.map((p) => (
-            <ProductCard key={p.slug} product={p} layout="grid" />
+        <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((p, i) => (
+            <Reveal key={p.slug} delay={(i % 3) * 0.05}>
+              <ProductCard product={p} layout="grid" />
+            </Reveal>
           ))}
         </div>
       )}
@@ -397,7 +390,6 @@ export function CategoryPage({
           </button>
         </div>
       )}
-
     </>
   );
 
@@ -421,27 +413,29 @@ export function CategoryPage({
       <div>
         <div className="container-os py-5">
           {breadcrumb && (
-            <div className="text-[13px] text-charbon-soft">
-              {breadcrumb.map((b, i) => (
-                <span key={i}>
-                  {b.to ? (
-                    <Link to={b.to} className="transition hover:text-charbon">
-                      {b.label}
-                    </Link>
-                  ) : (
-                    <span className="text-charbon">{b.label}</span>
-                  )}
-                  {i < breadcrumb.length - 1 && (
-                    <span className="mx-2 text-charbon-soft/50">&rsaquo;</span>
-                  )}
-                </span>
-              ))}
-            </div>
+            <nav className="text-xs text-charbon-soft" aria-label="Fil d'ariane">
+              <ol className="flex flex-wrap items-center gap-1">
+                {breadcrumb.map((b, i) => (
+                  <li key={i} className="flex items-center gap-1">
+                    {b.to ? (
+                      <Link to={b.to} className="transition-colors hover:text-gold">
+                        {b.label}
+                      </Link>
+                    ) : (
+                      <span className="text-charbon" aria-current="page">
+                        {b.label}
+                      </span>
+                    )}
+                    {i < breadcrumb.length - 1 && (
+                      <ChevronRight className="h-3 w-3 text-charbon-soft/50" />
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
           )}
         </div>
       </div>
-
-
 
       {notice && <div className="container-os pt-5">{notice}</div>}
 
@@ -452,7 +446,6 @@ export function CategoryPage({
             {emptyState}
           </>
         ) : hasSidebar ? (
-
           <FiltersSidebar
             sections={sections}
             hasActive={hasActiveFilters}

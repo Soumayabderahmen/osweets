@@ -46,8 +46,6 @@ const cardBadge = (p: Product): string | null => {
   return null;
 };
 
-
-
 type Action = "cart" | "quote" | "notify";
 
 function priceLabel(p: Product) {
@@ -65,17 +63,19 @@ function resolveAction(p: Product): Action {
   return "cart";
 }
 
-/** Round 40px ivory action button used on card hover. */
+/** Round 44px action button used on card hover — "light" (favoris/aperçu) or "gold" (action principale). */
 function RoundButton({
   label,
   onClick,
   children,
   active,
+  tone = "light",
 }: {
   label: string;
   onClick: () => void;
   children: React.ReactNode;
   active?: boolean;
+  tone?: "light" | "gold";
 }) {
   return (
     <button
@@ -83,13 +83,12 @@ function RoundButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`h-10 w-10 shrink-0 rounded-full grid place-items-center bg-ivory/95 backdrop-blur-sm shadow-[0_2px_10px_rgba(42,35,32,0.10)] transition-all hover:bg-ivory focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
-        active ? "ring-1 ring-gold" : ""
-      }`}
+      className={`h-11 w-11 shrink-0 rounded-full grid place-items-center shadow-md backdrop-blur-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+        tone === "gold" ? "bg-gold text-white hover:bg-charbon" : "bg-ivory/95 hover:bg-ivory"
+      } ${active ? "ring-1 ring-gold" : ""}`}
     >
       {children}
     </button>
-
   );
 }
 
@@ -128,11 +127,19 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
   const actionMeta: Record<Action, { label: string; icon: React.ReactNode; run: () => void }> = {
     cart: {
       label: hasVariants ? "Choisir un parfum" : "Ajouter au panier",
-      icon: <ShoppingBag className="h-4 w-4 text-charbon" />,
+      icon: <ShoppingBag className="h-4 w-4 text-white" />,
       run: () => onCart(),
     },
-    quote: { label: "Demander un devis", icon: <FileText className="h-4 w-4 text-charbon" />, run: () => setQuickView(true) },
-    notify: { label: "Prévenez-moi", icon: <BellRing className="h-4 w-4 text-charbon" />, run: () => setQuickView(true) },
+    quote: {
+      label: "Demander un devis",
+      icon: <FileText className="h-4 w-4 text-white" />,
+      run: () => setQuickView(true),
+    },
+    notify: {
+      label: "Prévenez-moi",
+      icon: <BellRing className="h-4 w-4 text-white" />,
+      run: () => setQuickView(true),
+    },
   };
 
   if (layout === "list") {
@@ -165,20 +172,41 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <div className="mt-4 flex items-center justify-between gap-3">
               <span className="font-price text-base text-charbon-soft">{priceLabel(product)}</span>
               <div className="flex items-center gap-2">
-                <RoundButton label={`Ajouter ${product.name} aux favoris`} onClick={onFavorite} active={fav}>
-                  <Heart className={`h-4 w-4 ${fav ? "text-favorite" : "text-charbon"}`} style={fav ? { fill: "var(--favorite)", color: "var(--favorite)" } : undefined} />
+                <RoundButton
+                  label={`Ajouter ${product.name} aux favoris`}
+                  onClick={onFavorite}
+                  active={fav}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${fav ? "text-favorite" : "text-charbon"}`}
+                    style={fav ? { fill: "var(--favorite)", color: "var(--favorite)" } : undefined}
+                  />
                 </RoundButton>
-                <RoundButton label={`${actionMeta[action].label} — ${product.name}`} onClick={actionMeta[action].run}>
+                <RoundButton
+                  label={`${actionMeta[action].label} — ${product.name}`}
+                  onClick={actionMeta[action].run}
+                  tone="gold"
+                >
                   {actionMeta[action].icon}
                 </RoundButton>
-                <RoundButton label={`Aperçu rapide — ${product.name}`} onClick={() => setQuickView(true)}>
+                <RoundButton
+                  label={`Aperçu rapide — ${product.name}`}
+                  onClick={() => setQuickView(true)}
+                >
                   <Eye className="h-4 w-4 text-charbon" />
                 </RoundButton>
               </div>
             </div>
           </div>
         </div>
-        {quickView && <QuickView product={product} onClose={() => setQuickView(false)} onCart={onCart} action={action} />}
+        {quickView && (
+          <QuickView
+            product={product}
+            onClose={() => setQuickView(false)}
+            onCart={onCart}
+            action={action}
+          />
+        )}
       </>
     );
   }
@@ -190,7 +218,11 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
       <div className="group relative flex h-full flex-col">
         {/* Photo carrée, sans cadre */}
         <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-xl bg-sand">
-          <Link to="/produits/$slug" params={{ slug: product.slug }} className="absolute inset-0 block">
+          <Link
+            to="/produits/$slug"
+            params={{ slug: product.slug }}
+            className="absolute inset-0 block"
+          >
             <ProductImage
               src={product.image}
               alt={product.name}
@@ -199,34 +231,45 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
           </Link>
 
           {badge && (
-            <span className="pointer-events-none absolute left-3 top-3 bg-ivory/95 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-charbon">
+            <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charbon px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.2em] text-ivory">
               {badge}
             </span>
           )}
 
           {/* Actions rondes — survol desktop, permanentes sur mobile */}
           <div className="absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-2 transition-all duration-300 lg:translate-y-2 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-within:translate-y-0 lg:group-focus-within:opacity-100">
-            <RoundButton label={`${fav ? "Retirer" : "Ajouter"} ${product.name} ${fav ? "des" : "aux"} favoris`} onClick={onFavorite} active={fav}>
+            <RoundButton
+              label={`${fav ? "Retirer" : "Ajouter"} ${product.name} ${fav ? "des" : "aux"} favoris`}
+              onClick={onFavorite}
+              active={fav}
+            >
               <Heart
                 className={`h-4 w-4 transition-colors ${fav ? "text-favorite" : "text-charbon"}`}
                 style={fav ? { fill: "var(--favorite)", color: "var(--favorite)" } : undefined}
               />
             </RoundButton>
-            <RoundButton label={`${actionMeta[action].label} — ${product.name}`} onClick={actionMeta[action].run}>
+            <RoundButton
+              label={`${actionMeta[action].label} — ${product.name}`}
+              onClick={actionMeta[action].run}
+              tone="gold"
+            >
               {actionMeta[action].icon}
             </RoundButton>
-            <RoundButton label={`Aperçu rapide — ${product.name}`} onClick={() => setQuickView(true)}>
+            <RoundButton
+              label={`Aperçu rapide — ${product.name}`}
+              onClick={() => setQuickView(true)}
+            >
               <Eye className="h-4 w-4 text-charbon" />
             </RoundButton>
           </div>
         </div>
 
-        {/* Texte éditorial */}
-        <div className="flex flex-1 flex-col pt-5 text-center">
+        {/* Texte — hérite de la police d'affichage globale (h1-h4), aucune classe font-* à ajouter */}
+        <div className="mt-4 flex flex-1 flex-col text-left">
           <Link
             to="/produits/$slug"
             params={{ slug: product.slug }}
-            className="line-clamp-2 font-display text-[19px] leading-snug text-charbon transition-opacity hover:opacity-60 sm:text-[21px]"
+            className="truncate text-[15px] font-medium text-charbon transition-colors hover:text-gold"
           >
             {product.name}
           </Link>
@@ -237,13 +280,23 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             </span>
           )}
 
-          <span className="mt-2 font-price text-[15px] text-charbon-soft">
-            {priceLabel(product)}
-          </span>
+          <div className="mt-1.5 flex items-baseline justify-between gap-2">
+            <span className="font-price text-sm font-semibold text-gold">
+              {priceLabel(product)}
+            </span>
+            {product.unit && <span className="text-xs text-charbon-soft">{product.unit}</span>}
+          </div>
         </div>
       </div>
 
-      {quickView && <QuickView product={product} onClose={() => setQuickView(false)} onCart={onCart} action={action} />}
+      {quickView && (
+        <QuickView
+          product={product}
+          onClose={() => setQuickView(false)}
+          onCart={onCart}
+          action={action}
+        />
+      )}
     </>
   );
 }
@@ -279,8 +332,18 @@ function QuickView({
   const notice = seasonalNotice(product);
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Aperçu de ${product.name}`}>
-      <button type="button" aria-label="Fermer l'aperçu" onClick={onClose} className="absolute inset-0 bg-charbon/40 backdrop-blur-[2px]" />
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Aperçu de ${product.name}`}
+    >
+      <button
+        type="button"
+        aria-label="Fermer l'aperçu"
+        onClick={onClose}
+        className="absolute inset-0 bg-charbon/40 backdrop-blur-[2px]"
+      />
       <div className="relative z-10 max-h-[88vh] w-full max-w-4xl overflow-y-auto bg-ivory shadow-[0_20px_60px_rgba(42,35,32,0.18)]">
         <button
           type="button"
@@ -292,19 +355,29 @@ function QuickView({
         </button>
         <div className="grid sm:grid-cols-2">
           <div className="aspect-square overflow-hidden rounded-xl bg-sand">
-            <ProductImage src={variant?.image ?? product.image} alt={product.name} loading="eager" placeholderClassName="text-6xl" />
+            <ProductImage
+              src={variant?.image ?? product.image}
+              alt={product.name}
+              loading="eager"
+              placeholderClassName="text-6xl"
+            />
           </div>
           <div className="p-8 sm:p-10">
-            <span className="text-[10px] uppercase tracking-[0.24em] text-gold">{collectionLabel(product)}</span>
-            <h2 className="mt-3 font-display text-[28px] leading-tight text-charbon">{product.name}</h2>
+            <span className="text-[10px] uppercase tracking-[0.24em] text-gold">
+              {collectionLabel(product)}
+            </span>
+            <h2 className="mt-3 font-display text-[28px] leading-tight text-charbon">
+              {product.name}
+            </h2>
             <div className="mt-2 font-price text-lg text-charbon-soft">
               {variant ? formatPrice(variant.price) : priceLabel(product)}
             </div>
 
-
             {variants.length > 0 && (
               <div className="mt-4">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-gold">Choisissez un parfum</div>
+                <div className="text-[11px] uppercase tracking-[0.22em] text-gold">
+                  Choisissez un parfum
+                </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {variants.map((v) => (
                     <button
@@ -345,7 +418,9 @@ function QuickView({
             )}
 
             {notice && (
-              <p className="mt-4 border border-gold/40 bg-gold/10 px-3 py-2 text-xs text-charbon/80">{notice}</p>
+              <p className="mt-4 border border-gold/40 bg-gold/10 px-3 py-2 text-xs text-charbon/80">
+                {notice}
+              </p>
             )}
 
             <div className="mt-6 space-y-3">
@@ -353,9 +428,23 @@ function QuickView({
                 <>
                   <div className="flex items-center gap-3">
                     <div className="inline-flex items-center border border-charbon">
-                      <button type="button" aria-label="Diminuer la quantité" onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-10 w-10 grid place-items-center hover:bg-sable">−</button>
+                      <button
+                        type="button"
+                        aria-label="Diminuer la quantité"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        className="h-10 w-10 grid place-items-center hover:bg-sable"
+                      >
+                        −
+                      </button>
                       <span className="w-10 text-center font-price">{qty}</span>
-                      <button type="button" aria-label="Augmenter la quantité" onClick={() => setQty((q) => q + 1)} className="h-10 w-10 grid place-items-center hover:bg-sable">+</button>
+                      <button
+                        type="button"
+                        aria-label="Augmenter la quantité"
+                        onClick={() => setQty((q) => q + 1)}
+                        className="h-10 w-10 grid place-items-center hover:bg-sable"
+                      >
+                        +
+                      </button>
                     </div>
                     <button
                       onClick={() => {
@@ -369,19 +458,24 @@ function QuickView({
                       <ShoppingBag className="h-4 w-4" /> Ajouter au panier
                     </button>
                   </div>
-                  {needsVariant && (
-                    <p className="text-xs text-charbon/60">Choisissez un parfum</p>
-                  )}
+                  {needsVariant && <p className="text-xs text-charbon/60">Choisissez un parfum</p>}
                 </>
               )}
               {action === "quote" && (
-                <Link to="/devis" search={{ type: product.name }} onClick={onClose} className="btn btn-gold w-full justify-center">
+                <Link
+                  to="/devis"
+                  search={{ type: product.name }}
+                  onClick={onClose}
+                  className="btn btn-gold w-full justify-center"
+                >
                   <FileText className="h-4 w-4" /> Demander un devis
                 </Link>
               )}
               {action === "notify" && (
                 <div className="border border-gold/40 bg-gold/5 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-gold">Prévenez-moi</div>
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-gold">
+                    Prévenez-moi
+                  </div>
                   <p className="mt-1 text-xs text-charbon/70">
                     Laissez votre e-mail : nous vous préviendrons dès que ce produit est disponible.
                   </p>
