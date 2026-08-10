@@ -385,7 +385,7 @@ function Home() {
       </section>
 
       {/* INSTAGRAM */}
-      <section className="section-y bg-sand/40">
+      <section className="bg-sand/40 py-24 lg:py-32">
         <div className="container-os text-center">
           <div className="eyebrow">@osweet_patisserie</div>
           <h2 className="font-display text-4xl md:text-5xl mt-5">Suivez nos créations</h2>
