@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { useEffect } from "react";
 import { formatPrice, lineId, useShop } from "@/lib/shop-store";
+import { ProductImage } from "@/components/ProductImage";
 
 export function CartDrawer() {
   const { cart, cartOpen, closeCart, updateQty, removeFromCart, cartTotal, cartCount } = useShop();
@@ -11,7 +12,9 @@ export function CartDrawer() {
     if (!cartOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [cartOpen]);
 
   // Escape to close
@@ -37,16 +40,17 @@ export function CartDrawer() {
       <aside
         aria-hidden={!cartOpen}
         aria-label="Panier"
-        className={`fixed top-0 right-0 z-[70] h-full w-full sm:w-[420px] max-w-full bg-ivory shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+        className={`fixed top-0 right-0 z-[70] h-full w-full sm:w-[420px] max-w-full bg-ivory shadow-xl flex flex-col transition-transform duration-300 ease-out ${
           cartOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-beige">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-4 w-4 text-gold" />
             <span className="font-display text-lg">
-              Panier {cartCount > 0 && <span className="text-charbon/50 text-sm">({cartCount})</span>}
+              Panier{" "}
+              {cartCount > 0 && <span className="text-charbon/50 text-sm">({cartCount})</span>}
             </span>
           </div>
           <button onClick={closeCart} aria-label="Fermer" className="p-2 -mr-2 hover:text-gold">
@@ -59,9 +63,12 @@ export function CartDrawer() {
           {cart.length === 0 ? (
             <div className="h-full grid place-items-center text-center px-6">
               <div>
-                <div className="mx-auto h-14 w-14 rounded-full bg-sable grid place-items-center">
-                  <ShoppingBag className="h-6 w-6 text-gold" />
-                </div>
+                <span
+                  className="font-display text-6xl text-gold/30"
+                  style={{ filter: "drop-shadow(0 2px 3px rgba(42,35,32,0.18))" }}
+                >
+                  Ö
+                </span>
                 <p className="mt-4 font-display text-xl">Votre panier est vide</p>
                 <p className="mt-2 text-sm text-charbon/60">Nos pâtisseries vous attendent.</p>
                 <Link
@@ -74,19 +81,17 @@ export function CartDrawer() {
               </div>
             </div>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-beige">
               {cart.map((it) => (
                 <li key={lineId(it)} className="flex gap-3 p-4">
-                  <img
-                    src={it.image}
-                    alt={it.name}
-                    loading="lazy"
-                    className="h-20 w-20 object-cover shrink-0 bg-sable"
-                    style={{ aspectRatio: "1 / 1" }}
-                  />
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-sable">
+                    <ProductImage src={it.image} alt={it.name} placeholderClassName="text-2xl" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-display text-sm leading-tight truncate">{it.name}</div>
-                    <div className="font-price text-gold text-lg mt-0.5">{formatPrice(it.price)}</div>
+                    <div className="font-price text-gold text-lg mt-0.5">
+                      {formatPrice(it.price)}
+                    </div>
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <div className="inline-flex items-center border border-charbon/70">
                         <button
@@ -122,7 +127,7 @@ export function CartDrawer() {
 
         {/* Footer */}
         {cart.length > 0 && (
-          <div className="border-t border-border p-5 space-y-3 bg-white">
+          <div className="border-t border-beige p-5 space-y-3 bg-ivory">
             <div className="flex justify-between text-sm text-charbon/70">
               <span>Sous-total</span>
               <span className="font-price text-lg text-charbon">{formatPrice(cartTotal)}</span>
@@ -135,11 +140,7 @@ export function CartDrawer() {
             >
               Voir le panier
             </Link>
-            <Link
-              to="/checkout"
-              onClick={closeCart}
-              className="btn btn-gold w-full justify-center"
-            >
+            <Link to="/checkout" onClick={closeCart} className="btn btn-gold w-full justify-center">
               Paiement
             </Link>
           </div>

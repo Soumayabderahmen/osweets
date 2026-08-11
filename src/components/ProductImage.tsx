@@ -17,7 +17,7 @@ export function ProductImage({
   src,
   alt,
   className = "",
-  placeholderClassName = "text-5xl",
+  placeholderClassName = "text-3xl",
   loading = "lazy",
 }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
@@ -27,9 +27,14 @@ export function ProductImage({
       <div
         aria-label={alt}
         role="img"
-        className={`img-placeholder h-full w-full ${className}`}
+        className={`flex h-full w-full items-center justify-center bg-sable ${className}`}
       >
-        <span className={placeholderClassName}>Ö</span>
+        <span
+          className={`select-none font-display text-gold/30 ${placeholderClassName}`}
+          style={{ filter: "drop-shadow(0 2px 3px rgba(42,35,32,0.18))" }}
+        >
+          Ö
+        </span>
       </div>
     );
   }

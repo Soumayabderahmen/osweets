@@ -378,16 +378,6 @@
     position: relative;
   }
 
-  /* Placeholder produit sans photo */
-  .img-placeholder {
-    display: grid;
-    place-items: center;
-    background: var(--sand);
-    color: var(--gold-faint);
-    font-family: var(--font-display);
-    line-height: 1;
-  }
-
   /* Dark commander button per luxury spec */
   .btn-commander {
     display: inline-flex;
