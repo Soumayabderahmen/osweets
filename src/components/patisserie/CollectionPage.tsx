@@ -6,7 +6,8 @@ import { CategoryPage, type ExtraFilterGroup } from "@/components/CategoryPage";
 import { WaitlistForm } from "@/components/patisserie/WaitlistForm";
 import { useCatalog } from "@/lib/catalog";
 import { filterAvailable } from "@/lib/season";
-import { COLLECTIONS, patisserieProducts, type CollectionKey } from "@/lib/patisserie";
+import { patisserieProducts, type CollectionKey } from "@/lib/patisserie";
+import { useCollection } from "@/lib/collections";
 
 interface CollectionPageProps {
   collection: CollectionKey;
@@ -21,7 +22,9 @@ interface CollectionPageProps {
  * et état vide « Arrive bientôt » avec inscription à la liste d'attente.
  */
 export function CollectionPage({ collection, heroImage, notice }: CollectionPageProps) {
-  const def = COLLECTIONS[collection];
+  // Le rendu serveur part des définitions du code (bon pour le référencement) ;
+  // les textes saisis dans le back-office prennent le relais dès leur arrivée.
+  const def = useCollection(collection);
   const catalog = useCatalog(baseProducts);
 
   const list = useMemo(
@@ -66,19 +69,19 @@ export function CollectionPage({ collection, heroImage, notice }: CollectionPage
             Cette collection arrive bientôt
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-charbon/70">
-            Nos pâtissiers finalisent cette sélection. Laissez-nous votre e-mail : vous serez prévenu·e
-            dès sa mise en ligne, avant tout le monde.
+            Nos pâtissiers finalisent cette sélection. Laissez-nous votre e-mail : vous serez
+            prévenu·e dès sa mise en ligne, avant tout le monde.
           </p>
           <WaitlistForm collection={def.key} className="mx-auto mt-6 max-w-md" />
           <Link
             to="/patisserie"
+            search={{ vue: "tout" }}
             className="mt-8 inline-block border-b border-gold pb-0.5 text-[11px] uppercase tracking-[0.28em] text-gold"
           >
             Voir toute la pâtisserie tunisienne →
           </Link>
         </div>
       }
-
     />
   );
 }

@@ -7,12 +7,7 @@ import { products, type Product } from "@/data/products";
 import type { ProductFamily } from "@/data/products";
 
 export type CollectionKey =
-  | "amandes"
-  | "pistache-machmoum-pignon"
-  | "perles"
-  | "tradition"
-  | "ramadan"
-  | "aid";
+  "amandes" | "pistache-machmoum-pignon" | "perles" | "tradition" | "ramadan" | "aid";
 
 /** Périmètre : uniquement la pâtisserie tunisienne (exclut cakes, coffrets, salé, packs). */
 export const isPatisserieTunisienne = (p: Product) =>
@@ -108,8 +103,7 @@ export const COLLECTIONS: Record<CollectionKey, CollectionDef> = {
     title: "Collection Aïd Mubarak — Kaak Warka, Samsa, Hrisset Louz | Ö' Sweets",
     description:
       "Célébrez l'Aïd avec nos pâtisseries tunisiennes signature : Kaak Warka, Baklawa pistache, Samsa aux amandes, Sablé pur beurre, Hrisset Louz et dattes farcies.",
-    subtitle:
-      "Pour célébrer l'Aïd — les pâtisseries que l'on offre et que l'on partage.",
+    subtitle: "Pour célébrer l'Aïd — les pâtisseries que l'on offre et que l'on partage.",
     filter: (p) => (p.collections ?? []).includes("aid"),
   },
 };
@@ -151,10 +145,11 @@ export const PRODUCT_SLUG_REDIRECTS: Record<string, string> = {
   "ghrayba-amandes": "ghraiba",
   "samsa-praline": "samsa-praline-noisette",
   "samsa-pistache": "samsa-praline-pistache",
-  "kounafa-pistache": "kounefa",
-  "kounefa-kechda": "kounefa",
-  "kounefa-nutella": "kounefa",
-  "bachkoutou": "bechkoutou",
+  // La fiche kounefa à sélecteur est devenue une fiche par parfum.
+  kounefa: "kounefa-pistache",
+  "kounafa-pistache": "kounefa-pistache",
+  "kounefa-nutella": "kounefa-chocolat",
+  bachkoutou: "bechkoutou",
   "kaak-youyou": "youyou",
   "sable-tunisien": "sable",
   "hrissa-louz": "hrisset-louz",

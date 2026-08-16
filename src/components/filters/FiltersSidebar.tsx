@@ -1,15 +1,16 @@
 import { useState, type ReactNode } from "react";
-import { SlidersHorizontal, Filter } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { SlidersHorizontal, X } from "lucide-react";
 
 export type FilterOption = { value: string; label: string; count: number };
+
+/** Disponibilité : « in » = en stock, « out » = épuisé. Tableau vide = tous. */
+export type StockFilter = "in" | "out";
 
 export type Section =
   | {
       kind: "stock";
-      value: boolean;
-      onChange: (v: boolean) => void;
+      value: StockFilter[];
+      onChange: (v: StockFilter[]) => void;
       inStockCount: number;
       outStockCount: number;
       label?: string;
@@ -47,72 +48,82 @@ export interface FiltersSidebarProps {
   hasActive: boolean;
   onReset: () => void;
   totalCount: number;
+  /** Largeur de la colonne de filtres sur ordinateur (px). */
+  width?: number;
   /** Content rendered next to sidebar (the products grid). */
   children: ReactNode;
 }
 
-function SidebarBody({
-  sections,
-  hasActive,
-  onReset,
-  totalCount,
-}: Omit<FiltersSidebarProps, "children">) {
+/** Titre de groupe — 10px majuscules gris, référence base44. */
+function GroupTitle({ children }: { children: ReactNode }) {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.22em] text-charbon">
-          <SlidersHorizontal className="h-3.5 w-3.5 text-gold" />
-          Filtrer
-        </h2>
-        {hasActive && (
-          <button onClick={onReset} className="text-[11px] text-gold transition hover:opacity-60">
-            Réinitialiser
-          </button>
-        )}
-      </div>
-      <div className="text-[11px] uppercase tracking-[0.18em] text-charbon-soft">
-        {totalCount} produit{totalCount > 1 ? "s" : ""}
-      </div>
+    <h3 className="mb-3 text-[10px] uppercase tracking-[0.18em] text-charbon-soft">{children}</h3>
+  );
+}
 
-      {sections.map((s, i) => (
-        <div key={i} className="border-t border-beige pt-7">
-          <SectionView section={s} />
-        </div>
-      ))}
-    </div>
+/** Ligne d'option : case à cocher or, libellé, compteur gris à la suite. */
+function OptionRow({
+  checked,
+  onChange,
+  label,
+  count,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  count: number;
+  disabled?: boolean;
+}) {
+  return (
+    <li>
+      <label
+        className={`flex items-center gap-2.5 text-sm text-charbon ${
+          disabled ? "cursor-default opacity-60" : "cursor-pointer"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={onChange}
+          className="h-4 w-4 rounded accent-gold"
+        />
+        {label} <span className="text-charbon-soft">({count})</span>
+      </label>
+    </li>
   );
 }
 
 function SectionView({ section }: { section: Section }) {
   if (section.kind === "stock") {
+    // Une option dont le compteur vaut (0) est masquée, jamais grisée.
+    if (section.inStockCount === 0 && section.outStockCount === 0) return null;
+    const toggle = (v: StockFilter) =>
+      section.onChange(
+        section.value.includes(v) ? section.value.filter((x) => x !== v) : [...section.value, v],
+      );
     return (
       <div>
-        <h3 className="text-[11px] tracking-[0.2em] uppercase text-charbon font-medium mb-4">
-          {section.label ?? "Disponibilité"}
-        </h3>
-        <div className="space-y-2.5">
-          <label className="flex items-center justify-between gap-2 text-sm cursor-pointer group">
-            <span className="flex items-center gap-2.5">
-              <input
-                type="checkbox"
-                checked={section.value}
-                onChange={(e) => section.onChange(e.target.checked)}
-                className="accent-gold h-4 w-4 border-border"
-              />
-              En stock
-            </span>
-            <span className="text-xs text-charbon/50 group-hover:text-charbon/70">
-              ({section.inStockCount})
-            </span>
-          </label>
-          <div className="flex items-center justify-between gap-2 text-sm text-charbon/50">
-            <span className="flex items-center gap-2.5">
-              <span className="h-4 w-4 inline-block" />
-              En rupture de stock
-            </span>
-            <span className="text-xs">({section.outStockCount})</span>
-          </div>
-        </div>
+        <GroupTitle>{section.label ?? "Disponibilité"}</GroupTitle>
+        <ul className="space-y-2.5">
+          {section.inStockCount > 0 && (
+            <OptionRow
+              checked={section.value.includes("in")}
+              onChange={() => toggle("in")}
+              label="En stock"
+              count={section.inStockCount}
+            />
+          )}
+          {section.outStockCount > 0 && (
+            <OptionRow
+              checked={section.value.includes("out")}
+              onChange={() => toggle("out")}
+              label="Épuisé"
+              count={section.outStockCount}
+            />
+          )}
+        </ul>
       </div>
     );
   }
@@ -121,58 +132,41 @@ function SectionView({ section }: { section: Section }) {
     const single = section.bounds.max <= section.bounds.min;
     const safeMin = Number.isFinite(section.bounds.min) ? section.bounds.min : 0;
     const safeMax = Number.isFinite(section.bounds.max) ? section.bounds.max : safeMin;
-    const sliderMax = single ? safeMin + 1 : safeMax;
     return (
       <div>
-        <h3 className="text-[11px] tracking-[0.2em] uppercase text-charbon font-medium mb-3">
-          {section.label ?? "Prix"}
-        </h3>
-        <p className="text-xs text-charbon/60 mb-4">
-          {single ? `Prix : ${safeMin} €` : `Le prix le plus élevé est ${safeMax} €`}
-        </p>
-        <div className="px-1 mb-5">
-          <Slider
-            value={[single ? safeMin : section.max]}
+        <GroupTitle>{section.label ?? "Prix"}</GroupTitle>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            aria-label="Prix minimum"
             min={safeMin}
-            max={sliderMax}
-            step={1}
+            max={safeMax}
+            value={section.min}
             disabled={single}
-            onValueChange={(v) => section.onChange(section.min, v[0] ?? safeMax)}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              section.onChange(v, Math.max(v, section.max));
+            }}
+            className="h-9 w-full rounded-lg border border-beige bg-white px-3 text-sm outline-none focus:border-gold disabled:opacity-70"
+          />
+          <span className="text-xs text-charbon-soft">—</span>
+          <input
+            type="number"
+            aria-label="Prix maximum"
+            min={safeMin}
+            max={safeMax}
+            value={section.max}
+            disabled={single}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              section.onChange(Math.min(v, section.min), v);
+            }}
+            className="h-9 w-full rounded-lg border border-beige bg-white px-3 text-sm outline-none focus:border-gold disabled:opacity-70"
           />
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <label className="text-[10px] text-charbon/50 uppercase tracking-wider">De</label>
-            <input
-              type="number"
-              min={safeMin}
-              max={safeMax}
-              value={section.min}
-              disabled={single}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                section.onChange(v, Math.max(v, section.max));
-              }}
-              className="mt-1 w-full rounded-xl border border-beige bg-white px-3 py-2 text-sm outline-none focus:border-gold disabled:opacity-70"
-            />
-          </div>
-          <span className="pt-5 text-charbon/40">—</span>
-          <div className="flex-1">
-            <label className="text-[10px] text-charbon/50 uppercase tracking-wider">à</label>
-            <input
-              type="number"
-              min={safeMin}
-              max={safeMax}
-              value={section.max}
-              disabled={single}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                section.onChange(Math.min(v, section.min), v);
-              }}
-              className="mt-1 w-full rounded-xl border border-beige bg-white px-3 py-2 text-sm outline-none focus:border-gold disabled:opacity-70"
-            />
-          </div>
-        </div>
+        <p className="mt-2 text-xs text-charbon-soft">
+          {single ? `Prix : ${safeMin} €` : `Le prix le plus élevé est ${safeMax} €`}
+        </p>
       </div>
     );
   }
@@ -181,42 +175,31 @@ function SectionView({ section }: { section: Section }) {
     if (section.options.length === 0) return null;
     return (
       <div>
-        <h3 className="text-[11px] tracking-[0.2em] uppercase text-charbon font-medium mb-4">
-          {section.label}
-        </h3>
-        <ul className="space-y-2">
+        <GroupTitle>{section.label}</GroupTitle>
+        <ul className="space-y-2.5">
           <li>
-            <label className="flex items-center justify-between text-sm cursor-pointer group">
-              <span className="flex items-center gap-2.5">
-                <input
-                  type="radio"
-                  name={section.id}
-                  checked={section.value === ""}
-                  onChange={() => section.onChange("")}
-                  className="accent-gold h-4 w-4"
-                />
-                <span className="text-charbon/80 group-hover:text-charbon">
-                  {section.allLabel ?? "Tous"}
-                </span>
-              </span>
+            <label className="flex cursor-pointer items-center gap-2.5 text-sm text-charbon">
+              <input
+                type="radio"
+                name={section.id}
+                checked={section.value === ""}
+                onChange={() => section.onChange("")}
+                className="h-4 w-4 accent-gold"
+              />
+              {section.allLabel ?? "Tous"}
             </label>
           </li>
           {section.options.map((o) => (
             <li key={o.value}>
-              <label className="flex items-center justify-between text-sm cursor-pointer group">
-                <span className="flex items-center gap-2.5">
-                  <input
-                    type="radio"
-                    name={section.id}
-                    checked={section.value === o.value}
-                    onChange={() => section.onChange(o.value)}
-                    className="accent-gold h-4 w-4"
-                  />
-                  <span className="text-charbon/80 group-hover:text-charbon capitalize">
-                    {o.label}
-                  </span>
-                </span>
-                <span className="text-xs text-charbon/50">({o.count})</span>
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-charbon">
+                <input
+                  type="radio"
+                  name={section.id}
+                  checked={section.value === o.value}
+                  onChange={() => section.onChange(o.value)}
+                  className="h-4 w-4 accent-gold"
+                />
+                {o.label} <span className="text-charbon-soft">({o.count})</span>
               </label>
             </li>
           ))}
@@ -229,35 +212,24 @@ function SectionView({ section }: { section: Section }) {
   if (section.options.length === 0) return null;
   return (
     <div>
-      <h3 className="text-[11px] tracking-[0.2em] uppercase text-charbon font-medium mb-4">
-        {section.label}
-      </h3>
+      <GroupTitle>{section.label}</GroupTitle>
       <ul className="space-y-2.5">
         {section.options.map((o) => {
           const checked = section.value.includes(o.value);
           return (
-            <li key={o.value}>
-              <label className="flex items-center justify-between text-sm cursor-pointer group">
-                <span className="flex items-center gap-2.5">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() =>
-                      section.onChange(
-                        checked
-                          ? section.value.filter((x) => x !== o.value)
-                          : [...section.value, o.value],
-                      )
-                    }
-                    className="accent-gold h-4 w-4"
-                  />
-                  <span className="text-charbon/70 group-hover:text-charbon transition">
-                    {section.withoutPrefix ? `Sans ${o.label.toLowerCase()}` : o.label}
-                  </span>
-                </span>
-                <span className="text-xs text-charbon/50">({o.count})</span>
-              </label>
-            </li>
+            <OptionRow
+              key={o.value}
+              checked={checked}
+              onChange={() =>
+                section.onChange(
+                  checked
+                    ? section.value.filter((x) => x !== o.value)
+                    : [...section.value, o.value],
+                )
+              }
+              label={section.withoutPrefix ? `Sans ${o.label.toLowerCase()}` : o.label}
+              count={o.count}
+            />
           );
         })}
       </ul>
@@ -265,56 +237,93 @@ function SectionView({ section }: { section: Section }) {
   );
 }
 
-export function FiltersSidebar({
+function SidebarBody({
   sections,
-  hasActive,
   onReset,
   totalCount,
+}: Pick<FiltersSidebarProps, "sections" | "onReset" | "totalCount">) {
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between border-b border-beige pb-4">
+        <h2 className="text-xs uppercase tracking-[0.2em] text-charbon">
+          Filtrer <span className="text-charbon-soft">({totalCount})</span>
+        </h2>
+        <button onClick={onReset} className="text-xs text-gold hover:underline">
+          Réinitialiser
+        </button>
+      </div>
+
+      <div className="space-y-7">
+        {sections.map((s, i) => (
+          <SectionView key={i} section={s} />
+        ))}
+      </div>
+
+      <div className="mt-7 border-t border-beige pt-5">
+        <p className="text-xs text-charbon-soft">
+          {totalCount} produit{totalCount > 1 ? "s" : ""}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function FiltersSidebar({
+  sections,
+  onReset,
+  totalCount,
+  width = 216,
   children,
 }: FiltersSidebarProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr] lg:gap-14">
-      {/* Desktop sidebar */}
-      <aside className="hidden self-start lg:sticky lg:top-32 lg:block">
-        <SidebarBody
-          sections={sections}
-          hasActive={hasActive}
-          onReset={onReset}
-          totalCount={totalCount}
-        />
+    <div className="flex flex-col gap-10 lg:flex-row">
+      {/* Colonne de filtres — ordinateur */}
+      <aside className="hidden shrink-0 self-start lg:sticky lg:top-32 lg:block" style={{ width }}>
+        <SidebarBody sections={sections} onReset={onReset} totalCount={totalCount} />
       </aside>
 
-      {/* Mobile trigger */}
-      <div className="lg:hidden flex items-center justify-between gap-3 -mb-2">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <button className="inline-flex items-center gap-2 rounded-full border border-beige bg-white px-4 py-2 text-xs uppercase tracking-[0.18em] text-charbon transition hover:border-gold hover:text-gold">
-              <Filter className="h-4 w-4" /> Filtrer
-              {hasActive && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-gold" />}
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[320px] sm:w-[380px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle className="tracking-[0.16em] uppercase text-sm">Filtres</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <SidebarBody
-                sections={sections}
-                hasActive={hasActive}
-                onReset={onReset}
-                totalCount={totalCount}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-        <span className="text-xs text-charbon/60">
-          {totalCount} produit{totalCount > 1 ? "s" : ""}
-        </span>
-      </div>
+      {/* Déclencheur mobile */}
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-beige px-5 text-xs uppercase tracking-[0.15em] text-charbon lg:hidden"
+      >
+        <SlidersHorizontal className="h-4 w-4" /> Filtrer
+      </button>
 
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
+
+      {/* Tiroir de filtres — mobile */}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            aria-label="Fermer les filtres"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 animate-fade-in bg-charbon/40 backdrop-blur-sm"
+          />
+          <aside className="absolute right-0 top-0 flex h-full w-80 max-w-[85vw] animate-fade-in flex-col bg-ivory shadow-xl">
+            <div className="flex h-16 items-center justify-between border-b border-beige px-5">
+              <span className="font-display text-lg">Filtrer</span>
+              <button onClick={() => setOpen(false)} aria-label="Fermer">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="overflow-auto p-5">
+              <SidebarBody sections={sections} onReset={onReset} totalCount={totalCount} />
+            </div>
+            <div className="border-t border-beige p-5">
+              <button
+                onClick={() => setOpen(false)}
+                className="h-12 w-full rounded-full bg-charbon text-xs uppercase tracking-[0.2em] text-ivory"
+              >
+                Voir {totalCount} produit{totalCount > 1 ? "s" : ""}
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }

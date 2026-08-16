@@ -5,12 +5,14 @@ import { PATISSERIE_CAT_REDIRECTS } from "@/lib/patisserie";
 
 /**
  * Route parente de l'univers « Pâtisserie Tunisienne ».
- * Elle ne rend QUE l'Outlet : la page catalogue vit dans `patisserie.index.tsx`,
+ * Elle ne rend QUE l'Outlet : la page d'entrée vit dans `patisserie.index.tsx`,
  * chaque collection dans son propre fichier. Sans cet Outlet, les routes
  * /patisserie/* ne pouvaient pas s'afficher.
  */
 const searchSchema = z.object({
   cat: fallback(z.string(), "").optional(),
+  /** `tout` bascule /patisserie de l'index des collections vers le catalogue complet. */
+  vue: z.enum(["tout"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/patisserie")({

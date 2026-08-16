@@ -7,9 +7,11 @@ export interface CartItem {
   image: string;
   quantity: number;
   gift?: { message?: string; wrap?: boolean };
-  /** Parfum choisi (produits à variantes, ex. la kounefa). */
+  /** Parfum choisi, ou composition d'un coffret sur mesure. */
   variantId?: string;
   variantLabel?: string;
+  /** Unité de vente affichée dans le panier (« coffret », « / 500 g »…). */
+  unit?: string;
 }
 
 /** Identifiant de ligne panier — un même produit peut y figurer en plusieurs parfums. */
@@ -60,39 +62,42 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     if (hydrated) localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
   }, [favorites, hydrated]);
 
-  const value = useMemo<ShopState>(() => ({
-    cart,
-    favorites,
-    addToCart: (item, qty = 1) => {
-      setCart((prev) => {
-        const id = lineId(item);
-        const existing = prev.find((p) => lineId(p) === id);
-        if (existing) {
-          return prev.map((p) =>
-            lineId(p) === id ? { ...p, quantity: p.quantity + qty } : p,
-          );
-        }
-        return [...prev, { ...item, quantity: qty }];
-      });
-      setCartOpen(true);
-    },
-    removeFromCart: (line) => setCart((p) => p.filter((i) => lineId(i) !== line)),
-    updateQty: (line, qty) =>
-      setCart((p) =>
-        qty <= 0
-          ? p.filter((i) => lineId(i) !== line)
-          : p.map((i) => (lineId(i) === line ? { ...i, quantity: qty } : i)),
-      ),
-    clearCart: () => setCart([]),
-    toggleFavorite: (slug) =>
-      setFavorites((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug])),
-    isFavorite: (slug) => favorites.includes(slug),
-    cartCount: cart.reduce((sum, i) => sum + i.quantity, 0),
-    cartTotal: cart.reduce((sum, i) => sum + i.quantity * i.price, 0),
-    cartOpen,
-    openCart: () => setCartOpen(true),
-    closeCart: () => setCartOpen(false),
-  }), [cart, favorites, cartOpen]);
+  const value = useMemo<ShopState>(
+    () => ({
+      cart,
+      favorites,
+      addToCart: (item, qty = 1) => {
+        setCart((prev) => {
+          const id = lineId(item);
+          const existing = prev.find((p) => lineId(p) === id);
+          if (existing) {
+            return prev.map((p) => (lineId(p) === id ? { ...p, quantity: p.quantity + qty } : p));
+          }
+          return [...prev, { ...item, quantity: qty }];
+        });
+        setCartOpen(true);
+      },
+      removeFromCart: (line) => setCart((p) => p.filter((i) => lineId(i) !== line)),
+      updateQty: (line, qty) =>
+        setCart((p) =>
+          qty <= 0
+            ? p.filter((i) => lineId(i) !== line)
+            : p.map((i) => (lineId(i) === line ? { ...i, quantity: qty } : i)),
+        ),
+      clearCart: () => setCart([]),
+      toggleFavorite: (slug) =>
+        setFavorites((prev) =>
+          prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
+        ),
+      isFavorite: (slug) => favorites.includes(slug),
+      cartCount: cart.reduce((sum, i) => sum + i.quantity, 0),
+      cartTotal: cart.reduce((sum, i) => sum + i.quantity * i.price, 0),
+      cartOpen,
+      openCart: () => setCartOpen(true),
+      closeCart: () => setCartOpen(false),
+    }),
+    [cart, favorites, cartOpen],
+  );
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }

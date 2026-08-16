@@ -218,8 +218,8 @@ function Home() {
         </div>
       </section>
 
-      {/* BEST SELLERS */}
-      <section className="section-y bg-sable">
+      {/* BEST SELLERS — fond ivoire : base44 alterne sable / ivoire, jamais deux sable de suite */}
+      <section className="section-y bg-ivory">
         <div className="container-os">
           <div className="mb-14 flex items-end justify-between gap-6">
             <div>

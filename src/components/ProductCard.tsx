@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { Heart, ShoppingBag, Eye, FileText, BellRing, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Product, ProductVariant } from "@/data/products";
-import { allergenLabels } from "@/data/products";
+import { allergenLabels, products as allProducts, FAMILY_LABELS } from "@/data/products";
+import { familyMembers } from "@/lib/patisserie";
 import { formatPrice, useShop } from "@/lib/shop-store";
 import { isProductAvailableNow, seasonalNotice } from "@/lib/season";
 import { WaitlistForm } from "@/components/patisserie/WaitlistForm";
@@ -38,8 +40,24 @@ const collectionLabel = (p: Product) => {
   }
 };
 
+/** Produit marqué épuisé en administration (`inStock: false`). */
+const isOutOfStock = (p: Product) => p.inStock === false;
+
+/**
+ * L'unité de vente (« le pot », « la pièce ») précise à quoi correspond le prix.
+ * Sans prix affiché — fiche en cours de rédaction, produit sur devis — elle n'a
+ * plus de sens : « Bientôt disponible le pot » ne veut rien dire, on la masque.
+ */
+const saleUnit = (p: Product): string | null => {
+  if (!p.unit) return null;
+  if (p.hidePrice || p.draft || p.price <= 0) return null;
+  return p.unit;
+};
+
 /** Badge éditorial (coin haut gauche de la photo) — uniquement si pertinent. */
 const cardBadge = (p: Product): string | null => {
+  // La rupture prime sur les badges promotionnels.
+  if (isOutOfStock(p)) return "Épuisé";
   if (p.badge === "bestseller") return "Meilleure vente";
   if (p.badge === "nouveau") return "Nouveauté";
   if (p.badge === "commande") return "Sur commande";
@@ -170,7 +188,19 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
               <p className="mt-2 line-clamp-2 text-sm text-charbon-soft">{product.shortDesc}</p>
             )}
             <div className="mt-4 flex items-center justify-between gap-3">
-              <span className="font-price text-base text-charbon-soft">{priceLabel(product)}</span>
+              <span className="flex items-baseline gap-2">
+                <span className="font-price text-base text-charbon-soft">
+                  {priceLabel(product)}
+                </span>
+                {saleUnit(product) && (
+                  <span className="text-xs text-charbon-soft">{saleUnit(product)}</span>
+                )}
+                {isOutOfStock(product) && (
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-charbon-soft">
+                    · Épuisé
+                  </span>
+                )}
+              </span>
               <div className="flex items-center gap-2">
                 <RoundButton
                   label={`Ajouter ${product.name} aux favoris`}
@@ -212,6 +242,7 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
   }
 
   const badge = cardBadge(product);
+  const soldOut = isOutOfStock(product);
 
   return (
     <>
@@ -226,7 +257,9 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             <ProductImage
               src={product.image}
               alt={product.name}
-              className="transition-transform duration-700 ease-out group-hover:scale-105"
+              className={`transition-transform duration-700 ease-out group-hover:scale-105 ${
+                soldOut ? "opacity-60" : ""
+              }`}
             />
           </Link>
 
@@ -234,7 +267,11 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-charbon/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           {badge && (
-            <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charbon px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.2em] text-ivory">
+            <span
+              className={`pointer-events-none absolute left-3 top-3 rounded-full px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.2em] ${
+                soldOut ? "border border-beige bg-white text-charbon-soft" : "bg-charbon text-ivory"
+              }`}
+            >
               {badge}
             </span>
           )}
@@ -300,6 +337,8 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
 
         {/* Texte — hérite de la police d'affichage globale (h1-h4), aucune classe font-* à ajouter */}
         <div className="mt-4 flex flex-1 flex-col text-left">
+          {/* Surtitre collection — référence base44 */}
+          <span className="mb-1 text-[10px] uppercase tracking-[0.15em] text-gold/70">{label}</span>
           <Link
             to="/produits/$slug"
             params={{ slug: product.slug }}
@@ -314,11 +353,19 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             </span>
           )}
 
-          <div className="mt-1.5 flex items-baseline justify-between gap-2">
+          {/* Prix et unité de vente collés — l'unité qualifie le prix, elle ne part pas à droite. */}
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <span className="font-price text-sm font-semibold text-gold">
               {priceLabel(product)}
             </span>
-            {product.unit && <span className="text-xs text-charbon-soft">{product.unit}</span>}
+            {saleUnit(product) && (
+              <span className="text-xs text-charbon-soft">{saleUnit(product)}</span>
+            )}
+            {soldOut && (
+              <span className="text-[10px] uppercase tracking-[0.18em] text-charbon-soft">
+                · Épuisé
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -365,7 +412,20 @@ function QuickView({
 
   const notice = seasonalNotice(product);
 
-  return (
+  /** Les autres parfums de la même famille (Samsa, Kounefa, Assida…). */
+  const siblings = product.family
+    ? familyMembers(product.family, allProducts).filter((s) => s.slug !== product.slug)
+    : [];
+
+  /**
+   * Rendu via un portail sur <body>.
+   * Les cartes sont enveloppées dans <Reveal>, qui applique un `transform` :
+   * un ancêtre transformé devient le bloc conteneur d'un `position: fixed`,
+   * et la modale se retrouvait enfermée dans la cellule de la grille.
+   */
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center p-4"
       role="dialog"
@@ -376,19 +436,23 @@ function QuickView({
         type="button"
         aria-label="Fermer l'aperçu"
         onClick={onClose}
-        className="absolute inset-0 bg-charbon/40 backdrop-blur-[2px]"
+        className="absolute inset-0 animate-fade-in bg-charbon/50 backdrop-blur-sm"
       />
-      <div className="relative z-10 max-h-[88vh] w-full max-w-4xl overflow-y-auto bg-ivory shadow-[0_20px_60px_rgba(42,35,32,0.18)]">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-3xl animate-scale-in overflow-auto rounded-2xl bg-ivory shadow-2xl">
         <button
           type="button"
           onClick={onClose}
           aria-label="Fermer"
-          className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-ivory/95 shadow-[0_2px_10px_rgba(42,35,32,0.10)]"
+          className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-colors hover:bg-white"
         >
           <X className="h-4 w-4 text-charbon" />
         </button>
-        <div className="grid sm:grid-cols-2">
-          <div className="aspect-square overflow-hidden rounded-xl bg-sand">
+        <div className="grid md:grid-cols-2">
+          {/*
+            La photo occupe toute la hauteur du panneau sur ordinateur
+            (`md:aspect-auto`) et vient épouser les coins arrondis de la carte.
+          */}
+          <div className="aspect-square bg-sable md:aspect-auto">
             <ProductImage
               src={variant?.image ?? product.image}
               alt={product.name}
@@ -396,15 +460,25 @@ function QuickView({
               placeholderClassName="text-6xl"
             />
           </div>
-          <div className="p-8 sm:p-10">
+          <div className="p-7 lg:p-9">
             <span className="text-[10px] uppercase tracking-[0.24em] text-gold">
               {collectionLabel(product)}
             </span>
             <h2 className="mt-3 font-display text-[28px] leading-tight text-charbon">
               {product.name}
             </h2>
-            <div className="mt-2 font-price text-lg text-charbon-soft">
-              {variant ? formatPrice(variant.price) : priceLabel(product)}
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="font-price text-lg text-charbon-soft">
+                {variant ? formatPrice(variant.price) : priceLabel(product)}
+              </span>
+              {saleUnit(product) && (
+                <span className="text-xs text-charbon-soft">{saleUnit(product)}</span>
+              )}
+              {isOutOfStock(product) && (
+                <span className="rounded-full border border-beige bg-white px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-charbon-soft">
+                  Épuisé
+                </span>
+              )}
             </div>
 
             {variants.length > 0 && (
@@ -432,6 +506,38 @@ function QuickView({
               </div>
             )}
             <p className="mt-4 text-sm leading-relaxed text-charbon/75">{product.shortDesc}</p>
+
+            {/* Autres parfums de la famille — même ligne que sur la fiche produit */}
+            {product.family && siblings.length > 0 && (
+              <div className="mt-5 border-t border-line pt-4">
+                <div className="mb-3 text-[11px] uppercase tracking-[0.22em] text-charbon-soft">
+                  Autres parfums — {FAMILY_LABELS[product.family]}
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {siblings.map((s) => (
+                    <Link
+                      key={s.slug}
+                      to="/produits/$slug"
+                      params={{ slug: s.slug }}
+                      onClick={onClose}
+                      className="group/sib w-14 text-center"
+                    >
+                      <span className="block h-14 w-14 overflow-hidden rounded-full bg-sand">
+                        <ProductImage
+                          src={s.image}
+                          alt={s.name}
+                          placeholderClassName="text-xl"
+                          className="transition-transform duration-700 group-hover/sib:scale-105"
+                        />
+                      </span>
+                      <span className="mt-1.5 block text-[10px] leading-snug text-charbon-soft transition-colors group-hover/sib:text-gold">
+                        {s.flavorLabel ?? s.name}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {(product.weight || product.pieces) && (
               <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-charbon/55">
@@ -528,6 +634,7 @@ function QuickView({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

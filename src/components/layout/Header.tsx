@@ -11,11 +11,11 @@ import {
 } from "@/config/site";
 
 // Visuals (real Ö' Sweets photos)
-import imgPlateauSignature from "@/assets/plateau-or-assortiment-signature.jpg.asset.json";
-import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg.asset.json";
-import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg.asset.json";
-import imgLogoBranding from "@/assets/logo-produit-branding-officiel.jpg.asset.json";
-import imgAidCollection from "@/assets/collection-aid-eid-mubarak.jpg.asset.json";
+import imgPlateauSignature from "@/assets/plateau-or-assortiment-signature.jpg";
+import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg";
+import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg";
+import imgLogoBranding from "@/assets/logo-produit-branding-officiel.jpg";
+import imgAidCollection from "@/assets/collection-aid-eid-mubarak.jpg";
 // imgPastillesPistache retiré : plus utilisé après masquage de la carte Gâteaux placeholder.
 // NOTE: pas de photo confirmée pour "sables-tartinable-fond" ni "plateau-noir-assortiment-large"
 // ni "collection-aid-plateau-detail" ni "plateau-or-amandes-detail" — placeholder utilisé.
@@ -211,7 +211,7 @@ function seasonalBlock(): NavEntry["extraBlock"] | undefined {
       text: "Une sélection soignée pour célébrer l'Aïd.",
       ctaLabel: "Découvrir",
       to: "/evenements/aid",
-      image: imgAidCollection.url,
+      image: imgAidCollection,
     };
   }
   return undefined;
@@ -278,7 +278,7 @@ const NAV: NavEntry[] = [
     to: "/patisserie",
     cols: patisserieCols,
     card: {
-      image: imgPlateauSignature.url,
+      image: imgPlateauSignature,
       title: "Nos assortiments",
       text: "Une sélection de nos pâtisseries tunisiennes réunies dans un même écrin, prêtes à offrir.",
       cta: "Découvrir les assortiments",
@@ -298,7 +298,7 @@ const NAV: NavEntry[] = [
     to: "/composer",
     cols: coffretsCols,
     card: {
-      image: imgCoffretMignardises.url,
+      image: imgCoffretMignardises,
       title: "Votre coffret, votre sélection",
       text: "Choisissez vos pâtisseries préférées et composez un coffret personnalisé.",
       cta: "Je compose mon coffret",
@@ -329,7 +329,7 @@ const NAV: NavEntry[] = [
       text: "Parlez-nous de votre projet et recevez une proposition personnalisée.",
       ctaLabel: "Demander un devis →",
       to: "/devis",
-      image: imgMignardisesMariage.url,
+      image: imgMignardisesMariage,
     },
   },
 
@@ -338,7 +338,7 @@ const NAV: NavEntry[] = [
     to: "/la-maison",
     cols: maisonCols,
     card: {
-      image: imgLogoBranding.url,
+      image: imgLogoBranding,
       title: "L'esprit Ö' Sweets",
       cta: "Notre histoire",
       to: "/la-maison",
@@ -361,6 +361,10 @@ export function Header() {
     setMounted(true);
   }, []);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const navItemRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  /** Décalage gauche du panneau — il se centre sous son entrée de menu. */
+  const [panelLeft, setPanelLeft] = useState<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -394,6 +398,16 @@ export function Header() {
 
   const openMega = (label: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    const li = navItemRefs.current[label];
+    const head = headerRef.current;
+    if (li && head) {
+      const item = li.getBoundingClientRect();
+      const base = head.getBoundingClientRect();
+      // Centré sous l'entrée, puis ramené dans la fenêtre s'il déborde.
+      const width = label === "Pâtisserie Tunisienne" ? 580 : 780;
+      const raw = item.left - base.left + item.width / 2 - width / 2;
+      setPanelLeft(Math.min(Math.max(raw, 16), Math.max(base.width - width - 16, 16)));
+    }
     setHovered(label);
   };
   const scheduleClose = () => {
@@ -402,9 +416,11 @@ export function Header() {
   };
 
   const current = NAV.find((n) => n.label === hovered);
+  const isPatisserie = current?.label === "Pâtisserie Tunisienne";
 
   return (
     <header
+      ref={headerRef}
       className={`sticky top-0 z-40 bg-ivory/95 backdrop-blur-md transition-shadow ${
         pastHairline ? "shadow-[0_4px_24px_-12px_rgba(42,35,32,0.18)]" : "border-b border-beige/60"
       }`}
@@ -494,7 +510,13 @@ export function Header() {
           {NAV.map((item) => {
             const active = hovered === item.label;
             return (
-              <li key={item.label} onMouseEnter={() => openMega(item.label)}>
+              <li
+                key={item.label}
+                ref={(el) => {
+                  navItemRefs.current[item.label] = el;
+                }}
+                onMouseEnter={() => openMega(item.label)}
+              >
                 <Link
                   to={item.to}
                   className={`relative inline-flex items-center gap-1 py-2 transition ${active ? "opacity-55" : "hover:opacity-55"}`}
@@ -513,73 +535,65 @@ export function Header() {
         </ul>
       </nav>
 
-      {/* Mega menu overlay — carte flottante centrée */}
+      {/* Mega menu overlay — carte flottante */}
       {current?.cols && (
         <div
           onMouseEnter={() => openMega(current.label)}
           onMouseLeave={scheduleClose}
-          className="hidden lg:block absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3"
+          className={`hidden lg:block absolute top-full z-50 pt-3 ${
+            isPatisserie ? "" : "left-1/2 -translate-x-1/2"
+          }`}
+          style={isPatisserie ? { left: Math.max(panelLeft ?? 0, 0) } : undefined}
         >
           <div
-            className="max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-beige bg-white shadow-[0_30px_70px_-25px_rgba(42,35,32,0.28)] animate-in fade-in duration-150"
-            style={{ width: 780 }}
+            className={`max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-beige bg-white shadow-[0_30px_70px_-25px_rgba(42,35,32,0.28)] ${
+              isPatisserie ? "animate-fade-up" : "animate-in fade-in duration-150"
+            }`}
+            // Panneau compact base44 : 2 colonnes étroites (les libellés longs
+            // passent à la ligne) + la carte photo de 280px.
+            style={{ width: isPatisserie ? 580 : 780 }}
           >
-            {current.label === "Pâtisserie Tunisienne" ? (
-              // ─── Panneau compact : 2 colonnes + photo décorative ───
-              <div className="px-11 py-9">
-                <div className="grid gap-10" style={{ gridTemplateColumns: "1fr 1fr 0.9fr" }}>
-                  {current.cols.map((col, i) => (
-                    <div
-                      key={col.title}
-                      className={i > 0 ? "border-l border-beige pl-10" : undefined}
-                    >
-                      <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
-                        {col.title}
-                      </h4>
-                      <ul className="space-y-[6px]">
-                        {col.items.map((l) => (
-                          <li key={l.to + l.label}>
-                            <Link
-                              to={l.to}
-                              onClick={() => setHovered(null)}
-                              className="group flex items-center justify-between gap-2 py-2.5 text-[15px] normal-case tracking-normal text-charbon transition hover:text-gold"
-                            >
-                              {l.label}
-                              <ArrowUpRight className="h-4 w-4 shrink-0 text-charbon-soft/40 transition-colors group-hover:text-gold" />
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+            {isPatisserie ? (
+              // ─── Panneau 780px : 2 colonnes + carte photo pleine hauteur ───
+              <div className="grid grid-cols-[1fr_1fr_280px]">
+                {current.cols.map((col, i) => (
+                  <div key={col.title} className={`p-7 ${i > 0 ? "border-l border-beige" : ""}`}>
+                    <h3 className="mb-5 text-[10px] uppercase tracking-[0.22em] text-gold">
+                      {col.title}
+                    </h3>
+                    <ul className="space-y-0.5">
+                      {col.items.map((l) => (
+                        <li key={l.to + l.label}>
+                          <Link
+                            to={l.to}
+                            onClick={() => setHovered(null)}
+                            className="group flex items-center justify-between gap-2 py-2.5 normal-case tracking-normal text-charbon transition-colors hover:text-gold"
+                          >
+                            <span className="text-[15px]">{l.label}</span>
+                            <ArrowUpRight className="h-4 w-4 shrink-0 text-charbon-soft/40 transition-colors group-hover:text-gold" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
 
-                  {/* Photo décorative — non cliquable */}
-                  {current.card?.image && (
-                    <div
-                      className="relative overflow-hidden self-start"
-                      style={{ aspectRatio: "3 / 4" }}
-                      aria-hidden="true"
-                    >
-                      <img
-                        src={current.card.image}
-                        alt=""
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover object-center"
-                      />
+                {/* Photo décorative pleine hauteur — aucun lien */}
+                {current.card?.image && (
+                  <div className="relative overflow-hidden bg-sable" aria-hidden="true">
+                    <img
+                      src={current.card.image}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover object-center"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charbon/25 to-transparent" />
+                    <div className="absolute bottom-5 left-5">
+                      <p className="text-[9px] uppercase tracking-[0.25em] text-ivory/80">
+                        L'atelier
+                      </p>
+                      <p className="mt-1 font-display text-lg text-ivory">Fait main</p>
                     </div>
-                  )}
-                </div>
-
-                {/* CTA compact sous les colonnes */}
-                {current.bottomCta && (
-                  <div className="mt-6 pt-4 border-t border-beige">
-                    <Link
-                      to={current.bottomCta.to}
-                      onClick={() => setHovered(null)}
-                      className="inline-flex items-center min-h-11 text-[12px] tracking-[0.2em] uppercase text-gold hover:text-charbon transition"
-                    >
-                      {current.bottomCta.label}
-                    </Link>
                   </div>
                 )}
               </div>

@@ -1,474 +1,262 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { products as baseProducts, FAMILY_LABELS, type Product } from "@/data/products";
-import { mergeOverrides, fetchOverrides, type ProductOverride } from "@/lib/catalog";
-import { patisserieProducts } from "@/lib/patisserie";
+import {
+  AlertTriangle,
+  Bell,
+  Cookie,
+  LayoutDashboard,
+  Layers,
+  Package,
+  Sparkles,
+} from "lucide-react";
+import { currentAdmin, signIn, signOut, type AdminIdentity } from "@/api/auth";
+import { listProductsForAdmin } from "@/api/catalog";
+import { listWaitlist, type WaitlistRow } from "@/api/waitlist";
+import { listCollections, type CollectionRow } from "@/api/collections";
+import type { ProductRow } from "@/lib/catalog";
+import { AdminShell, type AdminNavGroup } from "@/components/admin/AdminShell";
+import { DashboardTab } from "@/components/admin/DashboardTab";
+import { CatalogueTab } from "@/components/admin/CatalogueTab";
+import { CollectionsTab } from "@/components/admin/CollectionsTab";
+import { FamillesTab } from "@/components/admin/FamillesTab";
+import { WaitlistTab } from "@/components/admin/WaitlistTab";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    vue: typeof search.vue === "string" ? search.vue : undefined,
+    col: typeof search.col === "string" ? search.col : undefined,
+  }),
   head: () => ({
     meta: [
-      { title: "Administration catalogue — Ö' Sweets" },
+      { title: "Administration — Ö' Sweets" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: AdminPage,
 });
 
-const COLLECTION_OPTIONS = ["amandes", "pistache", "perles", "tradition", "ramadan", "aid", "fin-annee"];
-
-interface Draft {
-  name: string;
-  price: string;
-  image_url: string;
-  short_desc: string;
-  collections: string[];
-  seasonal_only: boolean;
-  family: string;
-  published: boolean;
-  description: string;
-  composition: string;
-  allergens: string;
-  unit: string;
-  pieces: string;
-  weight: string;
-  variants: string;
-}
-
-const lines = (v: string) => (v.trim() ? v.split("\n").map((x) => x.trim()).filter(Boolean) : null);
-const csv = (v: string) => (v.trim() ? v.split(",").map((x) => x.trim()).filter(Boolean) : null);
-
-function toDraft(p: Product): Draft {
-  return {
-    name: p.name,
-    price: String(p.price ?? 0),
-    image_url: p.image ?? "",
-    short_desc: p.shortDesc ?? "",
-    collections: (p.collections ?? []) as string[],
-    seasonal_only: !!p.seasonalOnly,
-    family: p.family ?? "",
-    published: p.published !== false,
-    description: p.description ?? "",
-    composition: (p.composition ?? []).join("\n"),
-    allergens: (p.allergens ?? []).join(", "),
-    unit: p.unit ?? "",
-    pieces: p.pieces ? String(p.pieces) : "",
-    weight: p.weight ?? "",
-    variants: p.variants?.length ? JSON.stringify(p.variants, null, 2) : "",
-  };
-}
+const SECTIONS: Record<string, { title: string; breadcrumb: string }> = {
+  tableau: { title: "Tableau de bord", breadcrumb: "Pilotage" },
+  collections: { title: "Collections", breadcrumb: "Pâtisserie Tunisienne" },
+  produits: { title: "Produits", breadcrumb: "Pâtisserie Tunisienne" },
+  parfums: { title: "Parfums & familles", breadcrumb: "Pâtisserie Tunisienne" },
+  attente: { title: "Liste d'attente", breadcrumb: "Pâtisserie Tunisienne" },
+};
 
 function AdminPage() {
   const [checking, setChecking] = useState(true);
+  const [admin, setAdmin] = useState<AdminIdentity | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [session, setSession] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const refreshAuth = async () => {
-    const { data } = await supabase.auth.getUser();
-    const user = data.user ?? null;
-    setSession(!!user);
-    if (user) {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      setIsAdmin(!!roles?.some((r) => r.role === "admin"));
-    } else {
-      setIsAdmin(false);
+  const refresh = useCallback(async () => {
+    try {
+      setAdmin(await currentAdmin());
+    } catch {
+      setAdmin(null);
     }
     setChecking(false);
-  };
-
-  useEffect(() => {
-    void refreshAuth();
   }, []);
 
-  const signIn = async (e: FormEvent) => {
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-      return;
+    setBusy(true);
+    try {
+      const result = await signIn({ data: { email, password } });
+      if (!result.ok) {
+        toast.error(result.error ?? "Connexion impossible.");
+        return;
+      }
+      setAdmin(result.admin ?? null);
+      setPassword("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Connexion impossible.");
+    } finally {
+      setBusy(false);
     }
-    setChecking(true);
-    await refreshAuth();
   };
 
   if (checking) {
-    return <div className="container-os section-y text-center text-sm text-charbon/60">Chargement…</div>;
-  }
-
-  if (!session) {
     return (
-      <div className="container-os section-y max-w-md">
-        <div className="eyebrow text-center">Espace privé</div>
-        <h1 className="mt-3 text-center font-display text-3xl">Administration</h1>
-        <form onSubmit={signIn} className="mt-8 space-y-3 border border-border bg-sable p-6">
-          <input
-            required
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full border border-border bg-white px-4 py-3"
-          />
-          <input
-            required
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mot de passe"
-            className="w-full border border-border bg-white px-4 py-3"
-          />
-          <button type="submit" className="btn btn-gold w-full justify-center">Se connecter</button>
-        </form>
+      <div className="grid min-h-screen place-items-center bg-sable text-sm text-charbon/60">
+        Chargement…
       </div>
     );
   }
 
-  if (!isAdmin) {
+  if (!admin) {
     return (
-      <div className="container-os section-y max-w-lg text-center">
-        <h1 className="font-display text-3xl">Accès réservé</h1>
-        <p className="mt-4 text-sm text-charbon/70">
-          Votre compte n'a pas le rôle administrateur.
-        </p>
-        <button
-          onClick={async () => { await supabase.auth.signOut(); await refreshAuth(); }}
-          className="btn btn-ghost mt-6"
-        >
-          Se déconnecter
-        </button>
+      <div className="grid min-h-screen place-items-center bg-sable px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center">
+            <div className="font-display text-3xl">Ö' Sweets</div>
+            <div className="mt-2 text-[10px] uppercase tracking-[0.28em] text-gold">
+              Administration
+            </div>
+          </div>
+          <form onSubmit={submit} className="card-soft mt-8 space-y-3 p-6">
+            <input
+              required
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Adresse e-mail"
+              className="w-full rounded-lg border-0 bg-sable px-4 py-3 text-sm outline-none transition focus:ring-1 focus:ring-gold"
+            />
+            <input
+              required
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mot de passe"
+              className="w-full rounded-lg border-0 bg-sable px-4 py-3 text-sm outline-none transition focus:ring-1 focus:ring-gold"
+            />
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-lg bg-gradient-to-tl from-charbon to-[#4a3f3a] py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-ivory shadow-soft transition hover:opacity-90"
+            >
+              {busy ? "Connexion…" : "Se connecter"}
+            </button>
+          </form>
+          <p className="mt-4 text-center text-[11px] leading-relaxed text-charbon/50">
+            Pas encore de compte ?
+            <br />
+            <code>npm run db:admin -- ton@email.fr "MotDePasse"</code>
+          </p>
+        </div>
       </div>
     );
   }
 
-  return <AdminConsole onSignOut={async () => { await supabase.auth.signOut(); await refreshAuth(); }} />;
+  return (
+    <AdminConsole
+      admin={admin}
+      onSignOut={async () => {
+        await signOut();
+        setAdmin(null);
+      }}
+    />
+  );
 }
 
-function AdminConsole({ onSignOut }: { onSignOut: () => void }) {
-  const [tab, setTab] = useState<"catalogue" | "waitlist">("catalogue");
-  const [overrides, setOverrides] = useState<ProductOverride[]>([]);
-  const [waitlist, setWaitlist] = useState<{ id: string; email: string; collection: string; created_at: string }[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
-  const [saving, setSaving] = useState<string | null>(null);
+function AdminConsole({ admin, onSignOut }: { admin: AdminIdentity; onSignOut: () => void }) {
+  const { vue, col } = Route.useSearch();
+  const navigate = useNavigate({ from: "/admin" });
+  const section = vue && SECTIONS[vue] ? vue : "tableau";
 
-  const load = async () => {
+  const [q, setQ] = useState("");
+  const [rows, setRows] = useState<ProductRow[]>([]);
+  const [collections, setCollections] = useState<CollectionRow[]>([]);
+  const [waitlist, setWaitlist] = useState<WaitlistRow[]>([]);
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
     try {
-      const list = await fetchOverrides();
-      setOverrides(list);
-    } catch {
-      toast.error("Impossible de charger les ajustements.");
+      const [products, entries, cols] = await Promise.all([
+        listProductsForAdmin(),
+        listWaitlist(),
+        listCollections(),
+      ]);
+      setRows(products);
+      setWaitlist(entries);
+      setCollections(cols);
+      setDbError(null);
+    } catch (e) {
+      setDbError(e instanceof Error ? e.message : "Base de données injoignable.");
     }
-    const { data } = await supabase
-      .from("patisserie_waitlist")
-      .select("id,email,collection,created_at")
-      .order("created_at", { ascending: false });
-    setWaitlist(data ?? []);
-  };
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
-  const merged = useMemo(
-    () => patisserieProducts(mergeOverrides(baseProducts, overrides).filter(() => true)),
-    [overrides],
-  );
-  // On affiche aussi les produits dépubliés (patisserieProducts filtre les publiés).
-  const rows = useMemo(() => {
-    const published = new Set(merged.map((p) => p.slug));
-    const all = mergeOverrides(baseProducts, overrides);
-    return all.filter((p) => published.has(p.slug) || p.published === false);
-  }, [merged, overrides]);
+  const go = (key: string, collection?: string) =>
+    navigate({ search: { vue: key, col: collection } });
 
-  const draftFor = (p: Product) => drafts[p.slug] ?? toDraft(p);
-  const patch = (slug: string, p: Product, next: Partial<Draft>) =>
-    setDrafts((d) => ({ ...d, [slug]: { ...draftFor(p), ...next } }));
-
-  const save = async (p: Product) => {
-    const d = draftFor(p);
-    let parsedVariants: import("@/integrations/supabase/types").Json = null;
-    if (d.variants.trim()) {
-      try {
-        parsedVariants = JSON.parse(d.variants);
-      } catch {
-        toast.error("Parfums : JSON invalide.");
-        return;
-      }
-    }
-    setSaving(p.slug);
-    const { error } = await supabase.from("product_overrides").upsert(
-      {
-        slug: p.slug,
-        name: d.name || null,
-        price: d.price === "" ? null : Number(d.price),
-        image_url: d.image_url || null,
-        short_desc: d.short_desc || null,
-        collections: d.collections,
-        seasonal_only: d.seasonal_only,
-        family: d.family || null,
-        published: d.published,
-        description: d.description || null,
-        composition: lines(d.composition),
-        allergens: csv(d.allergens),
-        unit: d.unit || null,
-        pieces: d.pieces === "" ? null : Number(d.pieces),
-        weight: d.weight || null,
-        variants: parsedVariants,
-      },
-      { onConflict: "slug" },
-    );
-    setSaving(null);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success(`« ${d.name} » enregistré.`);
-    setDrafts((x) => {
-      const copy = { ...x };
-      delete copy[p.slug];
-      return copy;
-    });
-    void load();
-  };
+  const live = rows.filter((p) => !p.archived);
+  const groups: AdminNavGroup[] = [
+    {
+      title: "Pilotage",
+      items: [{ key: "tableau", label: "Tableau de bord", icon: LayoutDashboard }],
+    },
+    {
+      title: "Univers",
+      items: [
+        {
+          key: "patisserie",
+          label: "Pâtisserie Tunisienne",
+          icon: Cookie,
+          children: [
+            { key: "collections", label: "Collections", badge: collections.length },
+            { key: "produits", label: "Produits", badge: live.length },
+            { key: "parfums", label: "Parfums & familles" },
+            { key: "attente", label: "Liste d'attente", badge: waitlist.length },
+          ],
+        },
+      ],
+    },
+  ];
 
   return (
-    <div className="container-os section-y">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="eyebrow">Pâtisserie Tunisienne</div>
-          <h1 className="mt-2 font-display text-3xl">Administration du catalogue</h1>
-        </div>
-        <button onClick={onSignOut} className="btn btn-ghost">Se déconnecter</button>
-      </div>
-
-      <div className="mt-8 flex gap-2 border-b border-border">
-        {(["catalogue", "waitlist"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-xs uppercase tracking-[0.22em] ${
-              tab === t ? "border-b-2 border-gold text-gold" : "text-charbon/60 hover:text-gold"
-            }`}
-          >
-            {t === "catalogue" ? "Produits" : `Liste d'attente (${waitlist.length})`}
-          </button>
-        ))}
-      </div>
-
-      {tab === "catalogue" ? (
-        <div className="mt-8 space-y-4">
-          {rows.map((p) => {
-            const d = draftFor(p);
-            const dirty = !!drafts[p.slug];
-            return (
-              <div key={p.slug} className="border border-border bg-white p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="font-display text-lg">{p.name}</div>
-                  <code className="text-[11px] text-charbon/50">{p.slug}</code>
-                </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Nom
-                    <input
-                      value={d.name}
-                      onChange={(e) => patch(p.slug, p, { name: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Prix (€)
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={d.price}
-                      onChange={(e) => patch(p.slug, p, { price: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60 md:col-span-2">
-                    Image (URL)
-                    <input
-                      value={d.image_url}
-                      onChange={(e) => patch(p.slug, p, { image_url: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60 md:col-span-2">
-                    Description courte
-                    <textarea
-                      rows={2}
-                      value={d.short_desc}
-                      onChange={(e) => patch(p.slug, p, { short_desc: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60 md:col-span-2">
-                    Description longue
-                    <textarea
-                      rows={3}
-                      value={d.description}
-                      onChange={(e) => patch(p.slug, p, { description: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Composition (une ligne par ingrédient)
-                    <textarea
-                      rows={3}
-                      value={d.composition}
-                      onChange={(e) => patch(p.slug, p, { composition: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Allergènes (séparés par des virgules)
-                    <input
-                      value={d.allergens}
-                      onChange={(e) => patch(p.slug, p, { allergens: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Unité de vente
-                    <input
-                      value={d.unit}
-                      onChange={(e) => patch(p.slug, p, { unit: e.target.value })}
-                      placeholder="/ 500 g"
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Nombre de pièces
-                    <input
-                      type="number"
-                      value={d.pieces}
-                      onChange={(e) => patch(p.slug, p, { pieces: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Poids
-                    <input
-                      value={d.weight}
-                      onChange={(e) => patch(p.slug, p, { weight: e.target.value })}
-                      placeholder="500 g"
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60 md:col-span-2">
-                    Parfums (JSON : id, label, price, image)
-                    <textarea
-                      rows={4}
-                      value={d.variants}
-                      onChange={(e) => patch(p.slug, p, { variants: e.target.value })}
-                      placeholder='[{"id":"pistache","label":"Pistache","price":24}]'
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 font-mono text-xs normal-case tracking-normal text-charbon"
-                    />
-                  </label>
-                  <label className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Famille de parfums
-                    <select
-                      value={d.family}
-                      onChange={(e) => patch(p.slug, p, { family: e.target.value })}
-                      className="mt-1 w-full border border-border bg-sable px-3 py-2 text-sm normal-case tracking-normal text-charbon"
-                    >
-                      <option value="">—</option>
-                      {Object.entries(FAMILY_LABELS).map(([k, label]) => (
-                        <option key={k} value={k}>{label}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="text-xs uppercase tracking-[0.18em] text-charbon/60">
-                    Collections
-                    <div className="mt-2 flex flex-wrap gap-3 normal-case tracking-normal">
-                      {COLLECTION_OPTIONS.map((c) => (
-                        <label key={c} className="flex items-center gap-1.5 text-sm text-charbon/80">
-                          <input
-                            type="checkbox"
-                            checked={d.collections.includes(c)}
-                            onChange={(e) =>
-                              patch(p.slug, p, {
-                                collections: e.target.checked
-                                  ? [...d.collections, c]
-                                  : d.collections.filter((x) => x !== c),
-                              })
-                            }
-                            className="accent-[var(--gold)]"
-                          />
-                          {c}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap items-center gap-5">
-                  <label className="flex items-center gap-2 text-sm text-charbon/80">
-                    <input
-                      type="checkbox"
-                      checked={d.seasonal_only}
-                      onChange={(e) => patch(p.slug, p, { seasonal_only: e.target.checked })}
-                      className="accent-[var(--gold)]"
-                    />
-                    Édition saisonnière
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-charbon/80">
-                    <input
-                      type="checkbox"
-                      checked={d.published}
-                      onChange={(e) => patch(p.slug, p, { published: e.target.checked })}
-                      className="accent-[var(--gold)]"
-                    />
-                    Publié en boutique
-                  </label>
-                  <button
-                    onClick={() => save(p)}
-                    disabled={!dirty || saving === p.slug}
-                    className={`btn btn-gold ml-auto ${!dirty ? "opacity-40" : ""}`}
-                  >
-                    {saving === p.slug ? "Enregistrement…" : "Enregistrer"}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="mt-8 overflow-x-auto border border-border bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-sable text-left text-[11px] uppercase tracking-[0.18em] text-charbon/60">
-              <tr>
-                <th className="px-4 py-3">E-mail</th>
-                <th className="px-4 py-3">Collection</th>
-                <th className="px-4 py-3">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {waitlist.map((w) => (
-                <tr key={w.id} className="border-t border-border">
-                  <td className="px-4 py-3">{w.email}</td>
-                  <td className="px-4 py-3">{w.collection}</td>
-                  <td className="px-4 py-3 text-charbon/60">
-                    {new Date(w.created_at).toLocaleDateString("fr-FR")}
-                  </td>
-                </tr>
-              ))}
-              {waitlist.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-charbon/60">
-                    Aucune inscription pour l'instant.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+    <AdminShell
+      groups={groups}
+      active={section}
+      onSelect={(key) => go(key)}
+      email={admin.email}
+      onSignOut={onSignOut}
+      title={SECTIONS[section].title}
+      breadcrumb={SECTIONS[section].breadcrumb}
+      search={q}
+      onSearch={section === "produits" ? setQ : undefined}
+    >
+      {dbError && (
+        <div className="card-soft mb-6 flex gap-3 border-l-4 border-gold px-4 py-3 text-sm text-charbon/85">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+          <div>
+            <strong>La base ne répond pas.</strong> Vérifie que PostgreSQL tourne, que la connexion
+            est correcte dans <code className="text-xs">.env</code>, et que les migrations sont
+            appliquées (<code className="text-xs">npm run db:migrate</code>).
+            <div className="mt-1 text-[11px] text-charbon/55">{dbError}</div>
+          </div>
         </div>
       )}
-    </div>
+
+      {loading ? (
+        <div className="py-20 text-center text-sm text-charbon/60">Chargement du catalogue…</div>
+      ) : section === "tableau" ? (
+        <DashboardTab rows={rows} waitlist={waitlist} onGoTo={(key) => go(key)} />
+      ) : section === "produits" ? (
+        <CatalogueTab rows={rows} onReload={load} initialCollection={col} query={q} />
+      ) : section === "collections" ? (
+        <CollectionsTab
+          collections={collections}
+          rows={rows}
+          onOpenCollection={(c) => go("produits", c)}
+          onReload={load}
+        />
+      ) : section === "parfums" ? (
+        <FamillesTab
+          rows={rows}
+          onEdit={(slug) => {
+            setQ(slug);
+            go("produits");
+          }}
+        />
+      ) : (
+        <WaitlistTab entries={waitlist} />
+      )}
+    </AdminShell>
   );
 }

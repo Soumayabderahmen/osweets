@@ -59,7 +59,8 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  /* Rayon de référence base44 — angles nets, jamais arrondis « bulle ». */
+  --radius: 0.25rem;
 
   /* Brand palette — Ö' Sweets editorial luxury (valeurs alignées base44) */
   --gold: #a79152; /* Or doux */
@@ -126,6 +127,8 @@
     color: var(--color-foreground);
     font-family: var(--font-body);
     font-weight: 400;
+    /* base44 : léger desserrage du corps de texte */
+    letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -136,8 +139,17 @@
   h5 {
     font-family: var(--font-display);
     font-weight: 400;
-    letter-spacing: 0;
+    /* base44 : titres légèrement resserrés */
+    letter-spacing: -0.015em;
     color: var(--color-foreground);
+  }
+  ::selection {
+    background: var(--gold);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
   }
   .font-display {
     font-family: var(--font-display);
@@ -153,8 +165,9 @@
 }
 
 @layer components {
+  /* Conteneur de référence base44 : 1280px, gouttières 16 / 24 / 32px. */
   .container-os {
-    @apply mx-auto w-full max-w-7xl px-5 md:px-10;
+    @apply mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8;
   }
   .section-y {
     @apply py-20 md:py-24 lg:py-32;
@@ -172,12 +185,14 @@
     color: var(--gold);
   }
 
+  /* Bouton de référence base44 : hauteur fixe 48px, gouttière 28px. */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.85rem 1.9rem;
+    height: 3rem;
+    padding: 0 1.75rem;
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
@@ -415,4 +430,127 @@
       transition-duration: 0.001ms !important;
     }
   }
+}
+
+/* =========================================================
+   Utilitaires & animations repris de la référence base44
+   ========================================================= */
+@layer utilities {
+  .tracking-luxe {
+    letter-spacing: 0.25em;
+  }
+  .hairline {
+    border: 1px solid var(--beige);
+  }
+  .gold-rule {
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animate-fade-in {
+    animation: os-fade-in 0.3s ease-out;
+  }
+  .animate-fade-up {
+    animation: os-fade-up 0.4s ease-out;
+  }
+  .animate-scale-in {
+    animation: os-scale-in 0.25s ease-out;
+  }
+  .animate-slide-in {
+    animation: os-slide-in 0.3s ease-out;
+  }
+}
+
+@keyframes os-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes os-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes os-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes os-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ============================================================
+   BACK-OFFICE — langage visuel « Soft UI » dans la charte Ö' Sweets.
+   Surfaces blanches arrondies posées sur le sable, sans bordure :
+   c'est l'ombre douce qui détache les blocs.
+   ============================================================ */
+.card-soft {
+  background: #fff;
+  border-radius: 1rem; /* 16px — borderRadius.xl */
+  box-shadow: 0 20px 27px 0 rgb(0 0 0 / 0.05); /* boxShadows.xxl */
+}
+
+/* Ombre des petits éléments : pastilles d'icône, boutons. */
+.shadow-soft {
+  box-shadow:
+    0 4px 6px -1px rgb(20 20 20 / 0.12),
+    0 2px 4px -1px rgb(20 20 20 / 0.07);
+}
+
+/* Ombre de l'élément de menu actif. */
+.shadow-soft-lg {
+  box-shadow: 0 20px 27px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Filet dégradé, plus doux qu'une bordure pleine. */
+.divider-soft {
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--beige) 45%,
+    var(--beige) 55%,
+    transparent
+  );
+}
+
+/* Barre supérieure translucide, floutée. */
+.navbar-soft {
+  box-shadow:
+    inset 0 0 1px 1px rgb(255 255 255 / 0.9),
+    0 20px 27px 0 rgb(0 0 0 / 0.05);
+  backdrop-filter: saturate(200%) blur(30px);
+}
+
+/* Pastille d'icône dorée (dégradé 310°, comme le modèle). */
+.icon-gradient-gold {
+  background-image: linear-gradient(310deg, var(--gold-dark), var(--gold-light));
+}
+.icon-gradient-charbon {
+  background-image: linear-gradient(310deg, #1b1614, #4a3f3a);
 }

@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { FiltersSidebar, type Section } from "@/components/filters/FiltersSidebar";
+import {
+  FiltersSidebar,
+  type Section,
+  type StockFilter,
+} from "@/components/filters/FiltersSidebar";
 import { itemListJsonLd } from "@/lib/seo";
 
 export type CakeItem = {
@@ -98,7 +102,7 @@ export function CakeCatalogPage({
   const [flavor, setFlavor] = useState<string>("");
   const [size, setSize] = useState<string>("");
   const [diet, setDiet] = useState<string[]>([]);
-  const [stockOnly, setStockOnly] = useState(false);
+  const [stock, setStock] = useState<StockFilter[]>([]);
   const [priceMin, setPriceMin] = useState(priceBounds.min);
   const [priceMax, setPriceMax] = useState(priceBounds.max);
   const [excludeAllergens, setExcludeAllergens] = useState<string[]>([]);
@@ -117,7 +121,7 @@ export function CakeCatalogPage({
 
   const filtered = useMemo(() => {
     let list = items.filter((it) => {
-      if (stockOnly && it.inStock === false) return false;
+      if (stock.length && !stock.includes(it.inStock === false ? "out" : "in")) return false;
       if (flavor && it.flavor !== flavor) return false;
       if (size && it.size !== size) return false;
       if (diet.length && !diet.every((d) => (it.diet ?? []).includes(d as "sans-gluten" | "vegan")))
@@ -147,7 +151,20 @@ export function CakeCatalogPage({
     if (sort === "asc") list.sort((a, b) => a.price - b.price);
     if (sort === "desc") list.sort((a, b) => b.price - a.price);
     return list;
-  }, [items, flavor, size, diet, stockOnly, priceMin, priceMax, excludeAllergens, seasonalOnly, sort, extraFilters, extras]);
+  }, [
+    items,
+    flavor,
+    size,
+    diet,
+    stock,
+    priceMin,
+    priceMax,
+    excludeAllergens,
+    seasonalOnly,
+    sort,
+    extraFilters,
+    extras,
+  ]);
 
   const inStockCount = items.filter((i) => i.inStock !== false).length;
   const outStockCount = items.length - inStockCount;
@@ -157,7 +174,7 @@ export function CakeCatalogPage({
     !!flavor ||
     !!size ||
     diet.length > 0 ||
-    stockOnly ||
+    stock.length > 0 ||
     priceMin > priceBounds.min ||
     priceMax < priceBounds.max ||
     excludeAllergens.length > 0 ||
@@ -171,7 +188,7 @@ export function CakeCatalogPage({
     setFlavor("");
     setSize("");
     setDiet([]);
-    setStockOnly(false);
+    setStock([]);
     setPriceMin(priceBounds.min);
     setPriceMax(priceBounds.max);
     setExcludeAllergens([]);
@@ -185,10 +202,10 @@ export function CakeCatalogPage({
   const sections: Section[] = [
     {
       kind: "stock",
-      value: stockOnly,
+      value: stock,
       inStockCount,
       outStockCount,
-      onChange: setStockOnly,
+      onChange: setStock,
     },
     {
       kind: "price",

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Espaces privés ou transactionnels — sans intérêt pour l'indexation.
+Disallow: /admin
+Disallow: /checkout
+Disallow: /panier
+Disallow: /mon-compte
+Disallow: /favoris
+
+Sitemap: https://osweetspatisserie.lovable.app/sitemap.xml

@@ -5,7 +5,11 @@ import { allergenLabels } from "@/data/products";
 import { ProductCard } from "@/components/ProductCard";
 import { LayoutGrid, List, ChevronRight } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { FiltersSidebar, type Section } from "@/components/filters/FiltersSidebar";
+import {
+  FiltersSidebar,
+  type Section,
+  type StockFilter,
+} from "@/components/filters/FiltersSidebar";
 import { itemListJsonLd } from "@/lib/seo";
 import { isProductAvailableNow } from "@/lib/season";
 import { FULFILLMENT_LABELS, productModes } from "@/lib/fulfillment";
@@ -45,7 +49,16 @@ export interface CategoryPageProps {
 
 const allAllergens: Allergen[] = ["gluten", "lait", "oeuf", "fruits-coque", "sesame"];
 
-/** Bandeau collection éditorial : photo plein cadre, texte incrusté en bas à gauche. */
+/**
+ * Disponibilité d'un produit. Le champ `inStock` est optionnel :
+ * seul `inStock: false` marque une rupture, l'absence de valeur vaut « en stock ».
+ */
+const isInStock = (p: Product) => p.inStock !== false;
+
+/**
+ * Bandeau de collection — référence base44 : fond sable pleine largeur,
+ * texte à gauche (7/12), photo à droite (5/12), hauteur minimale 180px.
+ */
 function CollectionBanner({
   title,
   subtitle,
@@ -53,16 +66,35 @@ function CollectionBanner({
 }: {
   title: string;
   subtitle?: string;
-  image: string;
+  image?: string;
 }) {
   return (
-    <section className="relative mb-12 h-[260px] overflow-hidden rounded-2xl md:h-[340px]">
-      <img src={image} alt={title} className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-charbon/75 via-charbon/25 to-transparent" />
-      <div className="absolute bottom-0 left-0 max-w-xl p-8 text-ivory md:p-12">
-        <span className="text-[11px] uppercase tracking-[0.25em] text-gold">Collection</span>
-        <h1 className="mt-3 font-display text-4xl leading-tight md:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-4 max-w-md leading-relaxed text-ivory/80">{subtitle}</p>}
+    <section className="bg-sable">
+      <div className="container-os min-h-[180px] py-12 lg:py-16">
+        <div className="grid items-center gap-8 md:grid-cols-12">
+          <div className="md:col-span-7">
+            <span className="text-[11px] uppercase tracking-[0.25em] text-gold">Collection</span>
+            <h1 className="mt-3 font-display text-[32px] leading-tight text-charbon md:text-[40px]">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-4 max-w-lg text-sm leading-relaxed text-charbon-soft md:text-[15px]">
+                {subtitle}
+              </p>
+            )}
+          </div>
+          <div className="hidden md:col-span-5 md:block">
+            <div className="h-[200px] overflow-hidden rounded-xl bg-beige">
+              {image ? (
+                <img src={image} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="select-none font-display text-7xl text-gold/30">Ö</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -114,7 +146,7 @@ export function CategoryPage({
     return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
   }, [products]);
 
-  const [stockOnly, setStockOnly] = useState(false);
+  const [stock, setStock] = useState<StockFilter[]>([]);
   const [exclude, setExclude] = useState<Allergen[]>([]);
   const [priceMin, setPriceMin] = useState(priceBounds.min);
   const [priceMax, setPriceMax] = useState(priceBounds.max);
@@ -126,7 +158,7 @@ export function CategoryPage({
   );
 
   useEffect(() => {
-    setStockOnly(false);
+    setStock([]);
     setExclude([]);
     setPriceMin(priceBounds.min);
     setPriceMax(priceBounds.max);
@@ -139,7 +171,7 @@ export function CategoryPage({
   }, [products, priceBounds.min, priceBounds.max]);
 
   const resetFilters = () => {
-    setStockOnly(false);
+    setStock([]);
     setExclude([]);
     setPriceMin(priceBounds.min);
     setPriceMax(priceBounds.max);
@@ -152,7 +184,8 @@ export function CategoryPage({
 
   const filtered = useMemo(() => {
     let list = [...products];
-    if (filters.stock && stockOnly) list = list.filter((p) => p.inStock);
+    if (filters.stock && stock.length)
+      list = list.filter((p) => stock.includes(isInStock(p) ? "in" : "out"));
     if (filters.allergens && exclude.length)
       list = list.filter((p) => !p.allergens.some((a) => exclude.includes(a)));
     if (filters.price) list = list.filter((p) => p.price >= priceMin && p.price <= priceMax);
@@ -164,17 +197,17 @@ export function CategoryPage({
     if (sort === "desc") list.sort((a, b) => b.price - a.price);
     if (sort === "new") list = [...list].reverse();
     return list;
-  }, [products, filters, stockOnly, exclude, priceMin, priceMax, sort, extraFilters, extraValues]);
+  }, [products, filters, stock, exclude, priceMin, priceMax, sort, extraFilters, extraValues]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const inStockCount = products.filter((p) => p.inStock).length;
+  const inStockCount = products.filter(isInStock).length;
   const outStockCount = products.length - inStockCount;
 
   const hasSidebar = filters.stock || filters.price || filters.allergens || extraFilters.length > 0;
 
   const hasActiveFilters =
-    stockOnly ||
+    stock.length > 0 ||
     exclude.length > 0 ||
     priceMin > priceBounds.min ||
     priceMax < priceBounds.max ||
@@ -186,7 +219,8 @@ export function CategoryPage({
   // Build sections for the shared sidebar
   const countMatchingExcept = (predicate: (p: Product) => boolean): number =>
     products.filter((p) => {
-      if (filters.stock && stockOnly && !p.inStock) return false;
+      if (filters.stock && stock.length && !stock.includes(isInStock(p) ? "in" : "out"))
+        return false;
       if (filters.price && (p.price < priceMin || p.price > priceMax)) return false;
       if (filters.allergens && exclude.length && p.allergens.some((a) => exclude.includes(a)))
         return false;
@@ -197,11 +231,11 @@ export function CategoryPage({
   if (filters.stock)
     sections.push({
       kind: "stock",
-      value: stockOnly,
+      value: stock,
       inStockCount,
       outStockCount,
       onChange: (v) => {
-        setStockOnly(v);
+        setStock(v);
         setPage(1);
       },
     });
@@ -276,49 +310,53 @@ export function CategoryPage({
       withoutPrefix: true,
     });
 
-  const banner = heroImage ? (
-    <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />
-  ) : (
-    <header className="mb-10 max-w-2xl">
-      <h1 className="font-display text-[34px] leading-tight text-charbon md:text-[44px]">
-        {title}
-      </h1>
-      {subtitle && <p className="mt-3 text-sm leading-relaxed text-charbon-soft">{subtitle}</p>}
-    </header>
-  );
+  const banner = <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />;
 
   const Grid = (
     <>
-      {banner}
+      {/* Compteur + rappel de collection — au-dessus de la barre d'outils (base44) */}
+      <div className="mb-6 flex items-baseline justify-between">
+        <p className="text-xs tracking-wide text-charbon-soft">
+          {filtered.length} produit{filtered.length > 1 ? "s" : ""}
+        </p>
+        <span className="hidden text-xs text-charbon-soft/60 sm:block">{title}</span>
+      </div>
 
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-beige pb-4">
-        <div className="flex items-center gap-4">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-charbon-soft">
-            {filtered.length} produit{filtered.length > 1 ? "s" : ""}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setLayout("grid")}
-              className={`grid h-8 w-8 place-items-center transition ${layout === "grid" ? "text-charbon" : "text-charbon-soft/50 hover:text-charbon"}`}
-              aria-label="Grille"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setLayout("list")}
-              className={`grid h-8 w-8 place-items-center transition ${layout === "list" ? "text-charbon" : "text-charbon-soft/50 hover:text-charbon"}`}
-              aria-label="Liste"
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
+      <div className="mb-8 flex items-center justify-between border-b border-beige pb-5">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setLayout("grid")}
+            aria-label="Vue grille"
+            aria-pressed={layout === "grid"}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+              layout === "grid"
+                ? "bg-charbon text-ivory"
+                : "border border-beige text-charbon-soft hover:border-gold"
+            }`}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setLayout("list")}
+            aria-label="Vue liste"
+            aria-pressed={layout === "list"}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+              layout === "list"
+                ? "bg-charbon text-ivory"
+                : "border border-beige text-charbon-soft hover:border-gold"
+            }`}
+          >
+            <List className="h-4 w-4" />
+          </button>
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-charbon-soft">Trier</span>
+        <label className="flex items-center gap-2.5 text-sm">
+          <span className="hidden text-xs uppercase tracking-[0.15em] text-charbon-soft sm:inline">
+            Trier
+          </span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="min-w-[150px] rounded-full border border-beige bg-transparent px-4 py-1.5 text-sm text-charbon outline-none focus:border-gold"
+            className="h-9 rounded-lg border border-beige bg-white px-3 text-sm text-charbon outline-none focus:border-gold"
           >
             <option value="feature">En vedette</option>
             <option value="new">Nouveautés</option>
@@ -329,32 +367,20 @@ export function CategoryPage({
       </div>
 
       {visible.length === 0 ? (
-        <div className="py-10 text-center text-charbon-soft">
-          <p>Aucun produit ne correspond à ces filtres.</p>
+        <div className="py-12 text-center">
+          <p className="text-sm text-charbon-soft">Aucun produit ne correspond à ces filtres.</p>
           <button onClick={resetFilters} className="link-gold mt-5 inline-block">
             Réinitialiser les filtres
           </button>
         </div>
       ) : layout === "list" ? (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {visible.map((p) => (
             <ProductCard key={p.slug} product={p} layout="list" />
           ))}
         </div>
-      ) : visible.length === 1 ? (
-        <div className="flex justify-center">
-          <div className="w-full max-w-[400px]">
-            <ProductCard product={visible[0]} layout="grid" />
-          </div>
-        </div>
-      ) : visible.length === 2 ? (
-        <div className="mx-auto grid max-w-[820px] grid-cols-1 gap-8 sm:grid-cols-2 md:gap-10">
-          {visible.map((p) => (
-            <ProductCard key={p.slug} product={p} layout="grid" />
-          ))}
-        </div>
       ) : (
-        <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-3">
           {visible.map((p, i) => (
             <Reveal key={p.slug} delay={(i % 3) * 0.05}>
               <ProductCard product={p} layout="grid" />
@@ -364,19 +390,22 @@ export function CategoryPage({
       )}
 
       {totalPages > 1 && (
-        <div className="mt-16 flex items-center justify-center gap-1 text-sm">
+        <nav className="mt-14 flex items-center justify-center gap-2" aria-label="Pagination">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-2 text-charbon-soft transition hover:text-charbon disabled:opacity-30"
+            className="h-10 rounded-full border border-beige px-4 text-sm transition-colors hover:border-gold disabled:opacity-40"
           >
-            ←
+            Précédent
           </button>
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => setPage(i + 1)}
-              className={`h-9 w-9 transition ${page === i + 1 ? "border-b border-charbon text-charbon" : "text-charbon-soft hover:text-charbon"}`}
+              aria-current={page === i + 1 ? "page" : undefined}
+              className={`h-10 w-10 rounded-full text-sm transition-colors ${
+                page === i + 1 ? "bg-charbon text-ivory" : "border border-beige hover:border-gold"
+              }`}
             >
               {i + 1}
             </button>
@@ -384,11 +413,11 @@ export function CategoryPage({
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-3 py-2 text-charbon-soft transition hover:text-charbon disabled:opacity-30"
+            className="h-10 rounded-full border border-beige px-4 text-sm transition-colors hover:border-gold disabled:opacity-40"
           >
-            →
+            Suivant
           </button>
-        </div>
+        </nav>
       )}
     </>
   );
@@ -437,14 +466,13 @@ export function CategoryPage({
         </div>
       </div>
 
-      {notice && <div className="container-os pt-5">{notice}</div>}
+      {notice && <div className="container-os pb-5">{notice}</div>}
 
-      <section className="container-os py-8 md:py-12">
+      {banner}
+
+      <section className="container-os py-12 lg:py-16">
         {products.length === 0 && emptyState ? (
-          <>
-            {banner}
-            {emptyState}
-          </>
+          emptyState
         ) : hasSidebar ? (
           <FiltersSidebar
             sections={sections}

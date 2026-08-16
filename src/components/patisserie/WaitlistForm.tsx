@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { joinWaitlist } from "@/api/waitlist";
 
 interface WaitlistFormProps {
   /** Identifiant de la collection ou du produit concerné. */
@@ -23,15 +23,14 @@ export function WaitlistForm({ collection, className = "", compact }: WaitlistFo
       return;
     }
     setSending(true);
-    const { error } = await supabase
-      .from("patisserie_waitlist")
-      .insert({ email: value, collection });
-    setSending(false);
-
-    if (error && error.code !== "23505") {
+    try {
+      await joinWaitlist({ data: { email: value, collection } });
+    } catch {
+      setSending(false);
       toast.error("Enregistrement impossible pour le moment. Réessayez dans un instant.");
       return;
     }
+    setSending(false);
     setDone(true);
     setEmail("");
     toast.success("C'est noté — nous vous préviendrons dès l'ouverture.");
@@ -40,7 +39,8 @@ export function WaitlistForm({ collection, className = "", compact }: WaitlistFo
   if (done) {
     return (
       <p className={`text-sm text-charbon/75 ${className}`}>
-        Merci ! Votre adresse est enregistrée, nous vous écrirons dès que cette sélection sera en ligne.
+        Merci ! Votre adresse est enregistrée, nous vous écrirons dès que cette sélection sera en
+        ligne.
       </p>
     );
   }
