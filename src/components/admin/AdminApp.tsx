@@ -8,7 +8,14 @@ import { listFamilies, type FamilyRow } from "@/api/families";
 import { listWaitlist, type WaitlistRow } from "@/api/waitlist";
 import { getSettings, DEFAULT_SETTINGS, type ShopSettings } from "@/api/settings";
 import type { ProductRow } from "@/lib/catalog";
-import { alertes, enBoutique, type Contexte, type EcranKey, type PanneauDemande } from "./core";
+import {
+  alertes,
+  enBoutique,
+  type Contexte,
+  type EcranKey,
+  type FiltreProduits,
+  type PanneauDemande,
+} from "./core";
 import {
   EcranAttente,
   EcranBord,
@@ -25,9 +32,24 @@ import "./admin.css";
 /** Les écrans du back-office, et ce que porte leur en-tête. */
 const ECRANS = {
   bord: { titre: "Tableau de bord", fil: "Pilotage", recherche: false, bouton: null },
-  collections: { titre: "Collections", fil: "Pâtisserie Tunisienne", recherche: false, bouton: "+ Nouvelle collection" },
-  produits: { titre: "Produits", fil: "Pâtisserie Tunisienne", recherche: true, bouton: "+ Nouveau produit" },
-  familles: { titre: "Familles & parfums", fil: "Pâtisserie Tunisienne", recherche: false, bouton: "+ Nouvelle famille" },
+  collections: {
+    titre: "Collections",
+    fil: "Pâtisserie Tunisienne",
+    recherche: false,
+    bouton: "+ Nouvelle collection",
+  },
+  produits: {
+    titre: "Produits",
+    fil: "Pâtisserie Tunisienne",
+    recherche: true,
+    bouton: "+ Nouveau produit",
+  },
+  familles: {
+    titre: "Familles & parfums",
+    fil: "Pâtisserie Tunisienne",
+    recherche: false,
+    bouton: "+ Nouvelle famille",
+  },
   campagnes: { titre: "Ramadan & Aïd", fil: "Saisons", recherche: false, bouton: null },
   commandes: { titre: "Commandes", fil: "Ventes", recherche: false, bouton: null },
   attente: { titre: "Liste d'attente", fil: "Clientes", recherche: false, bouton: null },
@@ -37,9 +59,9 @@ const ECRANS = {
 
 const UNIVERS: EcranKey[] = ["collections", "produits", "familles", "campagnes"];
 
-
 export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () => void }) {
   const [ecran, setEcran] = useState<EcranKey>("bord");
+  const [filtreProduits, setFiltreProduits] = useState<FiltreProduits>("tous");
   const [ptOuvert, setPtOuvert] = useState(true);
   // Sous 900 px, la barre latérale devient un tiroir ouvert par le bouton ☰.
   const [menuOuvert, setMenuOuvert] = useState(false);
@@ -85,8 +107,9 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
     void recharger();
   }, [recharger]);
 
-  const aller = useCallback((e: EcranKey) => {
+  const aller = useCallback((e: EcranKey, filtre: FiltreProduits = "tous") => {
     setEcran(e);
+    setFiltreProduits(filtre);
     setRecherche("");
     setMenuOuvert(false);
     if (UNIVERS.includes(e)) setPtOuvert(true);
@@ -183,13 +206,25 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
                 <span className="chev">⌄</span>
               </button>
               <div className={`subnav${ptOuvert ? " open" : ""}`}>
-                <SubItem actif={ecran === "collections"} onClick={() => aller("collections")} n={collections.length}>
+                <SubItem
+                  actif={ecran === "collections"}
+                  onClick={() => aller("collections")}
+                  n={collections.length}
+                >
                   Collections
                 </SubItem>
-                <SubItem actif={ecran === "produits"} onClick={() => aller("produits")} n={vivants.length}>
+                <SubItem
+                  actif={ecran === "produits"}
+                  onClick={() => aller("produits")}
+                  n={vivants.length}
+                >
                   Produits
                 </SubItem>
-                <SubItem actif={ecran === "familles"} onClick={() => aller("familles")} n={familles.length}>
+                <SubItem
+                  actif={ecran === "familles"}
+                  onClick={() => aller("familles")}
+                  n={familles.length}
+                >
                   Familles &amp; parfums
                 </SubItem>
                 <SubItem actif={ecran === "campagnes"} onClick={() => aller("campagnes")}>
@@ -307,7 +342,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
             ) : ecran === "bord" ? (
               <EcranBord ctx={ctx} />
             ) : ecran === "produits" ? (
-              <EcranProduits ctx={ctx} />
+              <EcranProduits key={filtreProduits} ctx={ctx} filtreInitial={filtreProduits} />
             ) : ecran === "collections" ? (
               <EcranCollections ctx={ctx} />
             ) : ecran === "familles" ? (

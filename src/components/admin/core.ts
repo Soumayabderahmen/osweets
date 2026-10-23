@@ -1,5 +1,6 @@
 import { toast } from "sonner";
-import type { ProductRow } from "@/lib/catalog";
+import { rowToProduct, type ProductRow } from "@/lib/catalog";
+import { productBlockReason } from "@/lib/product-rules";
 import type { CollectionRow } from "@/api/collections";
 import type { FamilyRow } from "@/api/families";
 import type { WaitlistRow } from "@/api/waitlist";
@@ -27,6 +28,9 @@ export type EcranKey =
   | "bandeaux"
   | "reglages";
 
+/** Les puces de filtre de l'écran Produits. */
+export type FiltreProduits = "tous" | "aconfigurer" | "epuises" | "archives";
+
 /** Ce qu'un panneau latéral doit afficher. */
 export type PanneauDemande =
   | { type: "produit"; row: ProductRow | null; famille?: string; collection?: string }
@@ -52,7 +56,8 @@ export interface Contexte {
   recherche: string;
   recharger: () => Promise<void>;
   ouvrir: (d: PanneauDemande) => void;
-  aller: (e: EcranKey) => void;
+  /** Change d'écran ; `filtre` ouvre l'écran Produits déjà filtré. */
+  aller: (e: EcranKey, filtre?: FiltreProduits) => void;
 }
 
 /** Produits encore en boutique — les archives ne comptent nulle part ailleurs. */
@@ -64,6 +69,16 @@ export const dispo = (r: ProductRow) => r.stock_unlimited || (r.stock_qty ?? 0) 
 /** Réserve basse : il en reste, mais on approche de la rupture. */
 export const bas = (r: ProductRow) =>
   !r.stock_unlimited && (r.stock_qty ?? 0) > 0 && (r.stock_qty ?? 0) <= (r.stock_alert ?? 0);
+
+/**
+ * Publié, mais sans prix commandable : la boutique affiche « Tarif à venir »
+ * et bloque le panier. Même règle que le front (`productBlockReason`), pour
+ * que l'admin ne puisse pas dire « Publié » quand la cliente ne peut rien
+ * commander. La raison "no_price" passe avant la saison : pas besoin des
+ * fenêtres saisonnières pour la calculer.
+ */
+export const aConfigurer = (r: ProductRow) =>
+  !r.archived && r.published && !r.draft && productBlockReason(rowToProduct(r)) === "no_price";
 
 /** Les produits à surveiller — c'est exactement le compteur de la cloche. */
 export const alertes = (rows: ProductRow[]) =>

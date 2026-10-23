@@ -234,7 +234,10 @@ export const validateCart = createServerFn({ method: "POST" })
       const expired = isPriceLockExpired(line, new Date(checkedAt));
       const missingPriceMetadata =
         line.unitPriceSnapshot === undefined || !line.priceLockedAt || !line.currency;
-      const oldRefresh = needsFullCartRefresh(line, new Date(checkedAt));
+      // Une ligne jamais validée vient d'être ajoutée : ce n'est pas un
+      // « panier ancien », et le lui annoncer inquiéterait pour rien.
+      const oldRefresh =
+        Boolean(line.lastValidatedAt) && needsFullCartRefresh(line, new Date(checkedAt));
 
       if (missingPriceMetadata || expired) {
         price = current.price;

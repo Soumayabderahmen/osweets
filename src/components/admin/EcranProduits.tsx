@@ -7,19 +7,46 @@ import { kgOptionPrice } from "@/lib/variant-label";
 import { kgMainGrams } from "@/lib/product-rules";
 import { formatGrams } from "@/lib/weight";
 import { filterPatisserieRows } from "@/lib/patisserie-scope";
-import { adminImage, agir, bas, BADGES, dispo, enBoutique, euro, type Contexte } from "./core";
+import {
+  aConfigurer,
+  adminImage,
+  agir,
+  bas,
+  BADGES,
+  dispo,
+  enBoutique,
+  euro,
+  type Contexte,
+  type FiltreProduits,
+} from "./core";
 
-type Filtre = "tous" | "epuises" | "archives";
-
-/** Étiquette d'état — un produit est en boutique, ou archivé. Rien entre les deux. */
+/** Étiquette d'état — ce que la cliente voit réellement de la fiche. */
 function etatTag(r: ProductRow) {
   if (r.draft) return <span className="tag hide">Brouillon</span>;
   if (!r.published && !r.archived) return <span className="tag hide">Dépublié</span>;
-  return r.archived ? (
-    <span className="tag arch">Archivé</span>
-  ) : (
-    <span className="tag pub">Publié</span>
-  );
+  if (r.archived) return <span className="tag arch">Archivé</span>;
+  if (aConfigurer(r))
+    return (
+      <span
+        className="tag warn"
+        title="Visible en boutique avec « Tarif à venir » : non commandable"
+      >
+        Tarif à configurer
+      </span>
+    );
+  return <span className="tag pub">Publié</span>;
+}
+
+/** Ce qu'il manque pour qu'une fiche « Tarif à configurer » devienne commandable. */
+function manqueTarif(r: ProductRow): string {
+  const compo = (r.assortment_composition ?? []).reduce((s, x) => s + Number(x.grams || 0), 0);
+  if (r.product_type === "assortiment" && compo !== 1000) return "composition ≠ 1 kg";
+  if (r.sell_mode === "kg") {
+    const grammages = (r.sell_options ?? []).some((o) => (o.grams ?? 0) > 0);
+    if (!grammages && !(Number(r.price) > 0)) return "prix/kg et grammages à saisir";
+    return grammages ? "prix au kilo à saisir" : "aucun grammage coché";
+  }
+  return "prix à saisir";
 }
 
 /**
@@ -28,8 +55,14 @@ function etatTag(r: ProductRow) {
  * Un produit qui appartient à deux collections apparaît sous chacune : c'est
  * la vérité du catalogue, autant la montrer plutôt que de choisir pour vous.
  */
-export function EcranProduits({ ctx }: { ctx: Contexte }) {
-  const [filtre, setFiltre] = useState<Filtre>("tous");
+export function EcranProduits({
+  ctx,
+  filtreInitial = "tous",
+}: {
+  ctx: Contexte;
+  filtreInitial?: FiltreProduits;
+}) {
+  const [filtre, setFiltre] = useState<FiltreProduits>(filtreInitial);
   const { collections, familles, recherche, recharger, ouvrir } = ctx;
   const produits = useMemo(() => filterPatisserieRows(ctx.produits), [ctx.produits]);
   const inFlight = useRef(new Set<string>());
@@ -52,6 +85,7 @@ export function EcranProduits({ ctx }: { ctx: Contexte }) {
 
   const compteurs = {
     tous: enBoutique(produits).length,
+    aconfigurer: produits.filter(aConfigurer).length,
     epuises: enBoutique(produits).filter((r) => !dispo(r)).length,
     archives: produits.filter((r) => r.archived).length,
   };
@@ -61,6 +95,7 @@ export function EcranProduits({ ctx }: { ctx: Contexte }) {
     return produits
       .filter((r) => {
         if (filtre === "archives") return r.archived;
+        if (filtre === "aconfigurer") return aConfigurer(r);
         if (filtre === "epuises") return !r.archived && !dispo(r);
         return !r.archived;
       })
@@ -99,9 +134,10 @@ export function EcranProduits({ ctx }: { ctx: Contexte }) {
         {(
           [
             ["tous", "En boutique", compteurs.tous],
+            ["aconfigurer", "Tarif à configurer", compteurs.aconfigurer],
             ["epuises", "Épuisés", compteurs.epuises],
             ["archives", "Archivés", compteurs.archives],
-          ] as [Filtre, string, number][]
+          ] as [FiltreProduits, string, number][]
         ).map(([k, l, n]) => (
           <button
             key={k}
@@ -188,26 +224,32 @@ export function EcranProduits({ ctx }: { ctx: Contexte }) {
                     <div className="m">{meta}</div>
                   </div>
 
-                  <div className="price">
-                    {optionPrice
-                      ? euro(optionPrice.price ?? 0)
-                      : kgPrice != null
-                        ? euro(kgPrice)
-                        : r.price
-                          ? euro(Number(r.price))
-                          : "—"}
-                    <small>
+                  {aConfigurer(r) ? (
+                    <div className="price">
+                      —<small>{manqueTarif(r)}</small>
+                    </div>
+                  ) : (
+                    <div className="price">
                       {optionPrice
-                        ? optionPrice.label
+                        ? euro(optionPrice.price ?? 0)
                         : kgPrice != null
-                          ? formatGrams(kgFirstGram!)
-                          : r.sell_mode
-                            ? "configuration requise"
-                            : r.price
-                              ? (r.unit ?? "")
-                              : "prix à définir"}
-                    </small>
-                  </div>
+                          ? euro(kgPrice)
+                          : r.price
+                            ? euro(Number(r.price))
+                            : "—"}
+                      <small>
+                        {optionPrice
+                          ? optionPrice.label
+                          : kgPrice != null
+                            ? formatGrams(kgFirstGram!)
+                            : r.sell_mode
+                              ? "configuration requise"
+                              : r.price
+                                ? (r.unit ?? "")
+                                : "prix à définir"}
+                      </small>
+                    </div>
+                  )}
 
                   {r.archived ? (
                     <>

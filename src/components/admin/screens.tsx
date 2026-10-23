@@ -1,4 +1,13 @@
-import { adminImage, alertes, bas, dispo, enBoutique, euro, type Contexte } from "./core";
+import {
+  aConfigurer,
+  adminImage,
+  alertes,
+  bas,
+  dispo,
+  enBoutique,
+  euro,
+  type Contexte,
+} from "./core";
 import { collectionCounts, collectionState } from "@/lib/collection-presentation";
 import { rowToProduct } from "@/lib/catalog";
 import { toWindows } from "@/lib/season";
@@ -12,6 +21,7 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
   const faibles = vivants.filter(bas);
   const archives = produits.filter((r) => r.archived);
   const sansCollection = vivants.filter((r) => !(r.collections ?? []).length);
+  const sansTarif = produits.filter(aConfigurer);
   const max = Math.max(
     1,
     ...collections.map(
@@ -22,11 +32,15 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
   return (
     <>
       <div className="kpis">
-        <div className="kpi">
+        <div className={`kpi${sansTarif.length ? " warn" : ""}`}>
           <div>
             <div className="l">Produits en boutique</div>
             <div className="v">{vivants.length}</div>
-            <div className="h">sur {produits.length} fiches</div>
+            <div className="h">
+              {sansTarif.length
+                ? `dont ${sansTarif.length} tarif${sansTarif.length > 1 ? "s" : ""} à configurer`
+                : `sur ${produits.length} fiches`}
+            </div>
           </div>
           <div className="ic">▣</div>
         </div>
@@ -80,6 +94,16 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
           <h3>À faire</h3>
           <div className="sub">Ce que la boutique attend de vous.</div>
 
+          {sansTarif.length > 0 && (
+            <button type="button" className="todo" onClick={() => aller("produits", "aconfigurer")}>
+              <div className="b">{sansTarif.length}</div>
+              <div>
+                <div className="t1">Tarifs à configurer</div>
+                <div className="t2">Publiés mais « Tarif à venir » : impossibles à commander</div>
+              </div>
+            </button>
+          )}
+
           {alertes(produits).length > 0 && (
             <button type="button" className="todo" onClick={() => ouvrir({ type: "alertes" })}>
               <div className="b">{alertes(produits).length}</div>
@@ -111,6 +135,7 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
           )}
 
           {alertes(produits).length === 0 &&
+            sansTarif.length === 0 &&
             sansCollection.length === 0 &&
             archives.length === 0 && (
               <div className="empty">Rien à signaler. Tout est en ordre.</div>

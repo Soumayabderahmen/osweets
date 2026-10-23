@@ -497,6 +497,10 @@
   background: rgba(167, 145, 82, 0.16);
   color: var(--gold-dark);
 }
+.osadmin .tag.warn {
+  background: rgba(192, 57, 43, 0.12);
+  color: #a5321f;
+}
 .osadmin .tag.soon {
   background: #fff;
   border: 1px solid rgba(167, 145, 82, 0.55);
