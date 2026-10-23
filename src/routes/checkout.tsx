@@ -9,7 +9,7 @@ import { localDeliveryPrice, shippingPrice } from "@/api/settings";
 import { useShopSettings } from "@/components/layout/HolidayBanner";
 import { cartHasBlockingIssue, lineUnitPrice } from "@/lib/cart-rules";
 import { applyCartValidation, useCartValidation } from "@/lib/use-cart-validation";
-import { validateFulfillmentDate } from "@/lib/checkout-date";
+import { formatDateFr, validateFulfillmentDate } from "@/lib/checkout-date";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, unknown>): { etape?: number } => ({
@@ -483,7 +483,14 @@ function Page() {
                 </p>
               )}
 
+              <label
+                htmlFor="checkout-date"
+                className="block text-xs uppercase tracking-[0.2em] text-charbon/60"
+              >
+                {mode === "pickup" ? "Date de retrait" : "Date de réception souhaitée"}
+              </label>
               <input
+                id="checkout-date"
                 type="date"
                 required
                 min={minFulfillmentDate}
@@ -496,7 +503,7 @@ function Page() {
               )}
               {!form.date && (
                 <p className="text-xs text-charbon/60">
-                  Choisissez une date à partir du {minFulfillmentDate}.
+                  Fait à la commande : première date possible le {formatDateFr(minFulfillmentDate)}.
                 </p>
               )}
               <textarea
@@ -602,21 +609,21 @@ function Page() {
 
           {step === 4 && (
             <>
-              <h2 className="font-display text-2xl">Validation avant paiement</h2>
+              <h2 className="font-display text-2xl">Validation de la commande</h2>
               {/*
-              Deux phrases se contredisaient ici : « Paiement 100% sécurisé »
-              juste au-dessus de « Démonstration ». Tant que rien n'encaisse,
-              la première était une promesse que la boutique ne tenait pas.
-              On dit ce qui se passe réellement : la commande part, le
-              règlement se convient ensuite.
+              Tant que rien n'encaisse, on ne promet pas de « paiement
+              sécurisé ». On dit à la cliente ce qui se passe, dans ses mots
+              à elle : pas de paiement maintenant, l'atelier confirme d'abord.
+              (L'ancienne phrase parlait de « commandes serveur » et de
+              « phase séparée » — du vocabulaire de développeur.)
             */}
               <div className="bg-sable p-4 border border-gold/30 text-sm flex items-center gap-2">
                 <Lock className="h-4 w-4 text-gold" />
-                Aucun paiement en ligne n'est lancé sur cette étape.
+                Aucun paiement ne vous est demandé maintenant.
               </div>
               <p className="text-xs text-charbon/60">
-                Le panier, les prix et la disponibilité sont revérifiés juste avant la validation.
-                Le paiement en ligne et les commandes serveur seront ajoutés dans une phase séparée.
+                L'atelier vérifie votre commande et vous confirme la date avant de la préparer. Les
+                prix et la disponibilité sont revérifiés au moment de valider.
               </p>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" required className="accent-[var(--gold)]" /> J'accepte les{" "}

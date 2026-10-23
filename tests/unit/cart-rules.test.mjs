@@ -146,6 +146,13 @@ test("fulfillment dates reject past dates and honor preparation and holidays", (
 
   assert.deepEqual(validateFulfillmentDate("2026-08-31", { now }).ok, false);
 
+  // Fait à la commande : le jour même est refusé, le lendemain accepté.
+  const sameDay = validateFulfillmentDate("2026-09-01", { now });
+  assert.equal(sameDay.ok, false);
+  assert.equal(sameDay.min, "2026-09-02");
+  assert.match(sameDay.message ?? "", /mercredi 2 septembre 2026/);
+  assert.equal(validateFulfillmentDate("2026-09-02", { now }).ok, true);
+
   const withPrep = validateFulfillmentDate("2026-09-02", {
     now,
     prepLeads: ["3 jours"],

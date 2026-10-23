@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, Plus, Minus, ShoppingBag, Truck, Package, Check, ChevronDown } from "lucide-react";
 import { products, type Product } from "@/data/products";
 import { seasonNames, seasonalNotice, toWindows } from "@/lib/season";
@@ -289,6 +289,60 @@ function Fiche({ base }: { base: Product }) {
 
   const choiceLabel = variantChoiceLabel(variants, p.sellMode);
   const quantityLabel = QUANTITY_CHOICE_LABEL;
+
+  /*
+   * Sur téléphone, le bouton d'ajout tombe sous les options (jusqu'à deux
+   * écrans plus bas). Une barre fixe en bas d'écran prend le relais dès
+   * qu'il sort de la vue, et disparaît quand il revient.
+   */
+  const boutonAjout = useRef<HTMLButtonElement | null>(null);
+  // Le bouton est recréé quand la fiche passe du rendu serveur aux données de
+  // la base : on suit l'élément courant, pas le premier monté.
+  const [boutonEl, setBoutonEl] = useState<HTMLButtonElement | null>(null);
+  const refBouton = (el: HTMLButtonElement | null) => {
+    boutonAjout.current = el;
+    setBoutonEl(el);
+  };
+  const [ajoutEnVue, setAjoutEnVue] = useState(true);
+  useEffect(() => {
+    if (!boutonEl || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(([e]) => setAjoutEnVue(e.isIntersecting));
+    obs.observe(boutonEl);
+    return () => obs.disconnect();
+  }, [boutonEl]);
+  const barreAchat = !p.noCart && !p.hidePrice && !pendingConfig && !outOfStock && !ajoutEnVue;
+
+  const ajouter = () => {
+    if (!available || needsVariant) return;
+    addToCart(
+      {
+        slug: p.slug,
+        productId: p.id,
+        category: p.category,
+        // Le conditionnement s'affiche sur sa propre ligne (panier, commande).
+        name: p.name,
+        price: unitPrice,
+        image: variant?.image ?? p.image,
+        variantId: variant?.id ?? (grammages.length > 1 ? weightSel?.id : undefined),
+        variantLabel: variant ? variant.label : grammages.length > 1 ? weightSel?.label : undefined,
+        // Le format choisi remplace l'unité générique (« pot », « / 500 g »).
+        unit: variant || grammages.length > 1 ? "" : p.unit,
+        stockQty: p.stockQty,
+        stockUnlimited: p.stockUnlimited,
+        inStock: p.inStock,
+        published: p.published,
+        archived: p.archived,
+        draft: p.draft,
+        noCart: p.noCart,
+        hidePrice: p.hidePrice,
+        seasonalOnly: p.seasonalOnly,
+        collections: p.collections,
+        prepLead: p.prepLead,
+        gift: gift ? { wrap: true, message: giftMessage.trim() || undefined } : undefined,
+      },
+      qty,
+    );
+  };
 
   return (
     <div>
@@ -725,45 +779,8 @@ function Fiche({ base }: { base: Product }) {
                   <Heart className={`h-4 w-4 ${fav ? "fill-current" : ""}`} />
                 </button>
                 <button
-                  onClick={() =>
-                    available &&
-                    !needsVariant &&
-                    addToCart(
-                      {
-                        slug: p.slug,
-                        productId: p.id,
-                        category: p.category,
-                        // Le conditionnement s'affiche sur sa propre ligne (panier, commande).
-                        name: p.name,
-                        price: unitPrice,
-                        image: variant?.image ?? p.image,
-                        variantId:
-                          variant?.id ?? (grammages.length > 1 ? weightSel?.id : undefined),
-                        variantLabel: variant
-                          ? variant.label
-                          : grammages.length > 1
-                            ? weightSel?.label
-                            : undefined,
-                        // Le format choisi remplace l'unité générique (« pot », « / 500 g »).
-                        unit: variant || grammages.length > 1 ? "" : p.unit,
-                        stockQty: p.stockQty,
-                        stockUnlimited: p.stockUnlimited,
-                        inStock: p.inStock,
-                        published: p.published,
-                        archived: p.archived,
-                        draft: p.draft,
-                        noCart: p.noCart,
-                        hidePrice: p.hidePrice,
-                        seasonalOnly: p.seasonalOnly,
-                        collections: p.collections,
-                        prepLead: p.prepLead,
-                        gift: gift
-                          ? { wrap: true, message: giftMessage.trim() || undefined }
-                          : undefined,
-                      },
-                      qty,
-                    )
-                  }
+                  ref={refBouton}
+                  onClick={ajouter}
                   disabled={!available || needsVariant}
                   className={`btn btn-gold w-full sm:flex-1 sm:w-auto justify-center order-last sm:order-none ${!available || needsVariant ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
@@ -904,6 +921,28 @@ function Fiche({ base }: { base: Product }) {
             </div>
           </div>
         </section>
+      )}
+
+      {barreAchat && (
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-ivory/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm text-charbon">{p.name}</div>
+            <div className="font-price text-sm text-gold">
+              {needsVariant ? choiceLabel : `${formatPrice(unitPrice * qty)}`}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              needsVariant || !available
+                ? boutonAjout.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+                : ajouter()
+            }
+            className="btn btn-gold shrink-0 justify-center"
+          >
+            <ShoppingBag className="h-4 w-4" /> {needsVariant || !available ? "Choisir" : "Ajouter"}
+          </button>
+        </div>
       )}
     </div>
   );

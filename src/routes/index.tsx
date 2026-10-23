@@ -24,6 +24,8 @@ import composerHero from "@/assets/composer-hero.jpg";
 import weddingHero from "@/assets/wedding-buffet.jpg";
 import { giftCategories } from "@/data/products";
 import { useCatalog } from "@/lib/catalog";
+import { isPatisserieTunisienne, isPublished } from "@/lib/patisserie";
+import { productBlockReason } from "@/lib/product-rules";
 import { ProductCard } from "@/components/ProductCard";
 import { ImmersiveCard } from "@/components/ImmersiveCard";
 import { Reveal } from "@/components/Reveal";
@@ -81,9 +83,22 @@ function Home() {
   const reglages = useShopSettings();
   // Un raccourci vers une fiche ne s'affiche que si la fiche existe.
   const raccourcis = cats.filter((c) => !c.slug || catalogue.some((p) => p.slug === c.slug));
-  const bestSellers = catalogue
-    .filter((p) => p.badge === "bestseller" || p.badge === "nouveau")
-    .slice(0, 6);
+  /*
+   * La maison est d'abord une pâtisserie tunisienne : ses meilleures ventes
+   * passent devant les cakes et l'épicerie, qui complètent la sélection.
+   * Une fiche « Tarif à venir » n'est jamais mise en avant — on ne vante pas
+   * ce qu'on ne peut pas commander.
+   */
+  const misesEnAvant = catalogue.filter(
+    (p) =>
+      (p.badge === "bestseller" || p.badge === "nouveau") &&
+      isPublished(p) &&
+      productBlockReason(p) !== "no_price",
+  );
+  const bestSellers = [
+    ...misesEnAvant.filter(isPatisserieTunisienne),
+    ...misesEnAvant.filter((p) => !isPatisserieTunisienne(p)),
+  ].slice(0, 6);
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "success" | "error">("idle");
 
   return (

@@ -13,7 +13,11 @@ import {
 import { itemListJsonLd } from "@/lib/seo";
 import { useSeasons } from "@/lib/seasons-hook";
 import { FULFILLMENT_LABELS, productModes } from "@/lib/fulfillment";
-import { displayedProductPrice, isProductStructuredAvailable } from "@/lib/product-rules";
+import {
+  displayedProductPrice,
+  isProductStructuredAvailable,
+  productBlockReason,
+} from "@/lib/product-rules";
 import { useCatalogQuery } from "@/lib/use-catalog-query";
 import { activeCatalogCriteria, isPriceFilterActive, newestFirst } from "@/lib/catalog-query";
 
@@ -239,7 +243,11 @@ export function CategoryPage({
     if (sort === "asc") list.sort((a, b) => displayedProductPrice(a) - displayedProductPrice(b));
     if (sort === "desc") list.sort((a, b) => displayedProductPrice(b) - displayedProductPrice(a));
     if (sort === "new") list = newestFirst(list);
-    return list;
+    // Quel que soit le tri, les fiches « Tarif à venir » passent en fin de
+    // liste : la cliente voit d'abord ce qu'elle peut commander. Le tri
+    // reste stable à l'intérieur de chaque groupe.
+    const enAttente = (p: Product) => productBlockReason(p) === "no_price";
+    return [...list.filter((p) => !enAttente(p)), ...list.filter(enAttente)];
   }, [
     products,
     filters,

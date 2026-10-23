@@ -49,9 +49,25 @@ function parseDateInput(value?: string | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+/** « 2026-10-24 » → « samedi 24 octobre 2026 », pour la cliente. */
+export function formatDateFr(value: string): string {
+  const date = parseDateInput(value);
+  if (!date) return value;
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+/** Tout est fait à la commande : jamais de retrait ni de livraison le jour même. */
+const DELAI_MINIMUM_JOURS = 1;
+
 export function minimumFulfillmentDate(options: FulfillmentDateOptions = {}): Date {
   const now = options.now ?? new Date();
-  const prep = Math.max(0, ...(options.prepLeads ?? []).map(prepLeadDays));
+  const prep = Math.max(DELAI_MINIMUM_JOURS, ...(options.prepLeads ?? []).map(prepLeadDays));
   let min = addDays(now, prep);
 
   const settings = options.settings;
@@ -87,7 +103,7 @@ export function validateFulfillmentDate(
     return { ok: false, min, message: "La date choisie est déjà passée." };
   }
   if (selected.getTime() < minDate.getTime()) {
-    return { ok: false, min, message: `La première date disponible est le ${min}.` };
+    return { ok: false, min, message: `La première date disponible est le ${formatDateFr(min)}.` };
   }
   return { ok: true, min };
 }
