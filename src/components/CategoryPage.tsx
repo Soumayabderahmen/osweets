@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Product, Allergen } from "@/data/products";
 import { allergenLabels } from "@/data/products";
@@ -11,8 +11,11 @@ import {
   type StockFilter,
 } from "@/components/filters/FiltersSidebar";
 import { itemListJsonLd } from "@/lib/seo";
-import { isProductAvailableNow } from "@/lib/season";
+import { useSeasons } from "@/lib/seasons-hook";
 import { FULFILLMENT_LABELS, productModes } from "@/lib/fulfillment";
+import { displayedProductPrice, isProductStructuredAvailable } from "@/lib/product-rules";
+import { useCatalogQuery } from "@/lib/use-catalog-query";
+import { activeCatalogCriteria, isPriceFilterActive, newestFirst } from "@/lib/catalog-query";
 
 export type ExtraFilterGroup = {
   id: string;
@@ -45,15 +48,44 @@ export interface CategoryPageProps {
   emptyState?: ReactNode;
   /** Bandeau libre affiché sous le fil d'ariane. */
   notice?: ReactNode;
+  collectionContext?: { key: string; label: string };
 }
 
-const allAllergens: Allergen[] = ["gluten", "lait", "oeuf", "fruits-coque", "sesame"];
+// Les six allergènes déclarés dans le catalogue. Le soja manquait :
+// une cliente allergique obtenait une liste incomplète.
+/**
+ * Ordre d'affichage souhaité. Un allergène absent d'ici reste proposé, à la
+ * suite : la liste sert à ranger, pas à autoriser.
+ */
+const ALLERGEN_ORDER: Allergen[] = ["gluten", "lait", "oeuf", "fruits-coque", "sesame", "soja"];
+
+/** Les allergènes réellement déclarés par les produits affichés. */
+function allergensOf(products: Product[]): Allergen[] {
+  const present = new Set<Allergen>();
+  for (const p of products) for (const a of p.allergens) present.add(a);
+  const known = ALLERGEN_ORDER.filter((a) => present.has(a));
+  const extra = [...present].filter((a) => !ALLERGEN_ORDER.includes(a)).sort();
+  return [...known, ...extra];
+}
+
+/** Pastilles mises en avant sur la photo, dans l'ordre où on les montre. */
+const BADGE_ORDER = ["bestseller", "nouveau", "promo", "limitee", "commande"] as const;
+const BADGE_LABELS: Record<(typeof BADGE_ORDER)[number], string> = {
+  bestseller: "Meilleure vente",
+  nouveau: "Nouveauté",
+  promo: "Promotion",
+  limitee: "Édition limitée",
+  commande: "Sur commande",
+};
+
+const EMPTY_EXTRA_FILTERS: ExtraFilterGroup[] = [];
 
 /**
  * Disponibilité d'un produit. Le champ `inStock` est optionnel :
  * seul `inStock: false` marque une rupture, l'absence de valeur vaut « en stock ».
  */
-const isInStock = (p: Product) => p.inStock !== false;
+const isInStock = (p: Product) =>
+  p.inStock !== false && (p.stockUnlimited !== false || (p.stockQty ?? 0) > 0);
 
 /**
  * Bandeau de collection — référence base44 : fond sable pleine largeur,
@@ -121,66 +153,68 @@ export function CategoryPage({
   breadcrumb,
   products,
   filters = { stock: true, price: true, allergens: true },
-  extraFilters: extraFiltersProp = [],
+  extraFilters: extraFiltersProp = EMPTY_EXTRA_FILTERS,
   pageSize = 12,
   jsonLdPath,
   emptyState,
   notice,
+  collectionContext,
 }: CategoryPageProps) {
-  const fulfillmentGroup: ExtraFilterGroup = {
-    id: "fulfillment",
-    label: "Mode de réception",
-    type: "multi",
-    get: (p) => productModes(p),
-    options: [
-      { value: "shipping", label: FULFILLMENT_LABELS.shipping },
-      { value: "local", label: FULFILLMENT_LABELS.local },
-      { value: "pickup", label: FULFILLMENT_LABELS.pickup },
-    ],
-  };
-  const extraFilters: ExtraFilterGroup[] =
-    filters.fulfillment === false ? extraFiltersProp : [fulfillmentGroup, ...extraFiltersProp];
-  const priceBounds = useMemo(() => {
-    if (!products.length) return { min: 0, max: 0 };
-    const prices = products.map((p) => p.price);
-    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  /**
+   * Filtre « Mis en avant » : proposé seulement si au moins deux pastilles
+   * différentes existent parmi les produits affichés. Une seule pastille ne
+   * mérite pas un filtre, elle se voit déjà sur les photos.
+   */
+  const badgeGroup: ExtraFilterGroup | null = useMemo(() => {
+    const present = BADGE_ORDER.filter((b) => products.some((p) => p.badge === b));
+    if (present.length < 2) return null;
+    return {
+      id: "badge",
+      label: "Mis en avant",
+      type: "multi",
+      get: (p) => p.badge ?? null,
+      options: present.map((b) => ({ value: b, label: BADGE_LABELS[b] })),
+    };
   }, [products]);
 
-  const [stock, setStock] = useState<StockFilter[]>([]);
-  const [exclude, setExclude] = useState<Allergen[]>([]);
-  const [priceMin, setPriceMin] = useState(priceBounds.min);
-  const [priceMax, setPriceMax] = useState(priceBounds.max);
-  const [sort, setSort] = useState<"feature" | "asc" | "desc" | "new">("feature");
-  const [layout, setLayout] = useState<"grid" | "list">("grid");
-  const [page, setPage] = useState(1);
-  const [extraValues, setExtraValues] = useState<Record<string, string | string[]>>(() =>
-    Object.fromEntries(extraFilters.map((g) => [g.id, g.type === "multi" ? [] : ""])),
-  );
+  const extraFilters: ExtraFilterGroup[] = useMemo(() => {
+    const groups: ExtraFilterGroup[] = [];
+    if (filters.fulfillment !== false) {
+      groups.push({
+        id: "fulfillment",
+        label: "Mode de réception",
+        type: "multi",
+        get: (p) => productModes(p),
+        options: [
+          { value: "shipping", label: FULFILLMENT_LABELS.shipping },
+          { value: "local", label: FULFILLMENT_LABELS.local },
+          { value: "pickup", label: FULFILLMENT_LABELS.pickup },
+        ],
+      });
+    }
+    groups.push(...extraFiltersProp);
+    if (badgeGroup) groups.push(badgeGroup);
+    return groups;
+  }, [badgeGroup, extraFiltersProp, filters.fulfillment]);
+  const priceBounds = useMemo(() => {
+    if (!products.length) return { min: 0, max: 0 };
+    const prices = products.map(displayedProductPrice).filter((price) => price > 0);
+    if (!prices.length) return { min: 0, max: 0 };
+    return { min: 0, max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
 
-  useEffect(() => {
-    setStock([]);
-    setExclude([]);
-    setPriceMin(priceBounds.min);
-    setPriceMax(priceBounds.max);
-    setSort("feature");
-    setPage(1);
-    setExtraValues(
-      Object.fromEntries(extraFilters.map((g) => [g.id, g.type === "multi" ? [] : ""])),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, priceBounds.min, priceBounds.max]);
-
-  const resetFilters = () => {
-    setStock([]);
-    setExclude([]);
-    setPriceMin(priceBounds.min);
-    setPriceMax(priceBounds.max);
-    setSort("feature");
-    setPage(1);
-    setExtraValues(
-      Object.fromEntries(extraFilters.map((g) => [g.id, g.type === "multi" ? [] : ""])),
-    );
-  };
+  const { state, setter, reset: resetFilters } = useCatalogQuery(priceBounds);
+  const { stock, exclude, priceMin, priceMax, sort, layout, page, extraValues } = state;
+  const priceFilterActive = isPriceFilterActive(state, priceBounds);
+  const activeCriteriaCount = activeCatalogCriteria(state, priceBounds);
+  const setStock = setter("stock");
+  const setExclude = setter("exclude");
+  const setPriceMin = setter("priceMin");
+  const setPriceMax = setter("priceMax");
+  const setSort = setter("sort");
+  const setLayout = setter("layout");
+  const setPage = setter("page");
+  const setExtraValues = setter("extraValues");
 
   const filtered = useMemo(() => {
     let list = [...products];
@@ -188,16 +222,36 @@ export function CategoryPage({
       list = list.filter((p) => stock.includes(isInStock(p) ? "in" : "out"));
     if (filters.allergens && exclude.length)
       list = list.filter((p) => !p.allergens.some((a) => exclude.includes(a)));
-    if (filters.price) list = list.filter((p) => p.price >= priceMin && p.price <= priceMax);
+    if (filters.price && priceFilterActive)
+      list = list.filter((p) => {
+        const price = displayedProductPrice(p);
+        // Un produit sans prix connu (« Tarif à venir ») n'a rien à filtrer :
+        // les bornes affichées sont calculées SANS lui (voir `priceBounds`
+        // ci-dessus), donc un filtre prix — même resté à sa valeur par
+        // défaut — l'exclurait à tort dès le premier chargement.
+        if (price <= 0) return true;
+        return price >= priceMin && price <= priceMax;
+      });
     for (const g of extraFilters) {
       const v = extraValues[g.id];
       if (v !== undefined) list = list.filter((p) => matchesGroup(p, g, v));
     }
-    if (sort === "asc") list.sort((a, b) => a.price - b.price);
-    if (sort === "desc") list.sort((a, b) => b.price - a.price);
-    if (sort === "new") list = [...list].reverse();
+    if (sort === "asc") list.sort((a, b) => displayedProductPrice(a) - displayedProductPrice(b));
+    if (sort === "desc") list.sort((a, b) => displayedProductPrice(b) - displayedProductPrice(a));
+    if (sort === "new") list = newestFirst(list);
     return list;
-  }, [products, filters, stock, exclude, priceMin, priceMax, sort, extraFilters, extraValues]);
+  }, [
+    products,
+    filters,
+    stock,
+    exclude,
+    priceMin,
+    priceMax,
+    priceFilterActive,
+    sort,
+    extraFilters,
+    extraValues,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -206,24 +260,26 @@ export function CategoryPage({
 
   const hasSidebar = filters.stock || filters.price || filters.allergens || extraFilters.length > 0;
 
-  const hasActiveFilters =
-    stock.length > 0 ||
-    exclude.length > 0 ||
-    priceMin > priceBounds.min ||
-    priceMax < priceBounds.max ||
-    extraFilters.some((g) => {
-      const v = extraValues[g.id];
-      return Array.isArray(v) ? v.length > 0 : !!v;
-    });
+  const hasActiveFilters = activeCriteriaCount > 0;
 
   // Build sections for the shared sidebar
-  const countMatchingExcept = (predicate: (p: Product) => boolean): number =>
+  const matchesOtherExtra = (p: Product, exceptId: string): boolean =>
+    extraFilters.every((g) => {
+      if (g.id === exceptId) return true;
+      const v = extraValues[g.id];
+      return v === undefined ? true : matchesGroup(p, g, v);
+    });
+
+  const countMatchingExcept = (predicate: (p: Product) => boolean, exceptId = ""): number =>
     products.filter((p) => {
       if (filters.stock && stock.length && !stock.includes(isInStock(p) ? "in" : "out"))
         return false;
-      if (filters.price && (p.price < priceMin || p.price > priceMax)) return false;
+      const price = displayedProductPrice(p);
+      if (filters.price && priceFilterActive && price > 0 && (price < priceMin || price > priceMax))
+        return false;
       if (filters.allergens && exclude.length && p.allergens.some((a) => exclude.includes(a)))
         return false;
+      if (!matchesOtherExtra(p, exceptId)) return false;
       return predicate(p);
     }).length;
 
@@ -260,7 +316,7 @@ export function CategoryPage({
         count: countMatchingExcept((p) => {
           const val = g.get(p);
           return Array.isArray(val) ? val.includes(o.value) : val === o.value;
-        }),
+        }, g.id),
       }))
       // Une option qui ne correspond à aucun produit n'est pas affichée.
       .filter((o) => o.count > 0 || (extraValues[g.id] ?? []).includes(o.value));
@@ -300,7 +356,7 @@ export function CategoryPage({
         setExclude(v as Allergen[]);
         setPage(1);
       },
-      options: allAllergens
+      options: allergensOf(products)
         .map((a) => ({
           value: a,
           label: allergenLabels[a],
@@ -376,14 +432,19 @@ export function CategoryPage({
       ) : layout === "list" ? (
         <div className="flex flex-col gap-6">
           {visible.map((p) => (
-            <ProductCard key={p.slug} product={p} layout="list" />
+            <ProductCard
+              key={p.slug}
+              product={p}
+              layout="list"
+              collectionContext={collectionContext}
+            />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-3">
           {visible.map((p, i) => (
             <Reveal key={p.slug} delay={(i % 3) * 0.05}>
-              <ProductCard product={p} layout="grid" />
+              <ProductCard product={p} layout="grid" collectionContext={collectionContext} />
             </Reveal>
           ))}
         </div>
@@ -422,12 +483,13 @@ export function CategoryPage({
     </>
   );
 
+  const saisons = useSeasons();
   const listLd = jsonLdPath
     ? itemListJsonLd({
         name: title,
         path: jsonLdPath,
         items: products,
-        availability: (p) => isProductAvailableNow(p as Product),
+        availability: (p) => isProductStructuredAvailable(p as Product, saisons),
       })
     : null;
 
@@ -479,6 +541,7 @@ export function CategoryPage({
             hasActive={hasActiveFilters}
             onReset={resetFilters}
             totalCount={filtered.length}
+            activeCount={activeCriteriaCount}
           >
             {Grid}
           </FiltersSidebar>

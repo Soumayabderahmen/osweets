@@ -1,19 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatPrice, lineId, useShop } from "@/lib/shop-store";
 import { ProductImage } from "@/components/ProductImage";
-import { products } from "@/data/products";
+import { cartPackaging } from "@/lib/variant-label";
+import type { Product } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
+import { lineUnitPrice, priceLockNotice } from "@/lib/cart-rules";
+import { useCartValidation } from "@/lib/use-cart-validation";
 
 /**
  * Unité de vente affichée sous le nom (« coffret », « / 500 g »…).
  * L'unité portée par la ligne prime — un coffret sur mesure n'existe pas au catalogue.
  */
-const unitFor = (item: { slug: string; unit?: string }) =>
-  item.unit ?? products.find((p) => p.slug === item.slug)?.unit;
+const unitFor = (item: { slug: string; unit?: string }, catalogue: Product[]) =>
+  item.unit ?? catalogue.find((p) => p.slug === item.slug)?.unit;
 
 export function CartDrawer() {
-  const { cart, cartOpen, closeCart, updateQty, removeFromCart, cartTotal } = useShop();
+  const { cart, cartOpen, closeCart, updateQty, removeFromCart, cartTotal, giftTotal } = useShop();
+  const validation = useCartValidation();
+  const [validatedOpen, setValidatedOpen] = useState(false);
+  // Le catalogue vient de la base : sans lui, une ligne pâtisserie perdrait
+  // son unité de vente (« le pot ») dans le panier.
+  const catalogue = useCatalog();
 
   // Lock body scroll when open
   useEffect(() => {
@@ -32,6 +41,16 @@ export function CartDrawer() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [cartOpen, closeCart]);
+
+  useEffect(() => {
+    if (!cartOpen) {
+      setValidatedOpen(false);
+      return;
+    }
+    if (validatedOpen || cart.length === 0) return;
+    setValidatedOpen(true);
+    void validation.refresh();
+  }, [cart.length, cartOpen, validatedOpen, validation]);
 
   return (
     <>
@@ -87,8 +106,18 @@ export function CartDrawer() {
           <>
             {/* Lignes */}
             <div className="flex-1 space-y-5 overflow-auto px-6 py-5">
+              {(validation.checking || validation.messages.length > 0) && (
+                <div className="rounded-lg border border-gold/30 bg-gold/10 px-4 py-3 text-xs leading-relaxed text-charbon/75">
+                  {validation.checking ? (
+                    <p>Vérification du panier avec l'atelier...</p>
+                  ) : (
+                    validation.messages.map((message) => <p key={message}>{message}</p>)
+                  )}
+                </div>
+              )}
               {cart.map((it) => {
-                const unit = unitFor(it);
+                // Même détail de conditionnement que le panier et le checkout.
+                const packaging = cartPackaging({ ...it, unit: unitFor(it, catalogue) });
                 return (
                   <div key={lineId(it)} className="flex gap-4">
                     <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-sable">
@@ -96,13 +125,34 @@ export function CartDrawer() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-charbon">{it.name}</p>
-                      {it.variantLabel && (
-                        <p className="mt-0.5 text-xs text-gold">· {it.variantLabel}</p>
+                      {packaging && (
+                        <p data-testid="drawer-packaging" className="mt-0.5 text-xs text-gold">
+                          {packaging}
+                        </p>
                       )}
-                      {unit && <p className="text-xs text-charbon-soft">{unit}</p>}
+                      {/* L'emballage cadeau et son mot se voient dès le panier :
+                          la cliente doit reconnaître ce qu'elle a demandé. */}
+                      {it.gift?.wrap && (
+                        <p className="mt-0.5 text-xs text-gold">🎁 Emballage cadeau</p>
+                      )}
+                      {it.gift?.message && (
+                        <p className="mt-0.5 line-clamp-2 text-[11px] italic text-charbon-soft">
+                          « {it.gift.message} »
+                        </p>
+                      )}
+                      {it.validationStatus?.message && (
+                        <p
+                          className={`mt-1.5 text-xs ${
+                            it.validationStatus.blocking ? "text-destructive" : "text-charbon-soft"
+                          }`}
+                        >
+                          {it.validationStatus.message}
+                        </p>
+                      )}
                       <p className="mt-1.5 text-sm text-charbon">
-                        {it.price > 0 ? formatPrice(it.price) : "Prix à venir"}
+                        {lineUnitPrice(it) > 0 ? formatPrice(lineUnitPrice(it)) : "Prix à venir"}
                       </p>
+                      <p className="mt-1 text-xs text-charbon-soft">{priceLockNotice(it)}</p>
                       <div className="mt-2 flex items-center gap-3">
                         <div className="flex items-center rounded-full border border-beige">
                           <button
@@ -137,22 +187,38 @@ export function CartDrawer() {
 
             {/* Pied */}
             <div className="border-t border-beige px-6 py-5">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-charbon-soft">Sous-total</span>
                 <span className="font-display text-2xl text-charbon">
                   {cartTotal > 0 ? formatPrice(cartTotal) : "—"}
                 </span>
               </div>
+              {giftTotal > 0 && (
+                <div className="mb-4 flex items-center justify-between text-sm">
+                  <span className="text-charbon-soft">Emballage cadeau</span>
+                  <span className="text-charbon">{formatPrice(giftTotal)}</span>
+                </div>
+              )}
               <p className="mb-4 text-xs text-charbon-soft/70">
                 Livraison &amp; taxes calculées à l'étape suivante.
               </p>
-              <Link
-                to="/checkout"
-                onClick={closeCart}
-                className="flex h-12 w-full items-center justify-center rounded-full bg-charbon text-xs uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-gold"
-              >
-                Passer commande
-              </Link>
+              {validation.blocking ? (
+                <button
+                  type="button"
+                  disabled
+                  className="flex h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-charbon/45 text-xs uppercase tracking-[0.2em] text-ivory"
+                >
+                  Corrigez le panier
+                </button>
+              ) : (
+                <Link
+                  to="/checkout"
+                  onClick={closeCart}
+                  className="flex h-12 w-full items-center justify-center rounded-full bg-charbon text-xs uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-gold"
+                >
+                  Passer commande
+                </Link>
+              )}
               <Link
                 to="/panier"
                 onClick={closeCart}

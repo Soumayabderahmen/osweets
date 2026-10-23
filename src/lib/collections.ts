@@ -1,16 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { listCollections, type CollectionRow } from "@/api/collections";
-import { COLLECTIONS, COLLECTION_ORDER, type CollectionKey } from "@/lib/patisserie";
 import type { Product } from "@/data/products";
 import { resolveProductImage } from "@/lib/product-assets";
+import { isCollectionPublic } from "@/lib/collection-visibility";
 
 /**
- * Une collection telle que l'affiche la boutique : les textes viennent de la
- * base dès qu'elle répond, sinon des définitions du code — qui restent le
- * filet de sécurité et la source du rendu serveur.
+ * Une collection telle que l'affiche la boutique.
+ *
+ * Tous ses textes viennent de la base. Il y avait ici une copie des six
+ * collections historiques, qui servait quand PostgreSQL ne répondait pas :
+ * une collection dépubliée au back-office serait alors revenue au menu,
+ * et son lien aurait mené à une page vide.
  */
 export interface LiveCollection {
-  key: CollectionKey;
+  /** Identifiant d'URL — celui d'une collection créée depuis l'admin aussi. */
+  key: string;
   /** Étiquette portée par les produits (`collections` du produit). */
   productKey: string;
   path: string;
@@ -21,69 +25,58 @@ export interface LiveCollection {
   subtitle: string;
   image?: string;
   published: boolean;
+  /** Masquee partout cote client, conservee dans le back-office. */
+  hidden: boolean;
+  /**
+   * Ce qu'il advient de la collection quand elle n'a aucun produit :
+   * « soon » garde sa page avec la liste d'attente, « hide » la retire
+   * des surfaces jusqu'à ce qu'elle en ait un. Le choix est fait dans le
+   * back-office, et il n'était lu nulle part.
+   */
+  emptyBehavior: "soon" | "hide";
   sortOrder: number;
   filter: (p: Product) => boolean;
 }
 
-/** Correspondance clé de page ↔ étiquette produit (elles diffèrent pour la pistache). */
-const PRODUCT_KEY: Record<CollectionKey, string> = {
-  amandes: "amandes",
-  "pistache-machmoum-pignon": "pistache",
-  perles: "perles",
-  tradition: "tradition",
-  ramadan: "ramadan",
-  aid: "aid",
-};
-
 const makeFilter = (productKey: string) => (p: Product) =>
   (p.collections ?? []).includes(productKey as never);
 
-/** Version issue uniquement du code — utilisée tant que la base n'a pas répondu. */
-export function staticCollections(): LiveCollection[] {
-  return COLLECTION_ORDER.map((key, i) => {
-    const def = COLLECTIONS[key];
-    return {
-      key,
-      productKey: PRODUCT_KEY[key],
-      path: def.path,
-      label: def.label,
-      h1: def.h1,
-      title: def.title,
-      description: def.description,
-      subtitle: def.subtitle,
-      published: true,
-      sortOrder: (i + 1) * 10,
-      filter: makeFilter(PRODUCT_KEY[key]),
-    };
-  });
-}
-
-/** Ligne de base → collection affichable. */
-export function rowToCollection(r: CollectionRow): LiveCollection | null {
-  const key = r.slug as CollectionKey;
-  if (!COLLECTIONS[key]) return null; // une page doit exister pour ce slug
+/**
+ * Ligne de base → collection affichable.
+ * Toute collection créée depuis le back-office est acceptée : sa page vit sur
+ * la route générique `/patisserie/$slug`, sans passer par le code.
+ */
+export function rowToCollection(r: CollectionRow): LiveCollection {
   const image = resolveProductImage(r.image_url, r.image_key);
   return {
-    key,
+    key: r.slug,
     productKey: r.product_key,
     path: `/patisserie/${r.slug}`,
     label: r.label,
-    h1: r.h1,
+    h1: r.h1 || r.label,
     title: r.title,
     description: r.description,
     subtitle: r.subtitle,
     image: image || undefined,
     published: r.published,
+    hidden: r.hidden ?? false,
+    emptyBehavior: r.empty_behavior === "hide" ? "hide" : "soon",
     sortOrder: r.sort_order,
     filter: makeFilter(r.product_key),
   };
 }
 
+/**
+ * Les lignes de base → les collections de la boutique.
+ *
+ * Sans réponse de la base, on ne retombe plus sur les six collections
+ * écrites dans le code. C'était la même fuite que le catalogue de
+ * secours, par une autre porte : une collection dépubliée au back-office
+ * serait restée au menu le jour où PostgreSQL se tait, et son lien aurait
+ * mené à une page vide. Rien vaut mieux que faux.
+ */
 export function mergeCollections(rows: CollectionRow[]): LiveCollection[] {
-  if (!rows.length) return staticCollections();
-  const fromDb = rows.map(rowToCollection).filter((c): c is LiveCollection => c !== null);
-  if (!fromDb.length) return staticCollections();
-  return [...fromDb].sort((a, b) => a.sortOrder - b.sortOrder);
+  return rows.map(rowToCollection).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 /** Les collections publiées, dans l'ordre. */
@@ -94,11 +87,17 @@ export function useCollections(): LiveCollection[] {
     staleTime: 60_000,
     retry: false,
   });
-  return mergeCollections(data ?? []).filter((c) => c.published);
+  return mergeCollections(data ?? []).filter(isCollectionPublic);
 }
 
-/** Une collection précise, avec repli sur la définition du code. */
-export function useCollection(key: CollectionKey): LiveCollection {
+/**
+ * Une collection précise.
+ *
+ * Elle vient de la base, ou de nulle part : la page saura le dire — elle
+ * n'ira pas chercher dans le code un titre que le back-office a peut-être
+ * changé depuis.
+ */
+export function useCollection(key: string): LiveCollection | undefined {
   const all = useCollections();
-  return all.find((c) => c.key === key) ?? staticCollections().find((c) => c.key === key)!;
+  return all.find((c) => c.key === key);
 }

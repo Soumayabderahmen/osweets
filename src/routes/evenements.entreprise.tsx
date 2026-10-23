@@ -16,18 +16,20 @@ import {
 import { eventHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/evenements/entreprise")({
-  head: () => eventHead({
-    title: "Cadeaux & Coffrets Corporate | Ö' Sweets Entreprise",
-    description: "Coffrets corporate personnalisés, plateaux de mignardises, cadeaux clients. Facturation entreprise, livraison sur site, devis sous 48h.",
-    path: "/evenements/entreprise",
-    serviceType: "Pâtisserie et coffrets pour événements d'entreprise",
-    crumbs: [
-      { name: "Accueil", path: "/" },
-      { name: "Événements", path: "/evenements" },
-      { name: "Entreprise", path: "/evenements/entreprise" },
-    ],
-    ogImage: coffret,
-  }),
+  head: () =>
+    eventHead({
+      title: "Cadeaux & Coffrets Corporate | Ö' Sweets Entreprise",
+      description:
+        "Coffrets corporate personnalisés, plateaux de mignardises, cadeaux clients. Facturation entreprise, livraison sur site, devis sous 48h.",
+      path: "/evenements/entreprise",
+      serviceType: "Pâtisserie et coffrets pour événements d'entreprise",
+      crumbs: [
+        { name: "Accueil", path: "/" },
+        { name: "Événements", path: "/evenements" },
+        { name: "Entreprise", path: "/evenements/entreprise" },
+      ],
+      ogImage: coffret,
+    }),
   component: Page,
 });
 
@@ -57,7 +59,7 @@ function Page() {
         eyebrow="Entreprise"
         title="Une touche gourmande pour vos événements professionnels"
         subtitle="Coffrets corporate, plateaux buffet, cadeaux clients — au service de votre image de marque."
-        image={wedding}
+        bannerKey="evenements-entreprise"
       />
 
       <section className="container-os section-y">
@@ -90,8 +92,19 @@ function Page() {
       </section>
 
       <section className="container-os pb-20">
-        <SectionTitle eyebrow="03 · Sélection" title="Nos incontournables corporate" desc="Curated pour vos réceptions et cadeaux d'affaires." />
-        <SuggestedProducts slugs={["coffret-prestige", "mignardises-assortiment", "coffret-decouverte", "coffret-aid"]} />
+        <SectionTitle
+          eyebrow="03 · Sélection"
+          title="Nos incontournables corporate"
+          desc="Curated pour vos réceptions et cadeaux d'affaires."
+        />
+        <SuggestedProducts
+          slugs={[
+            "coffret-prestige",
+            "mignardises-assortiment",
+            "coffret-decouverte",
+            "coffret-aid",
+          ]}
+        />
         <p className="text-center mt-6 text-sm text-charbon/60">
           + Personnalisation logo, ruban et carte de vœux sur devis.
         </p>
@@ -99,18 +112,37 @@ function Page() {
 
       <section className="bg-sable">
         <div className="container-os section-y">
-          <SectionTitle eyebrow="04 · Service B2B" title="Un accompagnement dédié" />
+          <SectionTitle
+            eyebrow="04 · Service B2B"
+            title="Un accompagnement dédié"
+          />
           <div className="grid md:grid-cols-2 gap-6">
             {[
-              { t: "Devis sur mesure", d: "Tarif dégressif selon la quantité, réponse sous 24 h." },
-              { t: "Facturation entreprise", d: "Numéro TVA, bon de commande, virement bancaire acceptés." },
-              { t: "Livraison sur site", d: "Créneau précis, dressage possible sur demande en Île-de-France." },
-              { t: "Packaging personnalisé", d: "Logo, couleurs de la marque, carte imprimée à vos codes." },
+              {
+                t: "Devis sur mesure",
+                d: "Tarif dégressif selon la quantité, réponse sous 24 h.",
+              },
+              {
+                t: "Facturation entreprise",
+                d: "Numéro TVA, bon de commande, virement bancaire acceptés.",
+              },
+              {
+                t: "Livraison sur site",
+                d: "Créneau précis, dressage possible sur demande en Île-de-France.",
+              },
+              {
+                t: "Packaging personnalisé",
+                d: "Logo, couleurs de la marque, carte imprimée à vos codes.",
+              },
             ].map((b) => (
               <div key={b.t} className="bg-white border border-border p-6">
-                <div className="text-[10px] uppercase tracking-[0.28em] text-gold">Service</div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-gold">
+                  Service
+                </div>
                 <div className="font-display text-lg mt-2">{b.t}</div>
-                <p className="text-sm text-charbon/70 mt-2 leading-relaxed">{b.d}</p>
+                <p className="text-sm text-charbon/70 mt-2 leading-relaxed">
+                  {b.d}
+                </p>
               </div>
             ))}
           </div>
@@ -120,17 +152,49 @@ function Page() {
       <section className="container-os section-y">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           <div>
-            <SectionTitle eyebrow="05 · Votre projet" title="Décrivez votre besoin" />
+            <SectionTitle
+              eyebrow="05 · Votre projet"
+              title="Décrivez votre besoin"
+            />
             <p className="text-charbon/70 font-light leading-relaxed">
-              Un chargé de projet vous répond sous 24 h avec un devis détaillé, adapté à votre volume et à vos codes de marque.
+              Un chargé de projet vous répond sous 24 h avec un devis détaillé,
+              adapté à votre volume et à vos codes de marque.
             </p>
           </div>
           <div className="bg-white border border-border p-8 space-y-4">
-            <input value={societe} onChange={(e) => setSociete(e.target.value)} placeholder="Société" className="w-full bg-white border border-border px-4 py-3" />
-            <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Nom & email professionnel" className="w-full bg-white border border-border px-4 py-3" />
-            <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={4} placeholder="Date, lieu, besoins spécifiques…" className="w-full bg-white border border-border px-4 py-3" />
-            <div className="text-xs text-charbon/60">Sélection : <span className="text-gold">{type.label} · {qty} pers.</span></div>
-            <a href={waLink} target="_blank" rel="noreferrer" className="btn btn-gold w-full justify-center">Demander mon devis</a>
+            <input
+              value={societe}
+              onChange={(e) => setSociete(e.target.value)}
+              placeholder="Société"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <input
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="Nom & email professionnel"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <textarea
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              rows={4}
+              placeholder="Date, lieu, besoins spécifiques…"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <div className="text-xs text-charbon/60">
+              Sélection :{" "}
+              <span className="text-gold">
+                {type.label} · {qty} pers.
+              </span>
+            </div>
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-gold w-full justify-center"
+            >
+              Demander mon devis
+            </a>
           </div>
         </div>
       </section>
@@ -149,8 +213,14 @@ function Page() {
         <SectionTitle eyebrow="06 · Bon à savoir" title="Infos pratiques" />
         <PracticalInfo
           items={[
-            { label: "Délai de commande", value: "10 jours pour les grosses quantités" },
-            { label: "Zone de livraison", value: "Île-de-France · France sur devis" },
+            {
+              label: "Délai de commande",
+              value: "10 jours pour les grosses quantités",
+            },
+            {
+              label: "Zone de livraison",
+              value: "Île-de-France · France sur devis",
+            },
             { label: "Facturation", value: "TVA, bon de commande, virement" },
           ]}
         />
@@ -158,13 +228,28 @@ function Page() {
 
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle eyebrow="07 · Ils nous ont fait confiance" title="Réalisations corporate" />
+          <SectionTitle
+            eyebrow="07 · Ils nous ont fait confiance"
+            title="Réalisations corporate"
+          />
           <SocialProof
             images={[coffret, mignardises, wedding, platter]}
             testimonials={[
-              { name: "Cabinet Legrand & Associés", event: "Cadeaux clients", text: "Nos clients ont été impressionnés par l'élégance des coffrets." },
-              { name: "Groupe Altair", event: "Séminaire 120 pers.", text: "Un buffet raffiné, service et logistique impeccables." },
-              { name: "Studio Nova", event: "Inauguration", text: "Le packaging à nos couleurs a fait toute la différence." },
+              {
+                name: "Cabinet Legrand & Associés",
+                event: "Cadeaux clients",
+                text: "Nos clients ont été impressionnés par l'élégance des coffrets.",
+              },
+              {
+                name: "Groupe Altair",
+                event: "Séminaire 120 pers.",
+                text: "Un buffet raffiné, service et logistique impeccables.",
+              },
+              {
+                name: "Studio Nova",
+                event: "Inauguration",
+                text: "Le packaging à nos couleurs a fait toute la différence.",
+              },
             ]}
           />
         </div>

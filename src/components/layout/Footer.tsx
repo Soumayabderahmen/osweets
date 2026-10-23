@@ -1,17 +1,34 @@
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
+import { useCollections } from "@/lib/collections";
+import { useCatalog } from "@/lib/catalog";
+import { useSeasons } from "@/lib/seasons-hook";
+import { filterAvailable } from "@/lib/season";
+import { patisserieProducts } from "@/lib/patisserie";
+import { shouldShowCollection } from "@/lib/collection-visibility";
 
-// Mêmes collections que le mega menu "Pâtisserie Tunisienne" du Header.
-const FOOTER_COLLECTIONS = [
-  { to: "/patisserie/amandes", label: "Amandes" },
-  { to: "/patisserie/pistache-machmoum-pignon", label: "Pistache, Machmoum & Pignon" },
-  { to: "/patisserie/perles", label: "Perles" },
-  { to: "/patisserie/tradition", label: "Tradition" },
-  { to: "/patisserie/ramadan", label: "Ramadan" },
-  { to: "/patisserie/aid", label: "Aïd" },
-];
+/**
+ * Les collections du pied de page.
+ *
+ * Elles étaient recopiées ici, comme dans le menu : dépublier une
+ * collection la retirait de la grille et du menu, mais elle survivait au
+ * pied de page — un lien vers une page qu'on venait de retirer. Même
+ * source que partout ailleurs, donc, et même règle pour « masquer ».
+ */
+function useFooterCollections() {
+  const collections = useCollections();
+  const catalogue = useCatalog();
+  const saisons = useSeasons();
+  return collections.filter((c) =>
+    shouldShowCollection(
+      c,
+      filterAvailable(patisserieProducts(catalogue).filter(c.filter), saisons).length,
+    ),
+  );
+}
 
 export function Footer() {
+  const collections = useFooterCollections();
   return (
     <footer className="bg-charbon text-ivory mt-20 mosaic-bg mosaic-bg-dark">
       <div className="container-os py-16 grid gap-12 md:grid-cols-12">
@@ -96,9 +113,9 @@ export function Footer() {
             Collections
           </div>
           <ul className="space-y-2.5 text-sm text-ivory/80">
-            {FOOTER_COLLECTIONS.map((c) => (
-              <li key={c.to}>
-                <Link to={c.to} className="hover:text-gold">
+            {collections.map((c) => (
+              <li key={c.path}>
+                <Link to={c.path} className="hover:text-gold">
                   {c.label}
                 </Link>
               </li>

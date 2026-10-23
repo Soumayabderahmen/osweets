@@ -16,18 +16,20 @@ import {
 import { eventHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/evenements/anniversaire")({
-  head: () => eventHead({
-    title: "Gâteau d'Anniversaire sur Mesure | Ö' Sweets Évry-Courcouronnes",
-    description: "Number cakes, gâteaux à thème, cupcakes et candy bars. Créations sur mesure façon pâtisserie tunisienne. Commandez pour votre anniversaire.",
-    path: "/evenements/anniversaire",
-    serviceType: "Gâteau d'anniversaire personnalisé",
-    crumbs: [
-      { name: "Accueil", path: "/" },
-      { name: "Événements", path: "/evenements" },
-      { name: "Fête d'anniversaire", path: "/evenements/anniversaire" },
-    ],
-    ogImage: cakeVanille,
-  }),
+  head: () =>
+    eventHead({
+      title: "Gâteau d'Anniversaire sur Mesure | Ö' Sweets Évry-Courcouronnes",
+      description:
+        "Number cakes, gâteaux à thème, cupcakes et candy bars. Créations sur mesure façon pâtisserie tunisienne. Commandez pour votre anniversaire.",
+      path: "/evenements/anniversaire",
+      serviceType: "Gâteau d'anniversaire personnalisé",
+      crumbs: [
+        { name: "Accueil", path: "/" },
+        { name: "Événements", path: "/evenements" },
+        { name: "Fête d'anniversaire", path: "/evenements/anniversaire" },
+      ],
+      ogImage: cakeVanille,
+    }),
   component: Page,
 });
 
@@ -62,11 +64,14 @@ function Page() {
         eyebrow="Fête d'anniversaire"
         title="Un anniversaire à croquer, à votre image"
         subtitle="Number cakes, gâteaux à thème, cupcakes et candy bars — pensés pour marquer chaque bougie."
-        image={cakeVanille}
+        bannerKey="evenements-anniversaire"
       />
 
       <section className="container-os section-y">
-        <SectionTitle eyebrow="01 · Pour qui" title="Choisissez la tranche d'âge" />
+        <SectionTitle
+          eyebrow="01 · Pour qui"
+          title="Choisissez la tranche d'âge"
+        />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ages.map((a) => (
             <button
@@ -81,7 +86,10 @@ function Page() {
         </div>
 
         <div className="mt-10">
-          <SectionTitle eyebrow="02 · Ambiance" title="Choisissez votre thème visuel" />
+          <SectionTitle
+            eyebrow="02 · Ambiance"
+            title="Choisissez votre thème visuel"
+          />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {themesVisuels.map((t) => (
               <button
@@ -89,7 +97,10 @@ function Page() {
                 onClick={() => setTheme(t)}
                 className={`p-5 text-left transition border-2 ${theme.id === t.id ? "border-gold bg-beige" : "border-border bg-white hover:border-gold/50"}`}
               >
-                <span className="block h-8 w-8 rounded-full border border-white shadow" style={{ background: t.color }} />
+                <span
+                  className="block h-8 w-8 rounded-full border border-white shadow"
+                  style={{ background: t.color }}
+                />
                 <div className="font-display text-sm mt-3">{t.label}</div>
               </button>
             ))}
@@ -98,10 +109,22 @@ function Page() {
       </section>
 
       <section className="container-os pb-20">
-        <SectionTitle eyebrow="03 · Sélection" title="Nos incontournables anniversaire" desc="Une sélection curée pour composer votre table." />
-        <SuggestedProducts slugs={["gateau-licorne", "gateau-floral-adulte", "mignardises-assortiment", "coffret-decouverte"]} />
+        <SectionTitle
+          eyebrow="03 · Sélection"
+          title="Nos incontournables anniversaire"
+          desc="Une sélection curée pour composer votre table."
+        />
+        <SuggestedProducts
+          slugs={[
+            "gateau-licorne",
+            "gateau-floral-adulte",
+            "mignardises-assortiment",
+            "coffret-decouverte",
+          ]}
+        />
         <p className="text-center mt-6 text-sm text-charbon/60">
-          + Number cakes personnalisés, cupcakes assortis et candy bars sur demande.
+          + Number cakes personnalisés, cupcakes assortis et candy bars sur
+          demande.
         </p>
       </section>
 
@@ -118,9 +141,13 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12">
           <div>
-            <SectionTitle eyebrow="04 · Sur mesure" title="Personnalisez votre gâteau" />
+            <SectionTitle
+              eyebrow="04 · Sur mesure"
+              title="Personnalisez votre gâteau"
+            />
             <p className="text-charbon/70 leading-relaxed font-light">
-              Prénom, âge, couleurs, thème, message — chaque détail est pensé pour l'invité d'honneur.
+              Prénom, âge, couleurs, thème, message — chaque détail est pensé
+              pour l'invité d'honneur.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Toppers & sablés personnalisés</li>
@@ -129,12 +156,44 @@ function Page() {
             </ul>
           </div>
           <div className="bg-white border border-border p-8 space-y-4">
-            <input value={prenom} onChange={(e) => setPrenom(e.target.value)} placeholder="Prénom" className="w-full bg-white border border-border px-4 py-3" />
-            <input value={ageNum} onChange={(e) => setAgeNum(e.target.value)} placeholder="Âge à célébrer" className="w-full bg-white border border-border px-4 py-3" />
-            <input value={couleurs} onChange={(e) => setCouleurs(e.target.value)} placeholder="Couleurs souhaitées" className="w-full bg-white border border-border px-4 py-3" />
-            <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message sur le gâteau" className="w-full bg-white border border-border px-4 py-3" />
-            <div className="text-xs text-charbon/60">Sélection : <span className="text-gold">{age.label} · {theme.label}</span></div>
-            <a href={waLink} target="_blank" rel="noreferrer" className="btn btn-gold w-full justify-center">Envoyer ma demande</a>
+            <input
+              value={prenom}
+              onChange={(e) => setPrenom(e.target.value)}
+              placeholder="Prénom"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <input
+              value={ageNum}
+              onChange={(e) => setAgeNum(e.target.value)}
+              placeholder="Âge à célébrer"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <input
+              value={couleurs}
+              onChange={(e) => setCouleurs(e.target.value)}
+              placeholder="Couleurs souhaitées"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Message sur le gâteau"
+              className="w-full bg-white border border-border px-4 py-3"
+            />
+            <div className="text-xs text-charbon/60">
+              Sélection :{" "}
+              <span className="text-gold">
+                {age.label} · {theme.label}
+              </span>
+            </div>
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-gold w-full justify-center"
+            >
+              Envoyer ma demande
+            </a>
           </div>
         </div>
       </section>
@@ -143,22 +202,46 @@ function Page() {
         <SectionTitle eyebrow="05 · Bon à savoir" title="Infos pratiques" />
         <PracticalInfo
           items={[
-            { label: "Délai de commande", value: "5 jours minimum avant la date" },
-            { label: "Tailles disponibles", value: "De 6 à 60 parts selon les invités" },
-            { label: "Zone de livraison", value: "Île-de-France · retrait boutique possible" },
+            {
+              label: "Délai de commande",
+              value: "5 jours minimum avant la date",
+            },
+            {
+              label: "Tailles disponibles",
+              value: "De 6 à 60 parts selon les invités",
+            },
+            {
+              label: "Zone de livraison",
+              value: "Île-de-France · retrait boutique possible",
+            },
           ]}
         />
       </section>
 
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle eyebrow="06 · Ils nous ont fait confiance" title="Nos plus belles bougies" />
+          <SectionTitle
+            eyebrow="06 · Ils nous ont fait confiance"
+            title="Nos plus belles bougies"
+          />
           <SocialProof
             images={[cakeVanille, cakeChocolat, cakePistache, mignardises]}
             testimonials={[
-              { name: "Nadia R.", event: "Anniversaire 6 ans", text: "Un number cake magique, ma fille en parle encore." },
-              { name: "Youssef K.", event: "Anniversaire 30 ans", text: "Élégant et délicieux, tous mes invités ont adoré." },
-              { name: "Lila S.", event: "Anniversaire 40 ans", text: "Une table digne d'un magazine, merci !" },
+              {
+                name: "Nadia R.",
+                event: "Anniversaire 6 ans",
+                text: "Un number cake magique, ma fille en parle encore.",
+              },
+              {
+                name: "Youssef K.",
+                event: "Anniversaire 30 ans",
+                text: "Élégant et délicieux, tous mes invités ont adoré.",
+              },
+              {
+                name: "Lila S.",
+                event: "Anniversaire 40 ans",
+                text: "Une table digne d'un magazine, merci !",
+              },
             ]}
           />
         </div>

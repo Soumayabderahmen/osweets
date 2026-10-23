@@ -1,24 +1,20 @@
 /**
  * Univers « Pâtisserie Tunisienne » — définitions centralisées.
  * Une seule source de vérité pour : le périmètre catalogue, les 6 collections,
- * les familles de parfums et les redirections 301 des anciennes URL.
+ * et les familles de parfums.
  */
-import { products, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 import type { ProductFamily } from "@/data/products";
+import { isPatisserieCategory } from "./patisserie-scope.ts";
 
 export type CollectionKey =
   "amandes" | "pistache-machmoum-pignon" | "perles" | "tradition" | "ramadan" | "aid";
 
 /** Périmètre : uniquement la pâtisserie tunisienne (exclut cakes, coffrets, salé, packs). */
-export const isPatisserieTunisienne = (p: Product) =>
-  p.category !== "cake" &&
-  p.category !== "coffret" &&
-  p.category !== "sale" &&
-  p.category !== "pack-fiancailles" &&
-  p.category !== "anniversaire";
+export const isPatisserieTunisienne = (p: Product) => isPatisserieCategory(p.category);
 
 /** Produit visible en boutique (le champ admin `published` prime). */
-export const isPublished = (p: Product) => p.published !== false;
+export const isPublished = (p: Product) => p.published !== false && !p.archived && !p.draft;
 
 /** Appartenance à une collection — assignation explicite, jamais déduite du texte. */
 const inCollection = (key: string) => (p: Product) => (p.collections ?? []).includes(key as never);
@@ -118,43 +114,42 @@ export const COLLECTION_ORDER: CollectionKey[] = [
 ];
 
 /** Tous les produits de l'univers pâtisserie tunisienne, publiés. */
-export function patisserieProducts(list: Product[] = products): Product[] {
+/**
+ * Les produits de l'univers Pâtisserie Tunisienne.
+ *
+ * Le catalogue est un paramètre OBLIGATOIRE, et c'est voulu : il vit en base,
+ * plus dans le code. Un appel qui l'oublie ne doit pas retomber en silence
+ * sur une liste vide — il doit refuser de compiler.
+ */
+export function patisserieProducts(list: Product[]): Product[] {
   return list.filter((p) => isPatisserieTunisienne(p) && isPublished(p));
 }
 
 /** Produits d'une collection donnée. */
-export function collectionProducts(key: CollectionKey, list: Product[] = products): Product[] {
+export function collectionProducts(key: CollectionKey, list: Product[]): Product[] {
   const def = COLLECTIONS[key];
   return patisserieProducts(list).filter(def.filter);
 }
 
 /** Les autres parfums de la même famille (hors produit courant). */
-export function familySiblings(p: Product, list: Product[] = products): Product[] {
+export function familySiblings(p: Product, list: Product[]): Product[] {
   if (!p.family) return [];
   return list.filter((x) => x.family === p.family && x.slug !== p.slug && isPublished(x));
 }
 
-export function familyMembers(family: ProductFamily, list: Product[] = products): Product[] {
+export function familyMembers(family: ProductFamily, list: Product[]): Product[] {
   return list.filter((x) => x.family === family && isPublished(x));
 }
 
-/**
- * Redirections 301 — anciens slugs produits renommés.
+/*
+ * Les redirections d'anciens slugs produits vivaient ici : onze lignes
+ * écrites à la main, à compléter après chaque renommage — et qu'on
+ * oubliait, laissant l'ancienne adresse en 404 sans que rien ne le dise.
+ *
+ * Elles sont passées en base (`product_slug_history`, migration 012), où
+ * un déclencheur les alimente tout seul à chaque changement de slug. La
+ * fiche produit les relit avec `resolveOldSlug`.
  */
-export const PRODUCT_SLUG_REDIRECTS: Record<string, string> = {
-  "ghrayba-amandes": "ghraiba",
-  "samsa-praline": "samsa-praline-noisette",
-  "samsa-pistache": "samsa-praline-pistache",
-  // La fiche kounefa à sélecteur est devenue une fiche par parfum.
-  kounefa: "kounefa-pistache",
-  "kounafa-pistache": "kounefa-pistache",
-  "kounefa-nutella": "kounefa-chocolat",
-  bachkoutou: "bechkoutou",
-  "kaak-youyou": "youyou",
-  "sable-tunisien": "sable",
-  "hrissa-louz": "hrisset-louz",
-  "degla-farcie": "dattes-farcies",
-};
 
 /**
  * Redirections 301 — anciennes URL `/patisserie?cat=…` vers les pages dédiées.

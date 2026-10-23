@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { products } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
 
 export const Route = createFileRoute("/galerie")({
   head: () => ({ meta: [{ title: "Galerie — Ö' Sweets" }, { name: "description", content: "Galerie photos de nos pâtisseries, coffrets et événements." }] }),
@@ -7,7 +7,11 @@ export const Route = createFileRoute("/galerie")({
 });
 
 function Page() {
-  const imgs = products.map((p) => p.image);
+  // Les photos pâtisserie vivent en base : sans le catalogue, la galerie
+  // n'afficherait plus que les gâteaux et le salé.
+  const imgs = useCatalog()
+    .map((p) => p.image)
+    .filter(Boolean);
   return (
     <div className="container-os section-y">
       <div className="text-center"><div className="eyebrow">Nos créations</div><h1 className="font-display text-4xl md:text-5xl mt-3">Galerie</h1><div className="mt-4"><span className="divider-gold" /></div></div>

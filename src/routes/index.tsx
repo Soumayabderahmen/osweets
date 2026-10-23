@@ -13,6 +13,7 @@ import {
   Send,
 } from "lucide-react";
 import { FULFILLMENT_LABELS } from "@/lib/fulfillment";
+import { useShopSettings } from "@/components/layout/HolidayBanner";
 import hero from "@/assets/hero-plateau-signature.jpg";
 import catKaak from "@/assets/cat-kaak.jpg";
 import catPat from "@/assets/cat-patisserie.jpg";
@@ -21,7 +22,8 @@ import catCoff from "@/assets/cat-coffrets.jpg";
 import catSale from "@/assets/cat-sale.jpg";
 import composerHero from "@/assets/composer-hero.jpg";
 import weddingHero from "@/assets/wedding-buffet.jpg";
-import { products, giftCategories } from "@/data/products";
+import { giftCategories } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { ImmersiveCard } from "@/components/ImmersiveCard";
 import { Reveal } from "@/components/Reveal";
@@ -52,8 +54,17 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+/**
+ * Les raccourcis de l'accueil.
+ *
+ * Le premier vise une fiche précise. Une fiche vit en base : si le
+ * back-office l'archive, ou si la base ne répond pas, ce raccourci mènerait
+ * à une page 404. Il n'est donc affiché que si le produit existe vraiment —
+ * voir `raccourcis()` plus bas. Les autres visent des rubriques, qui ne
+ * disparaissent pas.
+ */
 const cats = [
-  { img: catKaak, name: "Kaak Warka", to: "/produits/kaak-warka" },
+  { img: catKaak, name: "Kaak Warka", to: "/produits/kaak-warka", slug: "kaak-warka" },
   { img: catPat, name: "Pâtisseries", to: "/patisserie" },
   { img: catCakes, name: "Gâteaux", to: "/gateaux" },
   { img: catCoff, name: "Coffrets", to: "/composer" },
@@ -64,7 +75,13 @@ const cats = [
 const igPhotos = [catKaak, catPat, catCakes, catCoff, catSale, hero, composerHero, weddingHero];
 
 function Home() {
-  const bestSellers = products
+  // Les mises en avant se pilotent depuis le back-office : la pastille d'une
+  // fiche décide, plus une liste figée dans le code.
+  const catalogue = useCatalog();
+  const reglages = useShopSettings();
+  // Un raccourci vers une fiche ne s'affiche que si la fiche existe.
+  const raccourcis = cats.filter((c) => !c.slug || catalogue.some((p) => p.slug === c.slug));
+  const bestSellers = catalogue
     .filter((p) => p.badge === "bestseller" || p.badge === "nouveau")
     .slice(0, 6);
   const [newsletterStatus, setNewsletterStatus] = useState<"idle" | "success" | "error">("idle");
@@ -120,11 +137,20 @@ function Home() {
       <section className="border-y border-beige bg-sand/50">
         <div className="container-os grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {[
+            /*
+             * Cinq promesses lues comme des engagements.
+             *
+             * « Paiement sécurisé — Stripe · PayPal » n'était tenu par rien :
+             * aucun paiement en ligne n'existe, les commandes partent par
+             * message. Et « Expédié en 24-48h » contredisait le délai
+             * annoncé sur chaque fiche. Les deux lignes de livraison
+             * reprennent maintenant les Réglages, mot pour mot.
+             */
             { Icon: Hand, t: "Fait main", s: "Façonné à la commande" },
             { Icon: Leaf, t: "Ingrédients frais", s: "Sélection d'exception" },
-            { Icon: Lock, t: "Paiement sécurisé", s: "Stripe · PayPal" },
-            { Icon: Package, t: "Livraison France", s: "Expédié en 24-48h" },
-            { Icon: MapPin, t: FULFILLMENT_LABELS.pickup, s: "Évry-Courcouronnes" },
+            { Icon: Lock, t: "Commande confirmée", s: "Avant toute préparation" },
+            { Icon: Package, t: "Livraison France", s: reglages.shippingDelay },
+            { Icon: MapPin, t: FULFILLMENT_LABELS.pickup, s: reglages.pickupDelay },
           ].map(({ Icon, t, s }, i) => (
             <div
               key={t}
@@ -185,7 +211,7 @@ function Home() {
           </span>
         </div>
         <div className="container-os grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {cats.map((c, i) => (
+          {raccourcis.map((c, i) => (
             <Reveal key={c.name} delay={(i % 3) * 0.06}>
               <Link to={c.to} className="group block">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-beige">

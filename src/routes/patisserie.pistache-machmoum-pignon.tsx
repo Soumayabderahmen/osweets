@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionPage } from "@/components/patisserie/CollectionPage";
 import { COLLECTIONS } from "@/lib/patisserie";
-import { collectionHead } from "@/lib/collection-head";
-import heroImg from "@/assets/p-baklawa.jpg";
+import { collectionHead, collectionSeo } from "@/lib/collection-head";
 
 export const Route = createFileRoute("/patisserie/pistache-machmoum-pignon")({
-  head: () => collectionHead(COLLECTIONS["pistache-machmoum-pignon"], heroImg),
+  loader: () => collectionSeo("pistache-machmoum-pignon", COLLECTIONS["pistache-machmoum-pignon"]),
+  head: ({ loaderData }) => collectionHead(COLLECTIONS["pistache-machmoum-pignon"], loaderData),
   component: () => (
-    <CollectionPage collection="pistache-machmoum-pignon" heroImage={heroImg} />
+    <CollectionPage collection="pistache-machmoum-pignon" />
   ),
 });

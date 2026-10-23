@@ -1,8 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, ShoppingBag, User, Menu, X, ChevronDown, ArrowUpRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useShop } from "@/lib/shop-store";
+import { useCollections } from "@/lib/collections";
+import { useCatalog } from "@/lib/catalog";
+import { useSeasonKeys } from "@/lib/seasons-hook";
+import { usePageBanner } from "@/lib/banners";
+import { patisserieMenuGroups } from "@/lib/patisserie-menu";
 import {
   COOKIES_LOCATION,
   SEASONAL_COLLECTION,
@@ -11,7 +16,6 @@ import {
 } from "@/config/site";
 
 // Visuals (real Ö' Sweets photos)
-import imgPlateauSignature from "@/assets/plateau-or-assortiment-signature.jpg";
 import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg";
 import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg";
 import imgLogoBranding from "@/assets/logo-produit-branding-officiel.jpg";
@@ -34,26 +38,38 @@ type NavEntry = {
 
 // ─────────────────────────────────────────────────────────────
 // Menu 1 — Pâtisserie Tunisienne
-// Panneau compact 780px : 2 colonnes (filet vertical) + photo déco
+// Les collections viennent de la base : voir `usePatisserieCols()`.
 // ─────────────────────────────────────────────────────────────
-const patisserieCols: MegaCol[] = [
-  {
-    title: "Nos pâtisseries",
-    items: [
-      { to: "/patisserie/amandes", label: "Amandes" },
-      { to: "/patisserie/pistache-machmoum-pignon", label: "Pistache, Machmoum & Pignon" },
-      { to: "/patisserie/perles", label: "Perles" },
-      { to: "/patisserie/tradition", label: "Tradition" },
-    ],
-  },
-  {
-    title: "Occasions",
-    items: [
-      { to: "/patisserie/ramadan", label: "Ramadan" },
-      { to: "/patisserie/aid", label: "Aïd" },
-    ],
-  },
-];
+
+/**
+ * Les colonnes du menu Pâtisserie, construites à partir des collections
+ * réellement publiées.
+ *
+ * Une collection masquée quand elle est vide (`empty_behavior = 'hide'`)
+ * disparaît du menu tant qu'elle n'a pas de produit : c'est le choix fait
+ * dans le back-office, et il doit se voir ici aussi.
+ */
+function usePatisserieCols(): MegaCol[] {
+  const collections = useCollections();
+  const catalogue = useCatalog();
+  const saisons = Array.from(useSeasonKeys(), (key) => ({ key }));
+
+  const { pastries, occasions } = patisserieMenuGroups(collections, catalogue, saisons, 4);
+
+  const cols: MegaCol[] = [
+    {
+      title: "Nos pâtisseries",
+      items: pastries.map((c) => ({ to: c.path, label: c.label })),
+    },
+  ];
+  if (occasions.length) {
+    cols.push({
+      title: "Occasions",
+      items: occasions.map((c) => ({ to: c.path, label: c.label })),
+    });
+  }
+  return cols;
+}
 
 // ─────────────────────────────────────────────────────────────
 // Menu 2 — Gâteaux
@@ -272,18 +288,10 @@ const maisonCols: MegaCol[] = [
 // ─────────────────────────────────────────────────────────────
 // Nav assembly
 // ─────────────────────────────────────────────────────────────
-const NAV: NavEntry[] = [
+const NAV_BASE: NavEntry[] = [
   {
     label: "Pâtisserie Tunisienne",
     to: "/patisserie",
-    cols: patisserieCols,
-    card: {
-      image: imgPlateauSignature,
-      title: "Nos assortiments",
-      text: "Une sélection de nos pâtisseries tunisiennes réunies dans un même écrin, prêtes à offrir.",
-      cta: "Découvrir les assortiments",
-      to: "/patisserie",
-    },
   },
   {
     label: "Gâteaux",
@@ -415,6 +423,35 @@ export function Header() {
     closeTimer.current = setTimeout(() => setHovered(null), 120);
   };
 
+  /*
+   * Le menu Pâtisserie est le seul dont le contenu vient de la base. Les
+   * autres univers gardent leur liste écrite : ils ne sont pas migrés, et
+   * ce chantier ne les concerne pas.
+   */
+  const colsPatisserie = usePatisserieCols();
+  const megaPatisserie = usePageBanner("patisserie-mega-menu-occasions");
+  const NAV = useMemo(
+    () =>
+      NAV_BASE.map((n) =>
+        n.label === "Pâtisserie Tunisienne"
+          ? {
+              ...n,
+              cols: colsPatisserie,
+              card: megaPatisserie.image
+                ? {
+                    image: megaPatisserie.image,
+                    title: megaPatisserie.title || "L'atelier",
+                    text: megaPatisserie.subtitle || "Fait main",
+                    cta: "",
+                    to: "/patisserie",
+                  }
+                : undefined,
+            }
+          : n,
+      ),
+    [colsPatisserie, megaPatisserie.image, megaPatisserie.subtitle, megaPatisserie.title],
+  );
+
   const current = NAV.find((n) => n.label === hovered);
   const isPatisserie = current?.label === "Pâtisserie Tunisienne";
 
@@ -516,6 +553,7 @@ export function Header() {
                   navItemRefs.current[item.label] = el;
                 }}
                 onMouseEnter={() => openMega(item.label)}
+                onFocus={() => openMega(item.label)}
               >
                 <Link
                   to={item.to}
@@ -549,16 +587,27 @@ export function Header() {
             className={`max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-beige bg-white shadow-[0_30px_70px_-25px_rgba(42,35,32,0.28)] ${
               isPatisserie ? "animate-fade-up" : "animate-in fade-in duration-150"
             }`}
-            // Panneau compact base44 : 2 colonnes étroites (les libellés longs
-            // passent à la ligne) + la carte photo de 280px.
-            style={{ width: isPatisserie ? 580 : 780 }}
+            style={{ width: isPatisserie ? (current.card?.image ? 580 : 388) : 780 }}
           >
             {isPatisserie ? (
-              // ─── Panneau 780px : 2 colonnes + carte photo pleine hauteur ───
-              <div className="grid grid-cols-[1fr_1fr_280px]">
+              <div
+                data-testid="patisserie-mega-menu"
+                className="grid"
+                style={{
+                  gridTemplateColumns: current.card?.image
+                    ? current.cols.length > 1
+                      ? "205fr 183fr 336fr"
+                      : "1fr 1.6fr"
+                    : `repeat(${current.cols.length}, minmax(0, 1fr))`,
+                }}
+              >
                 {current.cols.map((col, i) => (
-                  <div key={col.title} className={`p-7 ${i > 0 ? "border-l border-beige" : ""}`}>
-                    <h3 className="mb-5 text-[10px] uppercase tracking-[0.22em] text-gold">
+                  <div
+                    key={col.title}
+                    data-menu-group={i === 0 ? "pastries" : "occasions"}
+                    className={`min-w-0 px-6 py-7 ${i > 0 ? "border-l border-beige" : ""}`}
+                  >
+                    <h3 className="mb-7 font-display text-[10px] uppercase tracking-[0.22em] text-gold">
                       {col.title}
                     </h3>
                     <ul className="space-y-0.5">
@@ -567,9 +616,9 @@ export function Header() {
                           <Link
                             to={l.to}
                             onClick={() => setHovered(null)}
-                            className="group flex items-center justify-between gap-2 py-2.5 normal-case tracking-normal text-charbon transition-colors hover:text-gold"
+                            className="group flex items-center justify-between gap-2 py-3 normal-case tracking-normal text-charbon transition-colors hover:text-gold"
                           >
-                            <span className="text-[15px]">{l.label}</span>
+                            <span className="min-w-0 break-words text-[14px]">{l.label}</span>
                             <ArrowUpRight className="h-4 w-4 shrink-0 text-charbon-soft/40 transition-colors group-hover:text-gold" />
                           </Link>
                         </li>
@@ -580,19 +629,24 @@ export function Header() {
 
                 {/* Photo décorative pleine hauteur — aucun lien */}
                 {current.card?.image && (
-                  <div className="relative overflow-hidden bg-sable" aria-hidden="true">
+                  <div
+                    data-menu-image
+                    className="relative overflow-hidden border-l border-beige bg-sable"
+                  >
                     <img
                       src={current.card.image}
-                      alt=""
+                      alt={megaPatisserie.label || current.card.title}
                       loading="lazy"
                       className="absolute inset-0 h-full w-full object-cover object-center"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-charbon/25 to-transparent" />
                     <div className="absolute bottom-5 left-5">
                       <p className="text-[9px] uppercase tracking-[0.25em] text-ivory/80">
-                        L'atelier
+                        {current.card.title}
                       </p>
-                      <p className="mt-1 font-display text-lg text-ivory">Fait main</p>
+                      {current.card.text && (
+                        <p className="mt-1 font-display text-lg text-ivory">{current.card.text}</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -815,7 +869,16 @@ export function Header() {
                                   → Voir tout {item.label}
                                 </Link>
                                 {item.cols!.map((col) => (
-                                  <div key={col.title}>
+                                  <div
+                                    key={col.title}
+                                    data-menu-group={
+                                      item.to === "/patisserie"
+                                        ? col === item.cols![0]
+                                          ? "pastries"
+                                          : "occasions"
+                                        : undefined
+                                    }
+                                  >
                                     <div className="text-[10px] tracking-[0.28em] uppercase text-charbon/50 mb-2">
                                       {col.title}
                                     </div>

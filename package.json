@@ -13,8 +13,15 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:admin": "node scripts/create-admin.mjs",
     "db:seed": "node scripts/generate-seed.mjs",
+    "test": "node --test tests/unit/*.test.mjs",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:media": "node scripts/push-media.mjs --write",
+    "db:extract": "node scripts/extract-patisserie.mjs --write",
+    "db:banners": "node scripts/push-banners.mjs --write",
+    "db:check-banners": "node scripts/check-banners.mjs",
+    "recette": "node scripts/recette-patisserie.mjs",
+    "validation": "node scripts/validation-backoffice.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -55,6 +62,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^13.0.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
     "pg": "^8.23.0",
@@ -74,7 +82,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.9.1",
+    "@lovable.dev/vite-tanstack-config": "2.13.1",
     "@types/node": "^22.16.5",
     "@types/pg": "^8.21.0",
     "@types/react": "^19.2.0",
@@ -91,5 +99,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
+  },
+  "overrides": {
+    "seroval": "^1.6.2",
+    "seroval-plugins": "^1.6.2"
   }
 }

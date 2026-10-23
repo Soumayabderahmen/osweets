@@ -1,4 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "include": ["src/routeTree.gen.ts", "src/api", "src/lib", "src/components/admin", "src/routes/admin.tsx"]
-}

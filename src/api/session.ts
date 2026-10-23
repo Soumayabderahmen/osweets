@@ -71,10 +71,12 @@ export async function authenticate(
   // Ménage des sessions périmées, tant qu'on y est.
   await query("DELETE FROM public.admin_sessions WHERE expires_at < now()");
 
+  // `SameSite=None; Secure` : le backoffice s'affiche aussi dans l'aperçu
+  // (iframe d'un autre domaine), où un cookie `lax` ne serait jamais renvoyé.
   setCookie(COOKIE, token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    secure: true,
     path: "/",
     maxAge: SESSION_DAYS * 24 * 60 * 60,
   });

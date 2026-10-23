@@ -6,7 +6,7 @@
  * 3) Retrait à l'atelier   : toujours disponible sauf indication contraire.
  */
 
-import { products, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 
 export type FulfillmentMode = "shipping" | "local" | "pickup";
 
@@ -16,42 +16,20 @@ export const FULFILLMENT_LABELS: Record<FulfillmentMode, string> = {
   pickup: "Retrait à l'atelier",
 };
 
-/**
- * PARAMÈTRES ADMIN — valeurs à ajuster (fournies par Ö' Sweets).
+/*
+ * Les tarifs ne sont plus ici.
+ *
+ * Ils vivaient dans une constante `DELIVERY_CONFIG` que ce fichier
+ * exportait : prix au kilomètre, forfait, rayon, seuils de gratuité,
+ * adresse de l'atelier. L'écran Réglages écrivait en base, et rien ne la
+ * lisait — la cliente payait donc les valeurs du fichier, quoi qu'on
+ * saisisse dans le back-office.
+ *
+ * Ces montants sont désormais dans la table `settings`, et se calculent
+ * avec `localDeliveryPrice` / `shippingPrice` de `@/api/settings`. Ce
+ * fichier ne garde que ce qui relève vraiment de la logique : quel mode
+ * de réception un panier autorise.
  */
-export const DELIVERY_CONFIG = {
-  /** Adresse de l'atelier — point de départ du calcul kilométrique. */
-  workshopAddress: "Atelier Ö' Sweets — Évry-Courcouronnes (91)",
-  /** Tarif par kilomètre (aller) en euros. */
-  pricePerKm: 1.2,
-  /** Forfait de prise en charge ajouté à toute livraison locale. */
-  baseFee: 5,
-  /** Rayon maximal de livraison locale, en kilomètres. */
-  maxRadiusKm: 30,
-  /** Montant de commande à partir duquel la livraison locale est offerte (0 = jamais). */
-  freeLocalFrom: 150,
-  /** Frais forfaitaires d'expédition nationale (colis). */
-  shippingFlatFee: 9.9,
-  /** Expédition nationale offerte à partir de ce montant (0 = jamais). */
-  freeShippingFrom: 80,
-};
-
-/** Frais de livraison locale pour une distance donnée. */
-export function localDeliveryFee(km: number, orderTotal = 0): number {
-  if (DELIVERY_CONFIG.freeLocalFrom > 0 && orderTotal >= DELIVERY_CONFIG.freeLocalFrom) return 0;
-  const d = Math.max(0, km);
-  return Math.round((DELIVERY_CONFIG.baseFee + d * DELIVERY_CONFIG.pricePerKm) * 100) / 100;
-}
-
-/** Frais d'expédition nationale. */
-export function shippingFee(orderTotal = 0): number {
-  if (DELIVERY_CONFIG.freeShippingFrom > 0 && orderTotal >= DELIVERY_CONFIG.freeShippingFrom) return 0;
-  return DELIVERY_CONFIG.shippingFlatFee;
-}
-
-export function isWithinRadius(km: number): boolean {
-  return km > 0 && km <= DELIVERY_CONFIG.maxRadiusKm;
-}
 
 /**
  * Modes de réception d'un produit.
@@ -60,7 +38,7 @@ export function isWithinRadius(km: number): boolean {
  */
 export function productModes(p: Product): FulfillmentMode[] {
   const cold = p.requiresCold ?? false;
-  const shippable = p.shippable ?? (!p.localOnly && !cold);
+  const shippable = !p.localOnly && !cold && (p.shippable ?? true);
   const local = p.localDelivery ?? true;
   const pickup = p.pickup ?? true;
   const modes: FulfillmentMode[] = [];
@@ -85,22 +63,64 @@ export interface CartFulfillment {
   mixedShipping: boolean;
   /** Le panier contient un produit nécessitant du froid ou du salé. */
   hasCold: boolean;
+  /**
+   * Lignes du panier introuvables au catalogue.
+   * Non vide = on ne sait pas ce qu'on vend : aucun mode n'est proposé.
+   */
+  unknown: string[];
   message?: string;
 }
+
+export const UNKNOWN_ITEM_MESSAGE =
+  "Un produit de votre panier n'est plus disponible à la vente. Retirez-le du panier pour choisir un mode de réception.";
 
 export const MIXED_SHIPPING_MESSAGE =
   "Certains produits de votre panier ne peuvent pas être expédiés. Choisissez la livraison locale, le retrait à l'atelier ou séparez votre commande.";
 
-export function cartFulfillment(cart: CartLike): CartFulfillment {
-  const items = cart
-    .map((c) => products.find((p) => p.slug === c.slug))
-    .filter((p): p is Product => Boolean(p));
+/**
+ * Modes de réception possibles pour un panier.
+ *
+ * Le catalogue est passé en argument, et c'est le point critique : une
+ * pâtisserie introuvable était simplement ignorée, le calcul se faisait sur
+ * un panier vide, et la fonction répondait « tous les modes possibles » —
+ * expédition comprise, pour un produit frais qui ne doit jamais voyager.
+ * Ce n'était pas une section vide, c'était une commande acceptée à tort.
+ */
+export function cartFulfillment(cart: CartLike, catalogue: Product[]): CartFulfillment {
+  const all: FulfillmentMode[] = ["shipping", "local", "pickup"];
 
-  if (items.length === 0) {
-    return { available: ["shipping", "local", "pickup"], nonShippable: [], mixedShipping: false, hasCold: false };
+  const items: Product[] = [];
+  const unknown: string[] = [];
+  for (const ligne of cart) {
+    const p = catalogue.find((x) => x.slug === ligne.slug);
+    if (p) items.push(p);
+    else unknown.push(ligne.slug);
   }
 
-  const all: FulfillmentMode[] = ["shipping", "local", "pickup"];
+  // Panier vide : il n'y a rien à contraindre.
+  if (cart.length === 0) {
+    return { available: all, nonShippable: [], mixedShipping: false, hasCold: false, unknown: [] };
+  }
+
+  /*
+   * Sûr par défaut. Une ligne qu'on ne retrouve pas au catalogue — produit
+   * archivé entre-temps, panier ancien, base qui n'a pas répondu — veut dire
+   * qu'on ignore ses contraintes. On ne peut alors affirmer aucun mode : un
+   * produit frais deviendrait expédiable par simple absence d'information.
+   * Mieux vaut bloquer et le dire que laisser passer une commande impossible
+   * à honorer.
+   */
+  if (unknown.length > 0) {
+    return {
+      available: [],
+      nonShippable: [],
+      mixedShipping: false,
+      hasCold: false,
+      unknown,
+      message: UNKNOWN_ITEM_MESSAGE,
+    };
+  }
+
   const available = all.filter((m) => items.every((p) => productModes(p).includes(m)));
   const nonShippable = items.filter((p) => !isShippable(p)).map((p) => p.name);
   const shippableCount = items.length - nonShippable.length;
@@ -111,6 +131,7 @@ export function cartFulfillment(cart: CartLike): CartFulfillment {
     nonShippable,
     mixedShipping: nonShippable.length > 0 && shippableCount > 0,
     hasCold,
+    unknown: [],
     message: nonShippable.length > 0 ? MIXED_SHIPPING_MESSAGE : undefined,
   };
 }

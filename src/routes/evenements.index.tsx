@@ -1,27 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { events } from "@/data/products";
 import { ImmersiveCard } from "@/components/ImmersiveCard";
-import wedding from "@/assets/wedding-buffet.jpg";
+import { usePageBannerImage } from "@/lib/banners";
 
 export const Route = createFileRoute("/evenements/")({
   head: () => ({
     meta: [
       { title: "Événements — Ö' Sweets" },
-      { name: "description", content: "Mariage, anniversaire, baby shower, fiançailles, entreprise, Ramadan, Aïd. Devis sur mesure." },
+      {
+        name: "description",
+        content:
+          "Mariage, anniversaire, baby shower, fiançailles, entreprise, Ramadan, Aïd. Devis sur mesure.",
+      },
     ],
   }),
   component: Page,
 });
 
 function Page() {
+  // Visuel piloté depuis le back-office (page « evenements »).
+  const banniere = usePageBannerImage("evenements");
   return (
     <div className="bg-ivory">
-      <section className="relative h-[55vh] min-h-[420px] overflow-hidden">
-        <img src={wedding} alt="Événements" className="absolute inset-0 h-full w-full object-cover" />
+      <section className="relative h-[55vh] min-h-[420px] overflow-hidden bg-charbon">
+        {/* Sans visuel enregistré, le dégradé suffit — pas de balise vide. */}
+        {banniere && (
+          <img
+            src={banniere}
+            alt="Événements"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/75" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">Vos moments précieux</div>
-          <h1 className="font-display text-5xl md:text-7xl mt-5 text-white" style={{ textShadow: "0 2px 30px rgba(0,0,0,0.5)" }}>
+          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">
+            Vos moments précieux
+          </div>
+          <h1
+            className="font-display text-5xl md:text-7xl mt-5 text-white"
+            style={{ textShadow: "0 2px 30px rgba(0,0,0,0.5)" }}
+          >
             Événements
           </h1>
           <span className="mt-6 inline-block h-px w-16 bg-gold" />

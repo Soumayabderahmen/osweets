@@ -10,7 +10,8 @@ import imgPastilles from "@/assets/pastilles-pistache-chocolat.jpg";
 import imgCookieDuo from "@/assets/cookie-pistache-chocolat-duo.jpg";
 import imgLogo from "@/assets/logo-produit-branding-officiel.jpg";
 
-const TITLE = "Nos présentations — Mariages, fiançailles, réceptions | Ö' Sweets";
+const TITLE =
+  "Nos présentations — Mariages, fiançailles, réceptions | Ö' Sweets";
 const DESC =
   "Galerie de nos présentations événementielles : mariages, fiançailles, circoncisions, réceptions et tables de douceurs. Demandez une présentation sur mesure pour votre événement.";
 
@@ -92,9 +93,10 @@ function Page() {
           </h1>
           <span className="mt-6 inline-block h-px w-16 bg-gold" />
           <p className="mt-6 max-w-2xl text-white/90 font-light leading-relaxed">
-            Quelques exemples de nos mises en scène pour mariages, fiançailles, circoncisions,
-            réceptions et tables de douceurs. Chaque présentation est étudiée sur mesure — les
-            photos ci-dessous sont des références, non des produits à commander.
+            Quelques exemples de nos mises en scène pour mariages, fiançailles,
+            circoncisions, réceptions et tables de douceurs. Chaque présentation
+            est étudiée sur mesure — les photos ci-dessous sont des références,
+            non des produits à commander.
           </p>
           <Link
             to="/devis"
@@ -116,13 +118,18 @@ function Page() {
             <div className="text-[10px] uppercase tracking-[0.3em] text-gold">
               Exemple de mise en scène
             </div>
-            <h2 className="font-display text-3xl md:text-4xl mt-3">{s.title}</h2>
+            <h2 className="font-display text-3xl md:text-4xl mt-3">
+              {s.title}
+            </h2>
             <span className="mt-4 inline-block h-px w-12 bg-gold" />
             <p className="mt-4 text-charbon/75 leading-relaxed">{s.desc}</p>
           </div>
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {s.images.map((img, i) => (
-              <div key={i} className="relative overflow-hidden bg-sable aspect-[4/5] group">
+              <div
+                key={i}
+                className="relative overflow-hidden bg-sable aspect-[4/5] group"
+              >
                 <img
                   src={img}
                   alt={`${s.title} — présentation Ö' Sweets`}
@@ -137,14 +144,17 @@ function Page() {
 
       <section className="bg-sable section-y">
         <div className="container-os text-center max-w-2xl mx-auto">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-gold">Sur mesure</div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-gold">
+            Sur mesure
+          </div>
           <h2 className="font-display text-3xl md:text-4xl mt-3">
             Votre présentation, à votre image
           </h2>
           <p className="mt-5 text-charbon/75 leading-relaxed">
-            Nos présentations sont pensées pour chaque événement : nombre d'invités, thème, palette,
-            contraintes du lieu. Décrivez-nous votre projet et notre atelier vous répond avec une
-            proposition personnalisée.
+            Nos présentations sont pensées pour chaque événement : nombre
+            d'invités, thème, palette, contraintes du lieu. Décrivez-nous votre
+            projet et notre atelier vous répond avec une proposition
+            personnalisée.
           </p>
           <Link
             to="/devis"

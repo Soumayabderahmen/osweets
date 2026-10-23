@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ShopProvider } from "../lib/shop-store";
 import { Header } from "../components/layout/Header";
+import { HolidayBanner } from "../components/layout/HolidayBanner";
 import { Footer } from "../components/layout/Footer";
 import { AnnouncementBar } from "../components/layout/AnnouncementBar";
 import { WhatsAppFloat } from "../components/layout/WhatsAppFloat";
@@ -69,6 +70,69 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  /**
+   * Catalogue, collections et réglages sont chargés ici, avant le rendu.
+   *
+   * Sans ça, le serveur rendrait le catalogue statique et le navigateur
+   * remplacerait tout une seconde plus tard : Google verrait la mauvaise
+   * version, et la cliente un clignotement. Une seule requête par donnée,
+   * partagée par toutes les pages.
+   *
+   * La base injoignable ne bloque rien : chaque crochet retombe sur sa
+   * valeur de repli.
+   */
+  loader: async ({ context }) => {
+    const [
+      { listProducts },
+      { listCollections },
+      { getSettings },
+      { listPageBanners },
+      { listSeasons },
+      { listFamilies },
+    ] = await Promise.all([
+      import("@/api/catalog"),
+      import("@/api/collections"),
+      import("@/api/settings"),
+      import("@/api/banners"),
+      import("@/api/seasons"),
+      import("@/api/families"),
+    ]);
+    const [catalogue, collections, settings, banners, seasons, families] = await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["catalogue"],
+        queryFn: () => listProducts(),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["collections"],
+        queryFn: () => listCollections(),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["shop-settings"],
+        queryFn: () => getSettings(),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["page-banners"],
+        queryFn: () => listPageBanners(),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["seasons"],
+        queryFn: () => listSeasons(),
+        staleTime: 60_000,
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["families"],
+        queryFn: () => listFamilies(),
+        staleTime: 60_000,
+      }),
+    ]);
+    // Retournées, donc sérialisées vers le navigateur : c'est ce qui permet
+    // aux deux rendus de partir du même état (voir `RootComponent`).
+    return { catalogue, collections, settings, banners, seasons, families };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -107,6 +171,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      {
+        rel: "icon",
+        type: "image/jpeg",
+        href: "/api/public/media/1787221302010-g74yqx-logo-produit-branding-officiel.jpg",
+      },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -137,6 +206,29 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const amorce = Route.useLoaderData();
+
+  /*
+   * On dépose les données du serveur dans le cache AVANT le premier rendu du
+   * navigateur. Sans cela le client repartirait du catalogue de départ,
+   * l'arbre ne correspondrait pas à celui du serveur, et React le
+   * reconstruirait entièrement. La garde `undefined` fait que rien n'est
+   * écrasé si le cache a déjà répondu.
+   */
+  if (amorce) {
+    if (queryClient.getQueryData(["catalogue"]) === undefined)
+      queryClient.setQueryData(["catalogue"], amorce.catalogue);
+    if (queryClient.getQueryData(["collections"]) === undefined)
+      queryClient.setQueryData(["collections"], amorce.collections);
+    if (queryClient.getQueryData(["shop-settings"]) === undefined)
+      queryClient.setQueryData(["shop-settings"], amorce.settings);
+    if (queryClient.getQueryData(["page-banners"]) === undefined)
+      queryClient.setQueryData(["page-banners"], amorce.banners);
+    if (queryClient.getQueryData(["seasons"]) === undefined)
+      queryClient.setQueryData(["seasons"], amorce.seasons);
+    if (queryClient.getQueryData(["families"]) === undefined)
+      queryClient.setQueryData(["families"], amorce.families);
+  }
   // Le back-office est un espace à part : ni bandeau, ni en-tête boutique,
   // ni panier, ni pied de page. Il occupe l'écran entier.
   const isAdmin = useRouterState({
@@ -160,6 +252,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ShopProvider>
         <AnnouncementBar />
+        <HolidayBanner />
         <Header />
         <main className="min-h-[60vh]">
           <Outlet />

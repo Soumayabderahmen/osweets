@@ -12,7 +12,7 @@ import type { AdminIdentity } from "./session";
 export type { AdminIdentity };
 
 export const signIn = createServerFn({ method: "POST" })
-  .validator((d: { email: string; password: string }) => d)
+  .inputValidator((d: { email: string; password: string }) => d)
   .handler(async ({ data }): Promise<{ ok: boolean; error?: string; admin?: AdminIdentity }> => {
     const { authenticate } = await import("./session");
     return authenticate(data.email, data.password);

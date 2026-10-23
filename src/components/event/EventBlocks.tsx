@@ -1,22 +1,41 @@
 import { Link } from "@tanstack/react-router";
-import { products, type Product } from "@/data/products";
+import { type Product } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
+import { usePageBannerImage } from "@/lib/banners";
 
+/**
+ * Bandeau d'une page événement.
+ *
+ * `bannerKey` désigne la ligne de `page_banners`, et c'est la seule chose
+ * qui décide du visuel : l'admin le remplace depuis le back-office, sans
+ * qu'on touche au code. Il n'y a plus d'image de repli — une page sans
+ * visuel enregistré n'en affiche pas, et `npm run db:check-banners` le
+ * signale avant qu'une cliente ne le voie.
+ */
 export function EventHero({
   eyebrow,
   title,
   subtitle,
-  image,
+  bannerKey,
   tint = "black/60",
 }: {
   eyebrow?: string;
   title: string;
   subtitle: string;
-  image: string;
+  bannerKey?: string;
   tint?: string;
 }) {
+  const visuel = usePageBannerImage(bannerKey ?? "");
   return (
-    <section className="relative h-[62vh] min-h-[460px] overflow-hidden">
-      <img src={image} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+    <section className="relative h-[62vh] min-h-[460px] overflow-hidden bg-charbon">
+      {/*
+        Pas de visuel enregistré, ou base injoignable : on n'affiche pas de
+        balise image vide, on laisse le dégradé sur fond charbon. Le titre
+        reste lisible, et rien ne se casse.
+      */}
+      {visuel && (
+        <img src={visuel} alt={title} className="absolute inset-0 h-full w-full object-cover" />
+      )}
       <div className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/45 to-${tint}`} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-white text-center px-6">
         {eyebrow && (
@@ -47,8 +66,11 @@ export function SectionTitle({ eyebrow, title, desc }: { eyebrow?: string; title
 }
 
 export function SuggestedProducts({ slugs }: { slugs: string[] }) {
+  // Le catalogue vient de la base : ces suggestions citent des produits
+  // Pâtisserie Tunisienne, qui n'existent plus dans le fichier statique.
+  const catalogue = useCatalog();
   const items = slugs
-    .map((s) => products.find((p) => p.slug === s))
+    .map((s) => catalogue.find((p) => p.slug === s))
     .filter((p): p is Product => !!p);
   if (items.length === 0) return null;
   return (

@@ -3,7 +3,6 @@ import baklawa from "@/assets/p-baklawa.jpg";
 import ghrayba from "@/assets/p-ghrayba.jpg";
 import makroudh from "@/assets/p-makroudh.jpg";
 import samsa from "@/assets/p-samsa.jpg";
-import kaakYouyou from "@/assets/p-kaak-youyou.jpg";
 import mignardises from "@/assets/p-mignardises.jpg";
 import cakeCitron from "@/assets/cake-citron.jpg";
 import cakeChocolat from "@/assets/cake-chocolat.jpg";
@@ -25,27 +24,77 @@ export type Category =
   | "pack-fiancailles"
   | "anniversaire";
 
+/** Façon de vendre — voir `Product.sellMode`. */
+export type SellMode = "" | "kg" | "format" | "pot";
+
 export type ProductCollection =
   "amandes" | "pistache" | "perles" | "tradition" | "ramadan" | "aid" | "fin-annee";
 
 /** Parfum d'un produit à variantes (ex. la kounefa) — prix et photo propres. */
 export interface ProductVariant {
   id: string;
+  /**
+   * Libellé COMPOSÉ (« Petit format · 4–6 personnes · 4 pièces ») — celui
+   * qui part au panier et dans la commande. Il est fabriqué une seule fois,
+   * par `rowToProduct()`, via `optionLabel()`.
+   */
   label: string;
-  price: number;
+  /**
+   * Nom SEUL saisi en back-office (« Petit format », « Pot individuel »),
+   * conservé à côté du libellé composé. Il permet d'afficher le choix sur
+   * deux niveaux — nom en titre, détails en dessous — sans avoir à
+   * re-découper le libellé composé (découpage fragile) ni à le recomposer
+   * (ce qui dupliquait les mentions, bug déjà rencontré).
+   */
+  baseLabel?: string;
+  /**
+   * Prix de l'option. Absent pour un palier `kg` : son prix se calcule
+   * toujours depuis `Product.price` (prix au kilo) × `grams` / 1000, jamais
+   * stocké — voir `kgOptionPrice()` dans `variant-label.ts`.
+   */
+  price?: number;
   image?: string;
+  /** Ancien champ texte libre (« 4 », « 12 ») — conservé en lecture pour les fiches non migrées. */
+  serves?: string;
+
+  /** FORMAT — bornes structurées du nombre de personnes couvertes par ce format. */
+  servesMin?: number | null;
+  servesMax?: number | null;
+  /** FORMAT — nombre de pièces de CE format (jamais le total produit). */
+  pieces?: number | null;
+  /** FORMAT — purement indicatif pour le tri/l'étiquette Petit/Grand. */
+  formatSize?: "small" | "large";
+
+  /** POT — poids ou contenance de ce contenant, en grammes. Appartient à l'option, jamais au produit. */
+  weightG?: number | null;
+
+  /** KG — grammage proposé pour ce palier (100, 250, 500, 1000…). */
+  grams?: number;
+  /** KG — estimation FACULTATIVE et non garantie du nombre de pièces pour ce grammage. */
+  piecesEstimate?: number | null;
+  /** KG — composition facultative d'un mélange (ex. Dattes Farcies Variées), par parfum. */
+  composition?: { flavor: string; pieces: number }[];
 }
 
-/** Familles de produits — regroupent les parfums d'une même recette. */
-export type ProductFamily = "samsa" | "kounefa" | "assida";
+export interface AssortmentCompositionItem {
+  flavor: string;
+  grams: number;
+}
 
-export const FAMILY_LABELS: Record<ProductFamily, string> = {
-  samsa: "Samsa",
-  kounefa: "Kounefa",
-  assida: "Assida",
-};
+/**
+ * Familles de produits — regroupent les parfums d'une même recette.
+ *
+ * La liste n'est plus écrite ici. Elle l'a été : trois valeurs — samsa,
+ * kounefa, assida. Créer une quatrième famille depuis le back-office
+ * n'aurait servi à rien : le type l'aurait refusée. Les familles vivent
+ * dans la table `families` ; le code ne manipule plus qu'une clé.
+ */
+export type ProductFamily = string;
 
 export interface Product {
+  createdAt?: string;
+  /** Identifiant stable quand le produit vient de PostgreSQL. */
+  id?: string;
   slug: string;
   name: string;
   category: Category;
@@ -59,7 +108,7 @@ export interface Product {
   allergens: Allergen[];
   conservation: string;
   availability?: string[];
-  badge?: "bestseller" | "nouveau" | "commande";
+  badge?: "bestseller" | "nouveau" | "commande" | "promo" | "limitee";
   occasions?: string[];
   inStock?: boolean;
   pieces?: number;
@@ -70,12 +119,27 @@ export interface Product {
   collections?: ProductCollection[];
   /** Champ admin — produit disponible uniquement pendant Ramadan / Aïd. */
   seasonalOnly?: boolean;
+  /** Titre saisi dans « Ce que Google affiche ». Prime sur le nom. */
+  seoTitle?: string;
+  /** Description saisie dans « Ce que Google affiche ». Prime sur l'accroche. */
+  seoDescription?: string;
   /** Famille de produit — regroupe les parfums d'une même recette. */
   family?: ProductFamily;
+  /** Type structuré au sein de la famille (ex. kechda, fromage, assortiment). */
+  productType?: string;
   /** Nom court du parfum au sein de la famille (ex. « Amandes »). */
   flavorLabel?: string;
+  /** Répartition de référence pour 1 kg, utilisée uniquement par un assortiment. */
+  assortmentComposition?: AssortmentCompositionItem[];
+  /**
+   * « Vous aimerez aussi » — les fiches choisies à la main au back-office.
+   * Vide : la boutique propose les autres produits de la même catégorie.
+   */
+  recommended?: string[];
   /** Champ admin — produit publié sur la boutique (défaut : true). */
   published?: boolean;
+  /** Champ admin — produit retiré du catalogue public sans être supprimé. */
+  archived?: boolean;
   /** Fiche en cours de rédaction : prix et photo à renseigner en admin. */
   draft?: boolean;
 
@@ -113,187 +177,27 @@ export interface Product {
   pickup?: boolean;
   /** Champ admin — Nécessite du froid (chaîne du froid : pas d'expédition). */
   requiresCold?: boolean;
+
+  /**
+   * Comment la cliente choisit, décidé par l'administratrice et non plus
+   * deviné à partir du texte des libellés.
+   *   ""       un seul prix, elle n'a rien à choisir
+   *   "kg"     elle choisit la quantité (100 g, 500 g, 1 kg…)
+   *   "format" elle choisit la taille (4-6 personnes, 8-12 personnes…)
+   *   "pot"    elle choisit la contenance (pot 100 g, pot 250 g…)
+   * Les options elles-mêmes vivent dans `variants`.
+   */
+  sellMode?: SellMode;
+
+  /** Quantité en réserve. Ignorée quand `stockUnlimited` vaut true. */
+  stockQty?: number;
+  /** Seuil d'alerte du back-office. */
+  stockAlert?: number;
+  /** Produit fait à la demande : aucun compteur, il ne s'épuise jamais seul. */
+  stockUnlimited?: boolean;
 }
 
 export const products: Product[] = [
-  {
-    slug: "kaak-warka",
-    name: "Kaak Warka",
-    category: "traditionnelle",
-    price: 32,
-    image: kaakWarka,
-    shortDesc: "L'icône tunisienne, anneau de pâte filo soufflée, amandes & fleur d'oranger.",
-    description:
-      "Le kaak warka est l'âme de la pâtisserie tunisienne. Anneau de pâte filo finement façonné à la main, garni d'une crème d'amandes parfumée à la fleur d'oranger, et délicatement saupoudré de sucre glace.",
-    composition: [
-      "Couronne de pâte filo soufflée",
-      "Crème d'amandes de Sicile",
-      "Eau de fleur d'oranger",
-      "Sucre glace",
-    ],
-    ingredients: [
-      "Farine de blé",
-      "Amandes",
-      "Sucre",
-      "Beurre AOP",
-      "Œufs",
-      "Eau de fleur d'oranger",
-      "Sucre glace",
-    ],
-    allergens: ["gluten", "lait", "oeuf", "fruits-coque"],
-    conservation:
-      "À conserver à l'abri de l'humidité dans une boîte hermétique. À consommer dans les 7 jours.",
-    badge: "bestseller",
-    inStock: true,
-    pieces: 12,
-    collections: ["amandes", "ramadan", "aid"],
-    occasions: ["aid", "mariage", "fiancailles"],
-  },
-  {
-    slug: "baklawa-pistache",
-    name: "Baklawa Pistache",
-    category: "orientale",
-    price: 38,
-    image: baklawa,
-    shortDesc: "Feuilles de filo, pistaches d'Iran, sirop de fleur d'oranger.",
-    description:
-      "Notre baklawa, c'est la rencontre entre la précision française et la générosité tunisienne. 24 fines couches de filo, abondance de pistaches d'Iran concassées, légèrement nappées d'un sirop tiède à la fleur d'oranger.",
-    composition: [
-      "24 couches de pâte filo",
-      "Pistaches d'Iran",
-      "Sirop fleur d'oranger",
-      "Beurre AOP",
-    ],
-    ingredients: ["Farine", "Pistaches", "Sucre", "Beurre", "Eau de fleur d'oranger", "Citron"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "Conservation 10 jours en boîte hermétique.",
-    badge: "bestseller",
-    inStock: true,
-    pieces: 18,
-    collections: ["pistache", "aid"],
-    occasions: ["aid", "ramadan", "mariage"],
-  },
-  {
-    slug: "ghraiba",
-    name: "Ghraïba",
-    category: "traditionnelle",
-    price: 28,
-    image: ghrayba,
-    shortDesc: "Sablé fondant à l'amande, surmonté d'une amande entière.",
-    description:
-      "La ghrayba se reconnaît à sa texture incomparable : un sablé qui s'effrite à peine, fondant en bouche, surmonté d'une amande entière dorée. Sans gluten.",
-    composition: ["Pâte d'amandes broyées finement", "Sucre glace", "Amande entière"],
-    ingredients: ["Amandes", "Sucre glace", "Blanc d'œuf"],
-    allergens: ["oeuf", "fruits-coque"],
-    conservation: "15 jours en boîte hermétique.",
-    inStock: true,
-    pieces: 20,
-    collections: ["amandes", "tradition"],
-    occasions: ["aid", "ramadan"],
-  },
-  {
-    slug: "makroudh",
-    name: "Makroudh aux Dattes",
-    category: "traditionnelle",
-    price: 26,
-    image: makroudh,
-    shortDesc: "Semoule dorée, cœur de pâte de dattes, sirop léger.",
-    description:
-      "Le makroudh raconte le sud tunisien. Semoule de blé dur travaillée à la main, cœur fondant de pâte de dattes deglet nour, frit à l'huile puis trempé dans un sirop léger au miel.",
-    composition: ["Semoule de blé dur", "Pâte de dattes deglet nour", "Sirop miel"],
-    ingredients: ["Semoule", "Dattes", "Huile", "Miel", "Cannelle"],
-    allergens: ["gluten"],
-    conservation: "12 jours.",
-    inStock: true,
-    pieces: 16,
-    occasions: ["aid", "ramadan"],
-  },
-  {
-    slug: "samsa-amandes",
-    name: "Samsa aux Amandes",
-    family: "samsa",
-    flavorLabel: "Amandes",
-    category: "orientale",
-    price: 30,
-    image: samsa,
-    shortDesc: "Triangles de filo croustillants, farce aux amandes, miel.",
-    description:
-      "Petits triangles dorés à la pâte filo, garnis d'une farce généreuse aux amandes et au miel, parfumés au géranium.",
-    composition: ["Filo", "Amandes mondées", "Miel", "Géranium"],
-    ingredients: ["Farine", "Amandes", "Miel", "Beurre", "Géranium"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "10 jours.",
-    inStock: true,
-    pieces: 18,
-    collections: ["amandes", "aid"],
-    occasions: ["mariage", "fiancailles"],
-  },
-  {
-    slug: "youyou",
-    name: "Youyou",
-    category: "traditionnelle",
-    price: 24,
-    image: kaakYouyou,
-    shortDesc: "Petit anneau au sésame, parfait avec le thé à la menthe.",
-    description:
-      "Anneau délicat aux graines de sésame, légèrement sucré, à la mie tendre. L'incontournable du goûter tunisien.",
-    composition: ["Pâte levée", "Graines de sésame"],
-    ingredients: ["Farine", "Sucre", "Œufs", "Beurre", "Sésame", "Levure"],
-    allergens: ["gluten", "lait", "oeuf", "sesame"],
-    conservation: "8 jours.",
-    inStock: true,
-    pieces: 20,
-    collections: ["tradition"],
-    occasions: ["ramadan"],
-  },
-  {
-    slug: "mignardises-assortiment",
-    name: "Assortiment Pâtisseries Tunisiennes",
-    category: "petits-fours",
-    price: 48,
-    image: mignardises,
-    shortDesc:
-      "Notre assortiment signature — un panorama de la pâtisserie tunisienne, façonné à la main.",
-    description:
-      "Un assortiment généreux de nos icônes tunisiennes : baklawa pistache, kaak warka, samsa aux amandes, ghrayba fondante, makroudh aux dattes et kaak youyou au sésame. Présenté dans notre écrin doré, prêt à offrir ou à partager.",
-    composition: [
-      "24 pièces variées façonnées à la main",
-      "Écrin doré Ö' Sweets",
-      "Livret de dégustation",
-    ],
-    varieties: [
-      "Baklawa pistache",
-      "Kaak warka aux amandes",
-      "Samsa aux amandes & miel",
-      "Ghrayba fondante",
-      "Makroudh aux dattes",
-      "Kaak youyou au sésame",
-    ],
-    ingredients: [
-      "Farine de blé",
-      "Amandes",
-      "Pistaches d'Iran",
-      "Beurre AOP",
-      "Œufs frais",
-      "Sucre",
-      "Miel",
-      "Eau de fleur d'oranger",
-      "Sésame",
-      "Dattes deglet nour",
-    ],
-    allergens: ["gluten", "lait", "oeuf", "fruits-coque", "sesame"],
-    conservation: "10 jours à l'abri de l'humidité, dans une boîte hermétique.",
-    weight: "≈ 600 g (24 pièces)",
-    deliveryMode:
-      "Retrait boutique Évry-Courcouronnes · Livraison Île-de-France 24-48h · Expédition France métropolitaine sous 72h (colis isotherme).",
-    customizable: true,
-    disclaimer:
-      "Nos mignardises sont disponibles exclusivement dans nos coffrets et nos offres événementielles.",
-    badge: "nouveau",
-    inStock: true,
-    pieces: 24,
-    occasions: ["mariage", "anniversaire", "entreprise"],
-  },
   {
     slug: "cake-citron-pavot",
     name: "Cake Citron Confit & Pavot",
@@ -913,222 +817,7 @@ export const products: Product[] = [
     themes: ["antipasti"],
   },
   // ============ COLLECTIONS TUNISIENNES — TRADITION / RAMADAN / AÏD ============
-  {
-    slug: "bechkoutou",
-    name: "Bechkoutou",
-    category: "traditionnelle",
-    price: 26,
-    image: ghrayba,
-    shortDesc: "Biscuit tunisien traditionnel, sec et parfumé, idéal avec le thé.",
-    description:
-      "Le Bachkoutou est un biscuit sec tunisien à la texture friable, subtilement parfumé à l'anis et au sésame. Un incontournable des goûters familiaux, servi avec un thé à la menthe.",
-    composition: ["Pâte levée maison", "Graines de sésame", "Anis"],
-    ingredients: ["Farine", "Sucre", "Œufs", "Huile", "Sésame", "Anis", "Levure"],
-    allergens: ["gluten", "oeuf", "sesame"],
-    conservation: "3 semaines en boîte hermétique.",
-    inStock: true,
-    pieces: 24,
-    collections: ["tradition"],
-    flavors: ["Anis", "Sésame"],
-    weight: "300 g",
-    availability: ["mardi", "jeudi", "samedi"],
-  },
-  {
-    slug: "sable",
-    name: "Sablé",
-    category: "traditionnelle",
-    price: 25,
-    image: ghrayba,
-    shortDesc: "Sablé fondant beurre & vanille, coeur confiture ou pur nature.",
-    description:
-      "Notre sablé se décline en plusieurs parfums selon la saison : nature, confiture d'abricot, coeur chocolat ou dattes. Une pâte pur beurre AOP qui fond en bouche.",
-    composition: ["Pâte sablée pur beurre", "Cœur au choix (nature, confiture, dattes, chocolat)"],
-    ingredients: ["Farine", "Beurre AOP", "Sucre glace", "Œufs", "Vanille"],
-    allergens: ["gluten", "lait", "oeuf"],
-    conservation: "3 semaines en boîte hermétique.",
-    inStock: true,
-    pieces: 24,
-    collections: ["tradition", "ramadan", "aid"],
-    flavors: ["Nature", "Confiture abricot", "Dattes", "Chocolat"],
-    weight: "350 g",
-  },
-  {
-    slug: "assida-zgougou",
-    requiresCold: true,
-    name: "Assida Zgougou",
-    family: "assida",
-    flavorLabel: "Zgougou",
-    category: "traditionnelle",
-    price: 14,
-    unit: "le pot",
-    image: mignardises,
-    shortDesc: "Crème traditionnelle de pin d'Alep, décor pignons & fruits secs.",
-    description:
-      "L'Assida Zgougou, spécialité célébrée pour le Mouled, à base de crème de graines de pin d'Alep, sucrée et parfumée. Servie individuellement en pot.",
-    composition: ["Crème de zgougou (pin d'Alep)", "Décor pignons, amandes, pistaches"],
-    ingredients: ["Zgougou", "Sucre", "Lait", "Fécule", "Fleur d'oranger"],
-    allergens: ["lait", "fruits-coque"],
-    conservation: "5 jours au frais.",
-    inStock: true,
-    collections: ["ramadan"],
-    weight: "180 g",
-  },
-  {
-    slug: "bouza",
-    requiresCold: true,
-    name: "Bouza",
-    category: "traditionnelle",
-    price: 12,
-    unit: "le pot",
-    image: mignardises,
-    shortDesc: "Crème onctueuse à base de sorgho, lait et noisettes torréfiées.",
-    description:
-      "La Bouza est une crème tunisienne traditionnelle du Ramadan, à base de sorgho, lait et noisettes torréfiées. Douceur réconfortante servie fraîche.",
-    composition: ["Crème de sorgho", "Lait entier", "Noisettes torréfiées"],
-    ingredients: ["Sorgho", "Lait", "Sucre", "Noisettes"],
-    allergens: ["lait", "fruits-coque"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    collections: ["ramadan"],
-    weight: "180 g",
-  },
-  {
-    slug: "hrisset-louz",
-    name: "Hrisset Louz",
-    category: "traditionnelle",
-    price: 30,
-    image: makroudh,
-    shortDesc: "Semoule fine, amandes, sirop parfumé — le classique tunisien.",
-    description:
-      "La H'rissa Louz est un carré fondant de semoule fine et amandes, imbibé d'un sirop léger à la fleur d'oranger. Servie traditionnellement à l'Aïd et lors des grandes fêtes.",
-    composition: ["Semoule fine", "Amandes broyées", "Sirop fleur d'oranger", "Amande entière"],
-    ingredients: ["Semoule", "Amandes", "Sucre", "Beurre", "Fleur d'oranger", "Zeste citron"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    pieces: 16,
-    collections: ["amandes", "ramadan", "aid"],
-    weight: "500 g",
-  },
-  {
-    slug: "dattes-farcies",
-    name: "Dattes farcies",
-    category: "traditionnelle",
-    price: 34,
-    image: makroudh,
-    shortDesc: "Dattes Deglet Nour farcies pâte d'amandes, roulées sucre cristallisé.",
-    description:
-      "Nos dattes Deglet Nour de Tunisie sont dénoyautées à la main puis farcies d'une pâte d'amandes maison parfumée à l'eau de fleur d'oranger, roulées dans le sucre cristallisé.",
-    composition: ["Dattes Deglet Nour", "Pâte d'amandes fleur d'oranger", "Sucre cristallisé"],
-    ingredients: ["Dattes", "Amandes", "Sucre", "Fleur d'oranger"],
-    allergens: ["fruits-coque"],
-    conservation: "3 semaines à l'abri de l'humidité.",
-    inStock: true,
-    pieces: 20,
-    collections: ["amandes", "ramadan", "aid"],
-    flavors: ["Nature", "Pistache", "Noix"],
-    weight: "400 g",
-  },
-
   // ---- Fiches créées pour compléter la collection Ramadan (prix & photos à renseigner en admin) ----
-  {
-    slug: "samsa-praline-noisette",
-    name: "Samsa Praliné Noisette",
-    family: "samsa",
-    flavorLabel: "Praliné noisette",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    image: samsa,
-    shortDesc: "Triangles de filo croustillants, cœur praliné noisette.",
-    description:
-      "Variante gourmande de notre Samsa : la même pâte filo façonnée à la main, garnie d'un praliné noisette maison.",
-    composition: ["Filo", "Praliné noisette", "Miel"],
-    ingredients: ["Farine", "Noisettes", "Amandes", "Sucre", "Beurre", "Miel"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "samsa-praline-pistache",
-    name: "Samsa Praliné Pistache",
-    family: "samsa",
-    flavorLabel: "Praliné pistache",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    image: samsa,
-    shortDesc: "Triangles de filo croustillants, farce à la pistache d'Iran.",
-    description:
-      "Notre Samsa décliné à la pistache d'Iran concassée, parfumée à la fleur d'oranger.",
-    composition: ["Filo", "Pistaches d'Iran", "Miel", "Fleur d'oranger"],
-    ingredients: ["Farine", "Pistaches", "Sucre", "Beurre", "Miel", "Fleur d'oranger"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["pistache", "ramadan"],
-  },
-  {
-    slug: "assida-noisette",
-    name: "Assida Noisette",
-    family: "assida",
-    flavorLabel: "Noisette",
-    category: "traditionnelle",
-    price: 0,
-    draft: true,
-    requiresCold: true,
-    unit: "le pot",
-    image: mignardises,
-    shortDesc: "Crème onctueuse aux noisettes torréfiées, décor fruits secs.",
-    description:
-      "Déclinaison de l'Assida à la noisette torréfiée, servie en pot individuel et décorée de fruits secs.",
-    composition: ["Crème de noisettes torréfiées", "Décor fruits secs"],
-    ingredients: ["Noisettes", "Lait", "Sucre", "Fécule", "Fleur d'oranger"],
-    allergens: ["lait", "fruits-coque"],
-    conservation: "5 jours au frais.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "assida-pistache",
-    name: "Assida Pistache",
-    family: "assida",
-    flavorLabel: "Pistache",
-    category: "traditionnelle",
-    price: 0,
-    draft: true,
-    requiresCold: true,
-    unit: "le pot",
-    image: mignardises,
-    shortDesc: "Crème veloutée à la pistache d'Iran, décor pistaches concassées.",
-    description:
-      "Déclinaison de l'Assida à la pistache d'Iran, d'un vert profond, servie en pot individuel.",
-    composition: ["Crème de pistaches d'Iran", "Décor pistaches concassées"],
-    ingredients: ["Pistaches", "Lait", "Sucre", "Fécule", "Fleur d'oranger"],
-    allergens: ["lait", "fruits-coque"],
-    conservation: "5 jours au frais.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "zlebia-mkharek",
-    name: "Zlebia & Mkharek",
-    category: "traditionnelle",
-    price: 0,
-    draft: true,
-    image: makroudh,
-    shortDesc: "Le duo incontournable du Ramadan, doré et nappé de sirop de miel.",
-    description:
-      "Zlebia en rosaces dentelées et Mkharek torsadés, frits minute puis trempés dans un sirop de miel parfumé. Le duo emblématique des soirées de Ramadan.",
-    composition: ["Zlebia (rosaces)", "Mkharek (torsades)", "Sirop de miel"],
-    ingredients: ["Farine", "Semoule", "Levure", "Sucre", "Miel", "Huile", "Safran"],
-    allergens: ["gluten"],
-    conservation: "À déguster le jour même.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-
   // ============ SALÉ — PLATEAUX & FORMATS INDIVIDUELS ============
   {
     slug: "plateau-sale-traditionnel",
@@ -1317,188 +1006,7 @@ export const products: Product[] = [
   },
 
   // ---- Collection Ramadan — fiches complémentaires (prix & photos à renseigner en admin) ----
-  {
-    slug: "samsa-fruits-secs",
-    name: "Samsa Fruits Secs",
-    family: "samsa",
-    flavorLabel: "Fruits secs",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    image: samsa,
-    shortDesc: "",
-    description: "",
-    composition: [],
-    ingredients: [],
-    allergens: ["gluten", "fruits-coque"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "samsa-chocolat-blanc",
-    name: "Samsa Chocolat Blanc",
-    family: "samsa",
-    flavorLabel: "Chocolat blanc",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    image: samsa,
-    shortDesc: "",
-    description: "",
-    composition: [],
-    ingredients: [],
-    allergens: ["gluten", "lait"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "samsa-chocolat-noir",
-    name: "Samsa Chocolat Noir",
-    family: "samsa",
-    flavorLabel: "Chocolat noir",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    image: samsa,
-    shortDesc: "",
-    description: "",
-    composition: [],
-    ingredients: [],
-    allergens: ["gluten", "soja"],
-    conservation: "10 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "debla",
-    name: "Debla · Oudhnine el Kadhi",
-    category: "traditionnelle",
-    price: 0,
-    draft: true,
-    image: makroudh,
-    shortDesc: "",
-    description: "",
-    composition: [],
-    ingredients: [],
-    allergens: ["gluten", "oeuf"],
-    conservation: "8 jours en boîte hermétique.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
-  {
-    slug: "cheesecake-kounefa",
-    name: "Cheese-cake Kounefa",
-    category: "orientale",
-    price: 0,
-    draft: true,
-    requiresCold: true,
-    image: baklawa,
-    shortDesc: "",
-    description: "",
-    composition: [],
-    ingredients: [],
-    allergens: ["gluten", "lait", "oeuf"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    collections: ["ramadan"],
-  },
   // ---- Famille KOUNEFA — un parfum = une fiche produit (plus de sélecteur) ----
-  {
-    slug: "kounefa-chocolat",
-    name: "Kounefa Chocolat",
-    family: "kounefa",
-    flavorLabel: "Chocolat",
-    category: "orientale",
-    price: 42,
-    requiresCold: true,
-    image: baklawa,
-    shortDesc: "Cheveux d'ange dorés et croustillants, cœur fondant au chocolat.",
-    description:
-      "Les cheveux d'ange beurrés et dorés au four, garnis d'un cœur fondant au chocolat, arrosés d'un sirop léger à la fleur d'oranger.",
-    composition: ["Cheveux d'ange (kadaïf)", "Beurre AOP", "Chocolat", "Sirop fleur d'oranger"],
-    ingredients: ["Kadaïf", "Beurre AOP", "Chocolat", "Lait", "Sucre", "Fleur d'oranger"],
-    allergens: ["gluten", "lait"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    pieces: 8,
-    collections: ["ramadan"],
-    weight: "600 g",
-  },
-  {
-    slug: "kounefa-kechda",
-    name: "Kounefa Kechda",
-    family: "kounefa",
-    flavorLabel: "Kechda",
-    category: "orientale",
-    price: 42,
-    requiresCold: true,
-    image: baklawa,
-    shortDesc: "Cheveux d'ange dorés et croustillants, cœur fondant à la kechda.",
-    description:
-      "Les cheveux d'ange beurrés et dorés au four, garnis d'une kechda onctueuse, arrosés d'un sirop léger à la fleur d'oranger.",
-    composition: ["Cheveux d'ange (kadaïf)", "Beurre AOP", "Kechda", "Sirop fleur d'oranger"],
-    ingredients: ["Kadaïf", "Beurre AOP", "Lait", "Sucre", "Fleur d'oranger"],
-    allergens: ["gluten", "lait"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    pieces: 8,
-    collections: ["ramadan"],
-    weight: "600 g",
-  },
-  {
-    slug: "kounefa-fromage",
-    name: "Kounefa Fromage",
-    family: "kounefa",
-    flavorLabel: "Fromage",
-    category: "orientale",
-    price: 42,
-    requiresCold: true,
-    image: baklawa,
-    shortDesc: "Cheveux d'ange dorés et croustillants, cœur fondant au fromage frais.",
-    description:
-      "Les cheveux d'ange beurrés et dorés au four, garnis d'un cœur de fromage frais filant, arrosés d'un sirop léger à la fleur d'oranger.",
-    composition: [
-      "Cheveux d'ange (kadaïf)",
-      "Beurre AOP",
-      "Fromage frais",
-      "Sirop fleur d'oranger",
-    ],
-    ingredients: ["Kadaïf", "Beurre AOP", "Fromage", "Lait", "Sucre", "Fleur d'oranger"],
-    allergens: ["gluten", "lait"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    pieces: 8,
-    collections: ["ramadan"],
-    weight: "600 g",
-  },
-  {
-    slug: "kounefa-pistache",
-    name: "Kounefa Pistache",
-    family: "kounefa",
-    flavorLabel: "Pistache",
-    category: "orientale",
-    price: 46,
-    requiresCold: true,
-    image: baklawa,
-    shortDesc: "Cheveux d'ange dorés et croustillants, cœur fondant à la pistache d'Iran.",
-    description:
-      "Les cheveux d'ange beurrés et dorés au four, garnis d'un cœur à la pistache d'Iran, arrosés d'un sirop léger à la fleur d'oranger.",
-    composition: [
-      "Cheveux d'ange (kadaïf)",
-      "Beurre AOP",
-      "Pistaches d'Iran",
-      "Sirop fleur d'oranger",
-    ],
-    ingredients: ["Kadaïf", "Beurre AOP", "Pistaches", "Lait", "Sucre", "Fleur d'oranger"],
-    allergens: ["gluten", "lait", "fruits-coque"],
-    conservation: "3 jours au frais.",
-    inStock: true,
-    pieces: 8,
-    collections: ["pistache", "ramadan"],
-    weight: "600 g",
-  },
 ];
 
 import coffretImg from "@/assets/cat-coffrets.jpg";

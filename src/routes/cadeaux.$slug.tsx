@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { giftCategories, products } from "@/data/products";
+import { giftCategories } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/cadeaux/$slug")({
@@ -22,7 +23,11 @@ export const Route = createFileRoute("/cadeaux/$slug")({
 
 function Page() {
   const cat = Route.useLoaderData();
-  const items = products.filter((p) => p.category === "coffret" || p.occasions?.includes(cat.slug));
+  // Les pâtisseries portent des occasions (ramadan, aïd) : sans la base,
+  // elles disparaîtraient de ces pages cadeaux.
+  const items = useCatalog().filter(
+    (p) => p.category === "coffret" || p.occasions?.includes(cat.slug),
+  );
   return (
     <div className="container-os section-y">
       <Link to="/cadeaux" className="text-xs uppercase tracking-[0.22em] text-charbon/60 hover:text-gold">← Tous les cadeaux</Link>

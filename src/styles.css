@@ -79,6 +79,12 @@
   --terracotta: #b5623b;
   --gold-border: #e7ded0;
 
+  /* Back-office : page blanche, cartes beige sable */
+  --admin-bg: #f8f8f7;
+  --admin-card: #ffffff;
+  --admin-card-strong: #f6f4f1;
+  --admin-border: #e9e5df;
+
   --background: var(--ivory);
   --foreground: var(--charbon);
   --card: var(--ivory);

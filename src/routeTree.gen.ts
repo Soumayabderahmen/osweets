@@ -33,6 +33,7 @@ import { Route as ParrainageRouteImport } from './routes/parrainage'
 import { Route as PatisserieRouteImport } from './routes/patisserie'
 import { Route as RemboursementRouteImport } from './routes/remboursement'
 import { Route as SurMesureRouteImport } from './routes/sur-mesure'
+import { Route as CadeauxIndexRouteImport } from './routes/cadeaux.index'
 import { Route as CadeauxSlugRouteImport } from './routes/cadeaux.$slug'
 import { Route as EvenementsIndexRouteImport } from './routes/evenements.index'
 import { Route as EvenementsSlugRouteImport } from './routes/evenements.$slug'
@@ -71,6 +72,7 @@ import { Route as PacksCirconcisionRouteImport } from './routes/packs.circoncisi
 import { Route as PacksFiancaillesRouteImport } from './routes/packs.fiancailles'
 import { Route as PacksMariageRouteImport } from './routes/packs.mariage'
 import { Route as PatisserieIndexRouteImport } from './routes/patisserie.index'
+import { Route as PatisserieSlugRouteImport } from './routes/patisserie.$slug'
 import { Route as PatisserieAidRouteImport } from './routes/patisserie.aid'
 import { Route as PatisserieAmandesRouteImport } from './routes/patisserie.amandes'
 import { Route as PatisseriePerlesRouteImport } from './routes/patisserie.perles'
@@ -84,6 +86,7 @@ import { Route as SaleMariageRouteImport } from './routes/sale.mariage'
 import { Route as GateauxAnniversaireIndexRouteImport } from './routes/gateaux.anniversaire.index'
 import { Route as GateauxAnniversaireThemeRouteImport } from './routes/gateaux.anniversaire.$theme'
 import { Route as GateauxAnniversairePersonnaliserRouteImport } from './routes/gateaux.anniversaire.personnaliser'
+import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -204,6 +207,11 @@ const SurMesureRoute = SurMesureRouteImport.update({
   id: '/sur-mesure',
   path: '/sur-mesure',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CadeauxIndexRoute = CadeauxIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CadeauxRoute,
 } as any)
 const CadeauxSlugRoute = CadeauxSlugRouteImport.update({
   id: '/$slug',
@@ -396,6 +404,11 @@ const PatisserieIndexRoute = PatisserieIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PatisserieRoute,
 } as any)
+const PatisserieSlugRoute = PatisserieSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => PatisserieRoute,
+} as any)
 const PatisserieAidRoute = PatisserieAidRouteImport.update({
   id: '/aid',
   path: '/aid',
@@ -465,6 +478,11 @@ const GateauxAnniversairePersonnaliserRoute =
     path: '/gateaux/anniversaire/personnaliser',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
+  id: '/api/public/media/$',
+  path: '/api/public/media/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -526,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/packs/circoncision': typeof PacksCirconcisionRoute
   '/packs/fiancailles': typeof PacksFiancaillesRoute
   '/packs/mariage': typeof PacksMariageRoute
+  '/patisserie/$slug': typeof PatisserieSlugRoute
   '/patisserie/aid': typeof PatisserieAidRoute
   '/patisserie/amandes': typeof PatisserieAmandesRoute
   '/patisserie/perles': typeof PatisseriePerlesRoute
@@ -535,6 +554,7 @@ export interface FileRoutesByFullPath {
   '/produits/$slug': typeof ProduitsSlugRoute
   '/sale/fiancailles': typeof SaleFiancaillesRoute
   '/sale/mariage': typeof SaleMariageRoute
+  '/cadeaux/': typeof CadeauxIndexRoute
   '/evenements/': typeof EvenementsIndexRoute
   '/gateaux/': typeof GateauxIndexRoute
   '/patisserie/': typeof PatisserieIndexRoute
@@ -542,11 +562,11 @@ export interface FileRoutesByFullPath {
   '/gateaux/anniversaire/$theme': typeof GateauxAnniversaireThemeRoute
   '/gateaux/anniversaire/personnaliser': typeof GateauxAnniversairePersonnaliserRoute
   '/gateaux/anniversaire/': typeof GateauxAnniversaireIndexRoute
+  '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/cadeaux': typeof CadeauxRouteWithChildren
   '/cgv': typeof CgvRoute
   '/checkout': typeof CheckoutRoute
   '/composer': typeof ComposerRoute
@@ -602,6 +622,7 @@ export interface FileRoutesByTo {
   '/packs/circoncision': typeof PacksCirconcisionRoute
   '/packs/fiancailles': typeof PacksFiancaillesRoute
   '/packs/mariage': typeof PacksMariageRoute
+  '/patisserie/$slug': typeof PatisserieSlugRoute
   '/patisserie/aid': typeof PatisserieAidRoute
   '/patisserie/amandes': typeof PatisserieAmandesRoute
   '/patisserie/perles': typeof PatisseriePerlesRoute
@@ -611,6 +632,7 @@ export interface FileRoutesByTo {
   '/produits/$slug': typeof ProduitsSlugRoute
   '/sale/fiancailles': typeof SaleFiancaillesRoute
   '/sale/mariage': typeof SaleMariageRoute
+  '/cadeaux': typeof CadeauxIndexRoute
   '/evenements': typeof EvenementsIndexRoute
   '/gateaux': typeof GateauxIndexRoute
   '/patisserie': typeof PatisserieIndexRoute
@@ -618,6 +640,7 @@ export interface FileRoutesByTo {
   '/gateaux/anniversaire/$theme': typeof GateauxAnniversaireThemeRoute
   '/gateaux/anniversaire/personnaliser': typeof GateauxAnniversairePersonnaliserRoute
   '/gateaux/anniversaire': typeof GateauxAnniversaireIndexRoute
+  '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -680,6 +703,7 @@ export interface FileRoutesById {
   '/packs/circoncision': typeof PacksCirconcisionRoute
   '/packs/fiancailles': typeof PacksFiancaillesRoute
   '/packs/mariage': typeof PacksMariageRoute
+  '/patisserie/$slug': typeof PatisserieSlugRoute
   '/patisserie/aid': typeof PatisserieAidRoute
   '/patisserie/amandes': typeof PatisserieAmandesRoute
   '/patisserie/perles': typeof PatisseriePerlesRoute
@@ -689,6 +713,7 @@ export interface FileRoutesById {
   '/produits/$slug': typeof ProduitsSlugRoute
   '/sale/fiancailles': typeof SaleFiancaillesRoute
   '/sale/mariage': typeof SaleMariageRoute
+  '/cadeaux/': typeof CadeauxIndexRoute
   '/evenements/': typeof EvenementsIndexRoute
   '/gateaux/': typeof GateauxIndexRoute
   '/patisserie/': typeof PatisserieIndexRoute
@@ -696,6 +721,7 @@ export interface FileRoutesById {
   '/gateaux/anniversaire/$theme': typeof GateauxAnniversaireThemeRoute
   '/gateaux/anniversaire/personnaliser': typeof GateauxAnniversairePersonnaliserRoute
   '/gateaux/anniversaire/': typeof GateauxAnniversaireIndexRoute
+  '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -759,6 +785,7 @@ export interface FileRouteTypes {
     | '/packs/circoncision'
     | '/packs/fiancailles'
     | '/packs/mariage'
+    | '/patisserie/$slug'
     | '/patisserie/aid'
     | '/patisserie/amandes'
     | '/patisserie/perles'
@@ -768,6 +795,7 @@ export interface FileRouteTypes {
     | '/produits/$slug'
     | '/sale/fiancailles'
     | '/sale/mariage'
+    | '/cadeaux/'
     | '/evenements/'
     | '/gateaux/'
     | '/patisserie/'
@@ -775,11 +803,11 @@ export interface FileRouteTypes {
     | '/gateaux/anniversaire/$theme'
     | '/gateaux/anniversaire/personnaliser'
     | '/gateaux/anniversaire/'
+    | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
-    | '/cadeaux'
     | '/cgv'
     | '/checkout'
     | '/composer'
@@ -835,6 +863,7 @@ export interface FileRouteTypes {
     | '/packs/circoncision'
     | '/packs/fiancailles'
     | '/packs/mariage'
+    | '/patisserie/$slug'
     | '/patisserie/aid'
     | '/patisserie/amandes'
     | '/patisserie/perles'
@@ -844,6 +873,7 @@ export interface FileRouteTypes {
     | '/produits/$slug'
     | '/sale/fiancailles'
     | '/sale/mariage'
+    | '/cadeaux'
     | '/evenements'
     | '/gateaux'
     | '/patisserie'
@@ -851,6 +881,7 @@ export interface FileRouteTypes {
     | '/gateaux/anniversaire/$theme'
     | '/gateaux/anniversaire/personnaliser'
     | '/gateaux/anniversaire'
+    | '/api/public/media/$'
   id:
     | '__root__'
     | '/'
@@ -912,6 +943,7 @@ export interface FileRouteTypes {
     | '/packs/circoncision'
     | '/packs/fiancailles'
     | '/packs/mariage'
+    | '/patisserie/$slug'
     | '/patisserie/aid'
     | '/patisserie/amandes'
     | '/patisserie/perles'
@@ -921,6 +953,7 @@ export interface FileRouteTypes {
     | '/produits/$slug'
     | '/sale/fiancailles'
     | '/sale/mariage'
+    | '/cadeaux/'
     | '/evenements/'
     | '/gateaux/'
     | '/patisserie/'
@@ -928,6 +961,7 @@ export interface FileRouteTypes {
     | '/gateaux/anniversaire/$theme'
     | '/gateaux/anniversaire/personnaliser'
     | '/gateaux/anniversaire/'
+    | '/api/public/media/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -998,6 +1032,7 @@ export interface RootRouteChildren {
   GateauxAnniversaireThemeRoute: typeof GateauxAnniversaireThemeRoute
   GateauxAnniversairePersonnaliserRoute: typeof GateauxAnniversairePersonnaliserRoute
   GateauxAnniversaireIndexRoute: typeof GateauxAnniversaireIndexRoute
+  ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1169,6 +1204,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sur-mesure'
       preLoaderRoute: typeof SurMesureRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/cadeaux/': {
+      id: '/cadeaux/'
+      path: '/'
+      fullPath: '/cadeaux/'
+      preLoaderRoute: typeof CadeauxIndexRouteImport
+      parentRoute: typeof CadeauxRoute
     }
     '/cadeaux/$slug': {
       id: '/cadeaux/$slug'
@@ -1436,6 +1478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatisserieIndexRouteImport
       parentRoute: typeof PatisserieRoute
     }
+    '/patisserie/$slug': {
+      id: '/patisserie/$slug'
+      path: '/$slug'
+      fullPath: '/patisserie/$slug'
+      preLoaderRoute: typeof PatisserieSlugRouteImport
+      parentRoute: typeof PatisserieRoute
+    }
     '/patisserie/aid': {
       id: '/patisserie/aid'
       path: '/aid'
@@ -1527,21 +1576,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GateauxAnniversairePersonnaliserRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/media/$': {
+      id: '/api/public/media/$'
+      path: '/api/public/media/$'
+      fullPath: '/api/public/media/$'
+      preLoaderRoute: typeof ApiPublicMediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface CadeauxRouteChildren {
   CadeauxSlugRoute: typeof CadeauxSlugRoute
+  CadeauxIndexRoute: typeof CadeauxIndexRoute
 }
 
 const CadeauxRouteChildren: CadeauxRouteChildren = {
   CadeauxSlugRoute: CadeauxSlugRoute,
+  CadeauxIndexRoute: CadeauxIndexRoute,
 }
 
 const CadeauxRouteWithChildren =
   CadeauxRoute._addFileChildren(CadeauxRouteChildren)
 
 interface PatisserieRouteChildren {
+  PatisserieSlugRoute: typeof PatisserieSlugRoute
   PatisserieAidRoute: typeof PatisserieAidRoute
   PatisserieAmandesRoute: typeof PatisserieAmandesRoute
   PatisseriePerlesRoute: typeof PatisseriePerlesRoute
@@ -1552,6 +1611,7 @@ interface PatisserieRouteChildren {
 }
 
 const PatisserieRouteChildren: PatisserieRouteChildren = {
+  PatisserieSlugRoute: PatisserieSlugRoute,
   PatisserieAidRoute: PatisserieAidRoute,
   PatisserieAmandesRoute: PatisserieAmandesRoute,
   PatisseriePerlesRoute: PatisseriePerlesRoute,
@@ -1633,6 +1693,7 @@ const rootRouteChildren: RootRouteChildren = {
   GateauxAnniversaireThemeRoute: GateauxAnniversaireThemeRoute,
   GateauxAnniversairePersonnaliserRoute: GateauxAnniversairePersonnaliserRoute,
   GateauxAnniversaireIndexRoute: GateauxAnniversaireIndexRoute,
+  ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

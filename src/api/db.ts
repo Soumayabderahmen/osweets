@@ -53,7 +53,28 @@ export function resolveConnection(): pg.PoolConfig {
   // TLS exigé par la plupart des hébergeurs distants, inutile en local.
   const ssl = env.DATABASE_SSL === "require" ? { rejectUnauthorized: false } : undefined;
 
-  if (env.DATABASE_URL) return { connectionString: env.DATABASE_URL, ssl };
+  if (env.DATABASE_URL) {
+    // On décompose l'URL : sinon le pilote irait chercher hôte/port/utilisateur
+    // dans les variables PG* de l'hébergeur, qui visent une autre base.
+    try {
+      const u = new URL(env.DATABASE_URL);
+      const sslmode = u.searchParams.get("sslmode");
+      // Neon n'expose que le port 5432 : un 6543 hérité (pooler d'un autre
+      // hébergeur) ferait expirer toutes les connexions.
+      const port = /\.neon\.tech$/i.test(u.hostname) ? 5432 : Number(u.port || 5432);
+      return {
+        host: u.hostname,
+        port,
+
+        database: decodeURIComponent(u.pathname.replace(/^\//, "")) || undefined,
+        user: decodeURIComponent(u.username),
+        password: decodeURIComponent(u.password),
+        ssl: ssl ?? (sslmode && sslmode !== "disable" ? { rejectUnauthorized: false } : undefined),
+      };
+    } catch {
+      return { connectionString: env.DATABASE_URL, ssl };
+    }
+  }
 
   if (env.DB_DATABASE || env.DB_HOST) {
     return {
@@ -69,13 +90,43 @@ export function resolveConnection(): pg.PoolConfig {
   throw new Error(MISSING);
 }
 
+/** La base est-elle configurée ? (sinon le site retombe sur le catalogue statique) */
+export function isDatabaseConfigured(): boolean {
+  loadDotEnv();
+  return Boolean(process.env.DATABASE_URL || process.env.DB_DATABASE || process.env.DB_HOST);
+}
+
 function pool(): pg.Pool {
   if (!globalForPg.__osweetsPool) {
-    globalForPg.__osweetsPool = new pg.Pool({
+    const p = new pg.Pool({
       ...resolveConnection(),
       max: 5,
       idleTimeoutMillis: 30_000,
+      // Sans plafond, une base injoignable fait attendre la page indéfiniment
+      // au lieu d'échouer franchement. Mieux vaut une erreur nette en deux
+      // secondes : c'est elle qui déclenche la page « indisponible ».
+      connectionTimeoutMillis: 2_000,
     });
+
+    /*
+     * Indispensable, et pas seulement prudent.
+     *
+     * Quand PostgreSQL s'arrête, le pilote émet un événement `error` sur ses
+     * connexions au repos. Sans écouteur, Node considère qu'une erreur n'a
+     * pas été traitée et TUE LE PROCESSUS : tout le site tombe — les
+     * gâteaux, le salé, les pages statiques — pour une panne qui ne
+     * concernait que la base. La page « boutique momentanément
+     * indisponible » ne pourrait alors jamais s'afficher, puisqu'il n'y
+     * aurait plus de serveur pour la rendre.
+     *
+     * On journalise et on continue : la requête suivante rouvrira une
+     * connexion, ou échouera proprement.
+     */
+    p.on("error", (e) => {
+      console.error("[postgres] connexion perdue :", e.message);
+    });
+
+    globalForPg.__osweetsPool = p;
   }
   return globalForPg.__osweetsPool;
 }
@@ -96,4 +147,20 @@ export async function queryOne<T = Record<string, unknown>>(
 ): Promise<T | null> {
   const rows = await query<T>(text, params);
   return rows[0] ?? null;
+}
+
+/** Transaction courte : utilisee pour les operations admin multi-lignes. */
+export async function transaction<T>(fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {
+  const client = await pool().connect();
+  try {
+    await client.query("BEGIN");
+    const out = await fn(client);
+    await client.query("COMMIT");
+    return out;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }

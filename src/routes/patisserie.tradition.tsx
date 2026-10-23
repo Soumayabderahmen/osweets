@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CollectionPage } from "@/components/patisserie/CollectionPage";
 import { COLLECTIONS } from "@/lib/patisserie";
-import { collectionHead } from "@/lib/collection-head";
-import heroImg from "@/assets/p-ghrayba.jpg";
+import { collectionHead, collectionSeo } from "@/lib/collection-head";
 
 export const Route = createFileRoute("/patisserie/tradition")({
-  head: () => collectionHead(COLLECTIONS.tradition, heroImg),
-  component: () => <CollectionPage collection="tradition" heroImage={heroImg} />,
+  loader: () => collectionSeo("tradition", COLLECTIONS.tradition),
+  head: ({ loaderData }) => collectionHead(COLLECTIONS.tradition, loaderData),
+  component: () => <CollectionPage collection="tradition" />,
 });

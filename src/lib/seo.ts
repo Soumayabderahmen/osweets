@@ -1,5 +1,8 @@
 // SEO / JSON-LD helpers for Ö' Sweets
 
+import type { Product, ProductVariant } from "@/data/products";
+import { displayedProductPrice } from "@/lib/product-rules";
+
 export const SITE = {
   url: "https://osweetspatisserie.lovable.app",
   name: "Ö' Sweets Pâtisserie",
@@ -36,6 +39,16 @@ export type ProductLike = {
   inStock?: boolean;
   seasonalOnly?: boolean;
   category?: string;
+  variants?: ProductVariant[];
+  weight?: string;
+  unit?: string;
+  hidePrice?: boolean;
+  noCart?: boolean;
+  published?: boolean;
+  archived?: boolean;
+  draft?: boolean;
+  stockQty?: number;
+  stockUnlimited?: boolean;
 };
 
 /** Schema.org Product JSON-LD with availability aware of Ramadan/Aïd windows. */
@@ -45,10 +58,19 @@ export function productJsonLd(
 ): JsonLd {
   const url = absUrl(opts.path ?? `/produits/${p.slug}`);
   const image = p.image ? absUrl(p.image) : undefined;
-  const isAvailable = opts.available ?? p.inStock ?? true;
+  const offerPrice = displayedProductPrice(p as Product);
+  const isAvailable =
+    opts.available ??
+    ((p.inStock ?? true) &&
+      p.published !== false &&
+      !p.archived &&
+      !p.draft &&
+      !p.hidePrice &&
+      !p.noCart &&
+      (p.stockUnlimited !== false || (p.stockQty ?? 0) > 0));
   const availability = isAvailable
     ? "https://schema.org/InStock"
-    : p.seasonalOnly
+    : p.seasonalOnly && p.inStock !== false && (p.stockUnlimited !== false || (p.stockQty ?? 0) > 0)
       ? "https://schema.org/SeasonalItemAvailability"
       : "https://schema.org/OutOfStock";
   const data: JsonLd = {
@@ -60,16 +82,18 @@ export function productJsonLd(
     url,
     brand: { "@type": "Brand", name: SITE.name },
     category: p.category,
-    offers: {
+  };
+  if (offerPrice > 0) {
+    data.offers = {
       "@type": "Offer",
       priceCurrency: "EUR",
-      price: p.price.toFixed(2),
+      price: offerPrice.toFixed(2),
       url,
       availability,
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@type": "Organization", name: SITE.name },
-    },
-  };
+    };
+  }
   if (image) data.image = image;
   if (opts.seasonNotice) data.disambiguatingDescription = opts.seasonNotice;
   return data;

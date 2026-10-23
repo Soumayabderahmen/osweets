@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { listProducts } from "@/api/catalog";
 import {
   products as baseProducts,
@@ -10,6 +11,7 @@ import {
   type ProductVariant,
 } from "@/data/products";
 import { resolveProductImage } from "@/lib/product-assets";
+import { optionLabel } from "@/lib/variant-label";
 
 /** Une ligne de la table `products` — le catalogue vit désormais en base. */
 export interface ProductRow {
@@ -18,7 +20,9 @@ export interface ProductRow {
   name: string;
   category: string;
   family: string | null;
+  product_type: string | null;
   flavor_label: string | null;
+  assortment_composition: { flavor: string; grams: number }[];
   price: number | string;
   price_per_piece: number | string | null;
   unit: string | null;
@@ -29,6 +33,8 @@ export interface ProductRow {
   prep_lead: string | null;
   short_desc: string;
   description: string;
+  seo_title: string | null;
+  seo_description: string | null;
   conservation: string;
   disclaimer: string | null;
   delivery_mode: string | null;
@@ -40,6 +46,8 @@ export interface ProductRow {
   flavors: string[];
   varieties: string[];
   collections: string[];
+  /** Slugs mis en avant sous la fiche. Vide = choix automatique. */
+  recommended: string[];
   availability: string[];
   occasions: string[];
   pack_includes: string[];
@@ -57,6 +65,22 @@ export interface ProductRow {
   hide_price: boolean;
   requires_cold: boolean;
   customizable: boolean | null;
+
+  /** Comment la cliente choisit : '' | 'kg' | 'format' | 'pot'. */
+  sell_mode: "" | "kg" | "format" | "pot";
+  /** Les options proposées, dans l'ordre. La première est cochée par défaut. */
+  sell_options: ProductVariant[];
+
+  /** Compteur de réserve — `in_stock` en découle, par déclencheur en base. */
+  stock_qty: number;
+  stock_alert: number;
+  stock_unlimited: boolean;
+
+  /** Modes de réception cochés pour ce produit. */
+  ship_pickup: boolean;
+  ship_local: boolean;
+  ship_national: boolean;
+
   sort_order: number;
   created_at?: string;
   updated_at?: string;
@@ -68,7 +92,9 @@ const list = <T>(v: T[] | null | undefined): T[] | undefined => (v && v.length ?
 /** Ligne PostgreSQL → objet `Product` utilisé partout dans le site. */
 export function rowToProduct(r: ProductRow): Product {
   return {
+    id: r.id,
     slug: r.slug,
+    createdAt: r.created_at,
     name: r.name,
     category: r.category as Category,
     price: Number(r.price ?? 0),
@@ -91,11 +117,24 @@ export function rowToProduct(r: ProductRow): Product {
     collections: list(r.collections) as ProductCollection[] | undefined,
     seasonalOnly: r.seasonal_only,
     family: (r.family ?? undefined) as ProductFamily | undefined,
+    productType: r.product_type ?? undefined,
     flavorLabel: r.flavor_label ?? undefined,
+    assortmentComposition: list(r.assortment_composition),
+    recommended: list(r.recommended),
     published: r.published,
+    archived: r.archived,
+    seoTitle: r.seo_title ?? undefined,
+    seoDescription: r.seo_description ?? undefined,
     draft: r.draft,
     flavors: list(r.flavors),
-    variants: r.variants?.length ? r.variants : undefined,
+    // `sell_options` fait autorité ; `variants` reste lu pour les fiches
+    // enregistrées avant que la façon de vendre existe.
+    variants: (r.sell_options?.length
+      ? r.sell_options
+      : r.variants?.length
+        ? r.variants
+        : undefined
+    )?.map((option) => ({ ...option, baseLabel: option.label, label: optionLabel(option) })),
     weight: r.weight ?? undefined,
     varieties: list(r.varieties),
     deliveryMode: r.delivery_mode ?? undefined,
@@ -108,6 +147,13 @@ export function rowToProduct(r: ProductRow): Product {
     prepLead: r.prep_lead ?? undefined,
     localOnly: r.local_only,
     requiresCold: r.requires_cold,
+    sellMode: r.sell_mode ?? "",
+    stockQty: r.stock_qty ?? 0,
+    stockAlert: r.stock_alert ?? 0,
+    stockUnlimited: r.stock_unlimited ?? true,
+    pickup: r.ship_pickup ?? true,
+    localDelivery: r.ship_local ?? true,
+    shippable: r.ship_national ?? true,
   };
 }
 
@@ -139,17 +185,42 @@ export function mergeCatalog(staticList: Product[], rows: ProductRow[]): Product
   return [...merged, ...created];
 }
 
-/**
- * Catalogue enrichi de la base.
- * Les données statiques restent la source du rendu serveur (bonnes pour le
- * référencement) ; la base prend le relais dès qu'elle a répondu.
- */
-export function useCatalog(staticList: Product[] = baseProducts): Product[] {
-  const { data } = useQuery({
-    queryKey: ["catalogue"],
+/** L'unique requête catalogue, partagée par toute la boutique. */
+function catalogueQuery() {
+  return {
+    queryKey: ["catalogue"] as const,
     queryFn: () => listProducts(),
     staleTime: 60_000,
     retry: false,
-  });
-  return mergeCatalog(staticList, data ?? []);
+  };
+}
+
+/**
+ * Le catalogue affiché.
+ *
+ * `src/data/products.ts` ne porte plus la Pâtisserie Tunisienne, et aucune
+ * copie de secours ne la porte non plus : elle vient de la base, ou elle ne
+ * vient pas. C'est la contrepartie exacte de la règle voulue — le
+ * back-office décide, et rien ne peut le contredire.
+ *
+ * Les autres catégories (gâteaux, salé, coffrets, packs) vivent toujours
+ * dans le fichier statique : elles ne sont pas migrées, on n'y touche pas.
+ */
+export function useCatalog(staticList: Product[] = baseProducts): Product[] {
+  const { data } = useQuery(catalogueQuery());
+  return useMemo(() => mergeCatalog(staticList, data?.rows ?? []), [staticList, data?.rows]);
+}
+
+/**
+ * L'état de la base, pour les pages qui ne peuvent rien montrer sans elle.
+ *
+ * « en attente » n'arrive qu'au tout premier rendu client d'une page non
+ * pré-chargée ; le chargeur racine remplit le cache avant le rendu serveur.
+ */
+export type EtatBase = "ok" | "attente" | "panne";
+
+export function useEtatBase(): EtatBase {
+  const { data, isLoading } = useQuery(catalogueQuery());
+  if (data) return data.ok ? "ok" : "panne";
+  return isLoading ? "attente" : "panne";
 }

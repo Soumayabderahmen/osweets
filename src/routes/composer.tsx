@@ -4,7 +4,8 @@ import { Check, Plus, Minus, ArrowRight, ArrowLeft, Gift, ChevronRight } from "l
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { toast } from "sonner";
-import { products } from "@/data/products";
+import { useCatalog, useEtatBase } from "@/lib/catalog";
+import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
 import { formatPrice, useShop } from "@/lib/shop-store";
 import { isPatisserieTunisienne, isPublished } from "@/lib/patisserie";
 import composerHero from "@/assets/composer-hero.jpg";
@@ -74,9 +75,11 @@ function Page() {
   }, [sizeParam]);
 
   /** Pâtisseries éligibles au coffret : publiées, avec un prix, hors devis. */
+  const catalogue = useCatalog();
+  const etatBase = useEtatBase();
   const eligible = useMemo(
     () =>
-      products.filter(
+      catalogue.filter(
         (p) =>
           isPatisserieTunisienne(p) &&
           isPublished(p) &&
@@ -85,9 +88,14 @@ function Page() {
           !p.hidePrice &&
           p.price > 0,
       ),
-    [],
+    [catalogue],
   );
 
+  /*
+   * Un coffret ne se compose que de pâtisseries tunisiennes. Sans la base,
+   * il n'y a rien à proposer — et surtout rien à facturer sur la foi d'un
+   * ancien prix.
+   */
   const chosen = size ? { pieces: size, ...BOXES[size], price: boxPrice(size) } : null;
   const totalSelected = useMemo(() => Object.values(picks).reduce((a, b) => a + b, 0), [picks]);
   const filled = !!chosen && totalSelected === chosen.pieces;
@@ -126,7 +134,7 @@ function Page() {
   const handleAddToCart = () => {
     if (!chosen) return;
     const composition = summaryParts.join(" · ");
-    addToCart({
+    const ok = addToCart({
       slug: `box-${chosen.pieces}`,
       // La composition distingue deux coffrets d'un même format dans le panier.
       variantId: `${composition}${giftWrap ? "|cadeau" : ""}`,
@@ -137,8 +145,10 @@ function Page() {
       unit: "coffret",
       gift: giftWrap ? { wrap: true, message: giftMessage || undefined } : undefined,
     });
-    toast.success(`Coffret ${chosen.label} ajouté au panier`);
+    if (ok) toast.success(`Coffret ${chosen.label} ajouté au panier`);
   };
+
+  if (etatBase === "panne") return <PatisserieIndisponible contexte="Votre Coffret" />;
 
   return (
     <div className="container-os py-6">

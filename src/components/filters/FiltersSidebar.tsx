@@ -48,6 +48,7 @@ export interface FiltersSidebarProps {
   hasActive: boolean;
   onReset: () => void;
   totalCount: number;
+  activeCount?: number;
   /** Largeur de la colonne de filtres sur ordinateur (px). */
   width?: number;
   /** Content rendered next to sidebar (the products grid). */
@@ -241,12 +242,13 @@ function SidebarBody({
   sections,
   onReset,
   totalCount,
-}: Pick<FiltersSidebarProps, "sections" | "onReset" | "totalCount">) {
+  activeCount = 0,
+}: Pick<FiltersSidebarProps, "sections" | "onReset" | "totalCount" | "activeCount">) {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between border-b border-beige pb-4">
         <h2 className="text-xs uppercase tracking-[0.2em] text-charbon">
-          Filtrer <span className="text-charbon-soft">({totalCount})</span>
+          Filtrer <span className="text-charbon-soft">({activeCount})</span>
         </h2>
         <button onClick={onReset} className="text-xs text-gold hover:underline">
           Réinitialiser
@@ -270,8 +272,10 @@ function SidebarBody({
 
 export function FiltersSidebar({
   sections,
+  hasActive,
   onReset,
   totalCount,
+  activeCount = hasActive ? 1 : 0,
   width = 216,
   children,
 }: FiltersSidebarProps) {
@@ -281,7 +285,12 @@ export function FiltersSidebar({
     <div className="flex flex-col gap-10 lg:flex-row">
       {/* Colonne de filtres — ordinateur */}
       <aside className="hidden shrink-0 self-start lg:sticky lg:top-32 lg:block" style={{ width }}>
-        <SidebarBody sections={sections} onReset={onReset} totalCount={totalCount} />
+        <SidebarBody
+          sections={sections}
+          onReset={onReset}
+          totalCount={totalCount}
+          activeCount={activeCount}
+        />
       </aside>
 
       {/* Déclencheur mobile */}
@@ -289,7 +298,7 @@ export function FiltersSidebar({
         onClick={() => setOpen(true)}
         className="inline-flex h-11 items-center gap-2 self-start rounded-full border border-beige px-5 text-xs uppercase tracking-[0.15em] text-charbon lg:hidden"
       >
-        <SlidersHorizontal className="h-4 w-4" /> Filtrer
+        <SlidersHorizontal className="h-4 w-4" /> Filtrer ({activeCount})
       </button>
 
       <div className="min-w-0 flex-1">{children}</div>
@@ -311,7 +320,12 @@ export function FiltersSidebar({
               </button>
             </div>
             <div className="overflow-auto p-5">
-              <SidebarBody sections={sections} onReset={onReset} totalCount={totalCount} />
+              <SidebarBody
+                sections={sections}
+                onReset={onReset}
+                totalCount={totalCount}
+                activeCount={activeCount}
+              />
             </div>
             <div className="border-t border-beige p-5">
               <button

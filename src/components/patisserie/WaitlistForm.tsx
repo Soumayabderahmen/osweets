@@ -5,12 +5,18 @@ import { joinWaitlist } from "@/api/waitlist";
 interface WaitlistFormProps {
   /** Identifiant de la collection ou du produit concerné. */
   collection: string;
+  targetType?: "collection" | "product";
   className?: string;
   compact?: boolean;
 }
 
 /** Champ e-mail « Prévenez-moi » — enregistré dans la base. */
-export function WaitlistForm({ collection, className = "", compact }: WaitlistFormProps) {
+export function WaitlistForm({
+  collection,
+  targetType = "collection",
+  className = "",
+  compact,
+}: WaitlistFormProps) {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
@@ -24,7 +30,7 @@ export function WaitlistForm({ collection, className = "", compact }: WaitlistFo
     }
     setSending(true);
     try {
-      await joinWaitlist({ data: { email: value, collection } });
+      await joinWaitlist({ data: { email: value, collection, targetType } });
     } catch {
       setSending(false);
       toast.error("Enregistrement impossible pour le moment. Réessayez dans un instant.");
