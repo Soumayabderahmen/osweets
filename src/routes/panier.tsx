@@ -213,8 +213,8 @@ function Page() {
                 </div>
                 <button
                   onClick={() => removeFromCart(lineId(it))}
-                  className="text-charbon/40 hover:text-destructive mt-3"
-                  aria-label="Supprimer"
+                  className="mt-1 -mr-3 grid h-11 w-11 place-items-center text-charbon/40 hover:text-destructive"
+                  aria-label={`Supprimer ${it.name}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

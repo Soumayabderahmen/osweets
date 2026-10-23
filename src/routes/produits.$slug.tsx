@@ -291,8 +291,8 @@ function Fiche({ base }: { base: Product }) {
   const quantityLabel = QUANTITY_CHOICE_LABEL;
 
   /*
-   * Sur téléphone, le bouton d'ajout tombe sous les options (jusqu'à deux
-   * écrans plus bas). Une barre fixe en bas d'écran prend le relais dès
+   * Sous 1024 px (téléphone et tablette, fiche sur une colonne), le bouton
+   * d'ajout tombe sous la photo et les options (jusqu'à deux écrans plus bas). Une barre fixe en bas d'écran prend le relais dès
    * qu'il sort de la vue, et disparaît quand il revient.
    */
   const boutonAjout = useRef<HTMLButtonElement | null>(null);
@@ -924,7 +924,7 @@ function Fiche({ base }: { base: Product }) {
       )}
 
       {barreAchat && (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-ivory/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-ivory/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm text-charbon">{p.name}</div>
             <div className="font-price text-sm text-gold">

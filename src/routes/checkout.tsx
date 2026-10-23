@@ -625,8 +625,9 @@ function Page() {
                 L'atelier vérifie votre commande et vous confirme la date avant de la préparer. Les
                 prix et la disponibilité sont revérifiés au moment de valider.
               </p>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" required className="accent-[var(--gold)]" /> J'accepte les{" "}
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" required className="h-5 w-5 accent-[var(--gold)]" />{" "}
+                J'accepte les{" "}
                 <Link to="/cgv" className="underline text-gold">
                   CGV
                 </Link>
@@ -681,25 +682,28 @@ function Page() {
                 )}
               </span>
               <span>{formatPrice(lineUnitPrice(c) * c.quantity)}</span>
-              <div className="w-full flex items-center gap-3">
+              <div className="w-full flex items-center gap-1">
+                {/* Cibles de 40 px : au doigt, un « − » de 9 px se rate. */}
                 <button
                   type="button"
                   aria-label={`Diminuer ${c.name}`}
                   onClick={() => updateQty(lineId(c), c.quantity - 1)}
+                  className="grid h-10 w-10 place-items-center border border-border hover:bg-sable"
                 >
                   −
                 </button>
-                <span>{c.quantity}</span>
+                <span className="w-8 text-center">{c.quantity}</span>
                 <button
                   type="button"
                   aria-label={`Augmenter ${c.name}`}
                   onClick={() => updateQty(lineId(c), c.quantity + 1)}
+                  className="grid h-10 w-10 place-items-center border border-border hover:bg-sable"
                 >
                   +
                 </button>
                 <button
                   type="button"
-                  className="underline ml-auto"
+                  className="ml-auto min-h-10 px-2 underline"
                   onClick={() => removeFromCart(lineId(c))}
                 >
                   Retirer

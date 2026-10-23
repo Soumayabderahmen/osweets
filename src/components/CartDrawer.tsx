@@ -174,7 +174,7 @@ export function CartDrawer() {
                         <button
                           onClick={() => removeFromCart(lineId(it))}
                           aria-label={`Retirer ${it.name}`}
-                          className="text-charbon-soft transition-colors hover:text-charbon"
+                          className="-m-3 grid h-11 w-11 place-items-center text-charbon-soft transition-colors hover:text-charbon"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
