@@ -52,7 +52,8 @@ export function isShippable(p: Product): boolean {
   return productModes(p).includes("shipping");
 }
 
-export type CartLike = { slug: string; name: string }[];
+/** `contents` : les pâtisseries d'un coffret composé, absent du catalogue. */
+export type CartLike = { slug: string; name: string; contents?: string[] }[];
 
 export interface CartFulfillment {
   /** Modes compatibles avec TOUS les produits du panier. */
@@ -92,9 +93,12 @@ export function cartFulfillment(cart: CartLike, catalogue: Product[]): CartFulfi
   const items: Product[] = [];
   const unknown: string[] = [];
   for (const ligne of cart) {
-    const p = catalogue.find((x) => x.slug === ligne.slug);
-    if (p) items.push(p);
-    else unknown.push(ligne.slug);
+    // Un coffret reçoit les contraintes de ce qu'il contient.
+    for (const slug of ligne.contents?.length ? ligne.contents : [ligne.slug]) {
+      const p = catalogue.find((x) => x.slug === slug);
+      if (p) items.push(p);
+      else unknown.push(slug);
+    }
   }
 
   // Panier vide : il n'y a rien à contraindre.

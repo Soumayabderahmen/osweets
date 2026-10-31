@@ -1,6 +1,7 @@
 import {
   aConfigurer,
   adminImage,
+  agir,
   alertes,
   bas,
   dispo,
@@ -12,16 +13,21 @@ import { collectionCounts, collectionState } from "@/lib/collection-presentation
 import { rowToProduct } from "@/lib/catalog";
 import { toWindows } from "@/lib/season";
 import { usePageBannerImage } from "@/lib/banners";
+import { setOrderStatus, type OrderRow } from "@/api/orders";
+import { formatDateFr } from "@/lib/checkout-date";
+import { FULFILLMENT_LABELS } from "@/lib/fulfillment";
+import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/order-rules";
 
 /** Tableau de bord — ce qu'il faut regarder en arrivant le matin. */
 export function EcranBord({ ctx }: { ctx: Contexte }) {
-  const { produits, collections, attente, ouvrir, aller } = ctx;
+  const { produits, collections, attente, commandes, ouvrir, aller } = ctx;
   const vivants = enBoutique(produits);
   const epuises = vivants.filter((r) => !dispo(r));
   const faibles = vivants.filter(bas);
   const archives = produits.filter((r) => r.archived);
   const sansCollection = vivants.filter((r) => !(r.collections ?? []).length);
   const sansTarif = produits.filter(aConfigurer);
+  const nouvelles = commandes.filter((o) => o.status === "nouvelle");
   const max = Math.max(
     1,
     ...collections.map(
@@ -94,6 +100,16 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
           <h3>À faire</h3>
           <div className="sub">Ce que la boutique attend de vous.</div>
 
+          {nouvelles.length > 0 && (
+            <button type="button" className="todo" onClick={() => aller("commandes")}>
+              <div className="b">{nouvelles.length}</div>
+              <div>
+                <div className="t1">Nouvelles commandes</div>
+                <div className="t2">À confirmer auprès des clientes</div>
+              </div>
+            </button>
+          )}
+
           {sansTarif.length > 0 && (
             <button type="button" className="todo" onClick={() => aller("produits", "aconfigurer")}>
               <div className="b">{sansTarif.length}</div>
@@ -135,6 +151,7 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
           )}
 
           {alertes(produits).length === 0 &&
+            nouvelles.length === 0 &&
             sansTarif.length === 0 &&
             sansCollection.length === 0 &&
             archives.length === 0 && (
@@ -412,15 +429,117 @@ export function EcranFamilles({ ctx }: { ctx: Contexte }) {
 
 /** Ramadan & Aïd — les produits qui ne sortent qu'en saison. */
 /** Commandes — l'écran existe, la boutique n'enregistre pas encore les commandes. */
-export function EcranCommandes() {
+/** Les commandes reçues, les plus récentes d'abord. */
+export function EcranCommandes({ ctx }: { ctx: Contexte }) {
+  const { commandes, recharger } = ctx;
+
+  const changer = (o: OrderRow, status: OrderStatus) => {
+    if (
+      status === "annulee" &&
+      !window.confirm(`Annuler ${o.number} ? Le stock est rendu, et ce choix est définitif.`)
+    )
+      return;
+    void agir(
+      () => setOrderStatus({ data: { id: o.id, status } }),
+      `${o.number} : ${ORDER_STATUS_LABELS[status]}.`,
+      recharger,
+    );
+  };
+
+  if (commandes.length === 0) return <div className="empty">Aucune commande pour le moment.</div>;
+
   return (
     <>
       <div className="note">
-        Les commandes passées en boutique ne sont pas encore enregistrées en base : elles partent
-        aujourd'hui par e-mail et par WhatsApp. Cet écran les recevra le jour où le paiement en
-        ligne sera branché.
+        Aucun paiement n'est encaissé en ligne : contactez la cliente pour confirmer sa commande,
+        puis faites avancer le statut.
       </div>
-      <div className="empty">Aucune commande enregistrée.</div>
+      <div className="list">
+        {commandes.map((o) => (
+          <details className="commande" key={o.id}>
+            <summary>
+              <span className="id">
+                <b>{o.number}</b> — {o.first_name} {o.last_name}
+                <small>
+                  {new Date(o.created_at).toLocaleString("fr-FR")} · {FULFILLMENT_LABELS[o.mode]}{" "}
+                  pour le {formatDateFr(o.fulfillment_date)}
+                </small>
+              </span>
+              <span className={`tag ${o.status === "nouvelle" ? "warn" : "pub"}`}>
+                {ORDER_STATUS_LABELS[o.status]}
+              </span>
+              <b>{euro(o.total)}</b>
+            </summary>
+
+            <div className="commande-corps">
+              <p>
+                <a href={`tel:${o.phone}`}>{o.phone}</a> ·{" "}
+                <a href={`mailto:${o.email}`}>{o.email}</a>
+              </p>
+              {o.mode !== "pickup" && (
+                <p>
+                  {[o.address, o.address2, `${o.postal_code} ${o.city}`, o.country]
+                    .filter((x) => x.trim())
+                    .join(", ")}
+                  {o.distance_km ? ` — ${o.distance_km} km déclarés par la cliente` : ""}
+                </p>
+              )}
+              {!o.billing_same && (
+                <p>
+                  Facturation : {o.billing_address}, {o.billing_postal_code} {o.billing_city}
+                </p>
+              )}
+              {o.instructions && <p>Instructions : {o.instructions}</p>}
+
+              <ul>
+                {o.items.map((i) => (
+                  <li key={i.id}>
+                    <span>
+                      {i.quantity} × {i.name}
+                      {i.variant_label && <small>{i.variant_label}</small>}
+                      {i.gift_wrap && (
+                        <small>
+                          Emballage cadeau{i.gift_message ? ` : « ${i.gift_message} »` : ""}
+                        </small>
+                      )}
+                      {!i.price_verified && <small className="alerte">Prix à vérifier</small>}
+                    </span>
+                    <b>{euro(i.line_total)}</b>
+                  </li>
+                ))}
+                {Number(o.gift_total) > 0 && (
+                  <li>
+                    <span>Emballage cadeau</span>
+                    <b>{euro(o.gift_total)}</b>
+                  </li>
+                )}
+                <li>
+                  <span>Réception</span>
+                  <b>{euro(o.delivery_fee)}</b>
+                </li>
+              </ul>
+
+              {o.status === "annulee" ? (
+                <p>Commande annulée : le stock a été rendu.</p>
+              ) : (
+                <label className="f">
+                  <span>Statut</span>
+                  <select
+                    value={o.status}
+                    onChange={(e) => changer(o, e.target.value as OrderStatus)}
+                  >
+                    {Object.entries(ORDER_STATUS_LABELS).map(([k, l]) => (
+                      <option key={k} value={k}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          </details>
+        ))}
+      </div>
     </>
   );
 }

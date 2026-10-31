@@ -497,6 +497,43 @@
   background: rgba(167, 145, 82, 0.16);
   color: var(--gold-dark);
 }
+.osadmin .commande summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.osadmin .commande summary .id {
+  flex: 1;
+  min-width: 0;
+}
+.osadmin .commande small {
+  display: block;
+  font-size: 12px;
+  color: rgba(41, 34, 31, 0.6);
+}
+.osadmin .commande small.alerte {
+  color: #a5321f;
+}
+.osadmin .commande-corps {
+  display: grid;
+  gap: 10px;
+  padding: 0 16px 16px;
+  font-size: 14px;
+}
+.osadmin .commande-corps ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.osadmin .commande-corps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
 .osadmin .tag.warn {
   background: rgba(192, 57, 43, 0.12);
   color: #a5321f;

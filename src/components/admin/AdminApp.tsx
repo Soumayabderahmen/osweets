@@ -6,6 +6,7 @@ import { listSeasons, type SeasonRow } from "@/api/seasons";
 import { EcranBandeaux } from "./EcranBandeaux";
 import { listFamilies, type FamilyRow } from "@/api/families";
 import { listWaitlist, type WaitlistRow } from "@/api/waitlist";
+import { listOrders, type OrderRow } from "@/api/orders";
 import { getSettings, DEFAULT_SETTINGS, type ShopSettings } from "@/api/settings";
 import type { ProductRow } from "@/lib/catalog";
 import {
@@ -72,6 +73,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
   const [collections, setCollections] = useState<CollectionRow[]>([]);
   const [familles, setFamilles] = useState<FamilyRow[]>([]);
   const [attente, setAttente] = useState<WaitlistRow[]>([]);
+  const [commandes, setCommandes] = useState<OrderRow[]>([]);
   const [reglages, setReglages] = useState<ShopSettings>(DEFAULT_SETTINGS);
   const [bandeaux, setBandeaux] = useState<PageBannerRow[]>([]);
   const [saisons, setSaisons] = useState<SeasonRow[]>([]);
@@ -80,7 +82,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
 
   const recharger = useCallback(async () => {
     try {
-      const [p, c, f, a, s, b, sa] = await Promise.all([
+      const [p, c, f, a, s, b, sa, o] = await Promise.all([
         listProductsForAdmin(),
         listCollections(),
         listFamilies(),
@@ -88,6 +90,8 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
         getSettings(),
         listPageBanners(),
         listSeasons(),
+        // Sans la migration 022, seul l'écran Commandes reste vide.
+        listOrders().catch(() => []),
       ]);
       setProduits(p);
       setCollections(c);
@@ -96,6 +100,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
       setReglages(s);
       setBandeaux(b);
       setSaisons(sa);
+      setCommandes(o);
       setErreur(null);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Base de données injoignable.");
@@ -128,6 +133,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
     familles,
     saisons,
     attente,
+    commandes,
     reglages,
     bandeaux,
     recherche,
@@ -235,7 +241,12 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
 
             <div className="navgroup">
               <h4>Ventes</h4>
-              <NavItem actif={ecran === "commandes"} onClick={() => aller("commandes")} ico="▢">
+              <NavItem
+                actif={ecran === "commandes"}
+                onClick={() => aller("commandes")}
+                ico="▢"
+                badge={commandes.filter((o) => o.status === "nouvelle").length}
+              >
                 Commandes
               </NavItem>
             </div>
@@ -350,7 +361,7 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
             ) : ecran === "campagnes" ? (
               <EcranCampagnes ctx={ctx} />
             ) : ecran === "commandes" ? (
-              <EcranCommandes />
+              <EcranCommandes ctx={ctx} />
             ) : ecran === "attente" ? (
               <EcranAttente ctx={ctx} />
             ) : ecran === "bandeaux" ? (

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useCatalog, useEtatBase } from "@/lib/catalog";
 import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
 import { formatPrice, useShop } from "@/lib/shop-store";
+import { boxPrice } from "@/lib/coffret";
 import { isPatisserieTunisienne, isPublished } from "@/lib/patisserie";
 import composerHero from "@/assets/composer-hero.jpg";
 import { ProductImage } from "@/components/ProductImage";
@@ -23,11 +24,6 @@ const BOXES: Record<number, { label: string; tagline: string }> = {
   36: { label: "Réception", tagline: "Réceptions" },
   48: { label: "Royal", tagline: "Grand format" },
 };
-
-const UNIT_PRICE = 3.5;
-
-const boxPrice = (pieces: number) =>
-  pieces * UNIT_PRICE + (pieces >= 36 ? 15 : pieces >= 24 ? 8 : pieces >= 18 ? 5 : 0);
 
 const STEPS = ["Format", "Pâtisseries", "Récapitulatif"] as const;
 
@@ -142,6 +138,7 @@ function Page() {
       name: `Coffret ${chosen.label} (${chosen.pieces} pièces)`,
       // Sans l'écrin : le panier l'ajoute lui-même via `gift.wrap` (giftTotal).
       price: chosen.price,
+      contents: Object.keys(picks),
       image: composerHero,
       unit: "coffret",
       gift: giftWrap ? { wrap: true, message: giftMessage || undefined } : undefined,

@@ -10,6 +10,7 @@ import { useShopSettings } from "@/components/layout/HolidayBanner";
 import { cartHasBlockingIssue, lineUnitPrice } from "@/lib/cart-rules";
 import { applyCartValidation, useCartValidation } from "@/lib/use-cart-validation";
 import { formatDateFr, validateFulfillmentDate } from "@/lib/checkout-date";
+import { createOrder } from "@/api/orders";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, unknown>): { etape?: number } => ({
@@ -93,7 +94,11 @@ function Page() {
   const [hydrated, setHydrated] = useState(false);
   const submitting = useRef(false);
   const [submitBusy, setSubmitBusy] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<{ number: string; total: number } | null>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  // Garde le même identifiant si la cliente renvoie après une erreur réseau :
+  // le serveur reconnaît la commande au lieu d'en créer une seconde.
+  const clientRef = useRef<string | null>(null);
   // On garde une copie des lignes : le panier est vidé à la validation, mais la
   // confirmation doit afficher le même détail de conditionnement que le récap.
   const [ordered, setOrdered] = useState<CartItem[]>([]);
@@ -189,8 +194,12 @@ function Page() {
     return (
       <div className="container-os section-y text-center">
         <div className="text-6xl mb-4">✓</div>
-        <h1 className="font-display text-4xl">Commande confirmée</h1>
-        <p className="text-charbon/70 mt-4">Vous recevrez un email de confirmation sous peu.</p>
+        <h1 className="font-display text-4xl">Commande bien reçue</h1>
+        <p className="mt-3 font-price text-lg text-gold">N° {done.number}</p>
+        <p className="text-charbon/70 mt-4">
+          L'atelier vous contacte pour confirmer votre commande et la date. Aucun paiement ne vous a
+          été demandé.
+        </p>
         {ordered.length > 0 && (
           <ul
             data-testid="confirmation-lines"
@@ -209,6 +218,10 @@ function Page() {
                 <span>{formatPrice(lineUnitPrice(c) * c.quantity)}</span>
               </li>
             ))}
+            <li className="flex justify-between gap-4 border-t border-border pt-2 font-medium">
+              <span>Total (emballage et réception compris)</span>
+              <span>{formatPrice(done.total)}</span>
+            </li>
           </ul>
         )}
         <Link to="/" className="btn btn-gold mt-8 inline-flex">
@@ -262,12 +275,36 @@ function Page() {
                 if (step === 2 && !canContinueDelivery) return;
                 if (step < 4) setStep(step + 1);
                 else {
+                  if (mode === "") return;
+                  setOrderError(null);
+                  clientRef.current ??= crypto.randomUUID();
+                  const order = await createOrder({
+                    data: {
+                      ...form,
+                      clientRef: clientRef.current,
+                      mode,
+                      km: distance,
+                      expectedTotal: total,
+                      lines: checkedCart.map((item) => ({
+                        ...item,
+                        lineKey: lineId(item),
+                        giftWrap: item.gift?.wrap,
+                        giftMessage: item.gift?.message,
+                      })),
+                    },
+                  });
                   setOrdered(checkedCart);
                   clearCart();
                   if (typeof window !== "undefined")
                     window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
-                  setDone(true);
+                  setDone(order);
                 }
+              } catch (err) {
+                setOrderError(
+                  err instanceof Error && err.message
+                    ? err.message
+                    : "Votre commande n'a pas pu être envoyée. Réessayez dans un instant.",
+                );
               } finally {
                 submitting.current = false;
                 setSubmitBusy(false);
@@ -635,6 +672,12 @@ function Page() {
             </>
           )}
 
+          {orderError && (
+            <p role="alert" className="text-sm text-destructive">
+              {orderError}
+            </p>
+          )}
+
           <div className="flex justify-between pt-4">
             {step > 1 && (
               <button
@@ -659,7 +702,7 @@ function Page() {
                 "Continuer →"
               ) : (
                 <>
-                  <Check className="h-4 w-4" /> Valider le récapitulatif
+                  <Check className="h-4 w-4" /> {submitBusy ? "Envoi…" : "Envoyer ma commande"}
                 </>
               )}
             </button>

@@ -35,6 +35,8 @@ export interface CartItem {
   /** Parfum choisi, ou composition d'un coffret sur mesure. */
   variantId?: string;
   variantLabel?: string;
+  /** Coffret composé : les pâtisseries qu'il contient. */
+  contents?: string[];
   /** Unité de vente affichée dans le panier (« coffret », « / 500 g »…). */
   unit?: string;
   unitPriceSnapshot?: number;

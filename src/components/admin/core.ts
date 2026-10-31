@@ -4,6 +4,7 @@ import { productBlockReason } from "@/lib/product-rules";
 import type { CollectionRow } from "@/api/collections";
 import type { FamilyRow } from "@/api/families";
 import type { WaitlistRow } from "@/api/waitlist";
+import type { OrderRow } from "@/api/orders";
 import type { ShopSettings } from "@/api/settings";
 import type { PageBannerRow } from "@/api/banners";
 import type { SeasonRow } from "@/api/seasons";
@@ -52,6 +53,7 @@ export interface Contexte {
   /** Fenêtres d'ouverture des collections saisonnières. */
   saisons: SeasonRow[];
   attente: WaitlistRow[];
+  commandes: OrderRow[];
   reglages: ShopSettings;
   recherche: string;
   recharger: () => Promise<void>;

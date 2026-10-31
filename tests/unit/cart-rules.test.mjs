@@ -17,6 +17,9 @@ import {
   shouldShowCollection,
 } from "../../src/lib/collection-visibility.ts";
 import { patisserieMenuGroups } from "../../src/lib/patisserie-menu.ts";
+import { canChangeOrderStatus, orderContactError, orderTotals } from "../../src/lib/order-rules.ts";
+import { boxPieces, boxPrice } from "../../src/lib/coffret.ts";
+import { cartFulfillment } from "../../src/lib/fulfillment.ts";
 import { parseFrenchPrice, isStrictlyPositivePrice } from "../../src/lib/admin-values.ts";
 import { currentUnitPrice } from "../../src/lib/cart-validation-pricing.ts";
 import { validateFulfillmentDate } from "../../src/lib/checkout-date.ts";
@@ -359,4 +362,67 @@ test("patisserie mega menu keeps four pastry collections and dynamic occasions",
     withoutRamadan.occasions.map((c) => c.productKey),
     ["aid"],
   );
+});
+
+test("order totals come from server prices and count gift wrap once per line", () => {
+  assert.deepEqual(
+    orderTotals(
+      [
+        { unitPrice: 21, quantity: 2, giftWrap: true },
+        { unitPrice: 8.1, quantity: 3 },
+      ],
+      5,
+      9.9,
+    ),
+    { subtotal: 66.3, giftTotal: 5, deliveryFee: 9.9, total: 81.2 },
+  );
+});
+
+test("order contact requires an address only when something is delivered", () => {
+  const contact = {
+    firstName: "Test",
+    lastName: "Client",
+    email: "client@example.com",
+    phone: "06 00 00 00 00",
+    address: "",
+    postalCode: "",
+    city: "",
+  };
+  assert.equal(orderContactError(contact, false), null);
+  assert.match(orderContactError(contact, true), /adresse/);
+  assert.match(orderContactError({ ...contact, email: "faux" }, false), /e-mail/);
+  assert.match(orderContactError({ ...contact, phone: "12" }, false), /téléphone/);
+});
+
+test("a cancelled order is final, because its stock was already returned", () => {
+  assert.equal(canChangeOrderStatus("nouvelle", "annulee"), true);
+  assert.equal(canChangeOrderStatus("annulee", "nouvelle"), false);
+  assert.equal(canChangeOrderStatus("confirmee", "confirmee"), false);
+});
+
+test("a composed box takes the delivery limits of what it contains", () => {
+  const catalogue = [
+    { slug: "sec", pickup: true, localDelivery: true, shippable: true },
+    { slug: "frais", pickup: true, localDelivery: true, shippable: false },
+  ];
+  const box = (contents) => [{ slug: "box-6", name: "Coffret", contents }];
+
+  assert.deepEqual(cartFulfillment(box(["sec"]), catalogue).available, [
+    "shipping",
+    "local",
+    "pickup",
+  ]);
+  assert.deepEqual(cartFulfillment(box(["sec", "frais"]), catalogue).available, [
+    "local",
+    "pickup",
+  ]);
+  assert.deepEqual(cartFulfillment(box(["disparu"]), catalogue).available, []);
+  assert.deepEqual(cartFulfillment(box(undefined), catalogue).available, []);
+});
+
+test("box prices are recomputed from the slug only for real formats", () => {
+  assert.equal(boxPieces("box-6"), 6);
+  assert.equal(boxPieces("box-7"), null);
+  assert.equal(boxPrice(6), 21);
+  assert.equal(boxPrice(24), 92);
 });
