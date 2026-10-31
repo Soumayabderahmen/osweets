@@ -6,6 +6,9 @@ import { saveCollection } from "@/api/collections";
 import { savePageBanner } from "@/api/banners";
 import type { Contexte } from "./core";
 
+/** Cette ligne ne porte que du texte pour Google : ni image, ni bandeau. */
+const CLE_GOOGLE = "patisserie-seo";
+
 /**
  * Écran « Bandeaux ».
  *
@@ -59,15 +62,19 @@ export function EcranBandeaux({ ctx }: { ctx: Contexte }) {
           <div className="bandeaux">
             {ctx.bandeaux.map((b) => (
               <div key={b.key} style={{ display: "grid", gap: 12 }}>
-                <Vignette
-                  titre={b.label || b.key}
-                  sous={b.key}
-                  image={b.image_url}
-                  onImage={async (url) => {
-                    await savePageBanner({ data: { key: b.key, imageUrl: url } });
-                  }}
-                  recharger={ctx.recharger}
-                />
+                {b.key === CLE_GOOGLE ? (
+                  <strong>{b.label}</strong>
+                ) : (
+                  <Vignette
+                    titre={b.label || b.key}
+                    sous={b.key}
+                    image={b.image_url}
+                    onImage={async (url) => {
+                      await savePageBanner({ data: { key: b.key, imageUrl: url } });
+                    }}
+                    recharger={ctx.recharger}
+                  />
+                )}
                 <TexteBandeau row={b} recharger={ctx.recharger} />
               </div>
             ))}
@@ -88,6 +95,7 @@ function TexteBandeau({
   const [title, setTitle] = useState(row.title);
   const [subtitle, setSubtitle] = useState(row.subtitle);
   const [busy, setBusy] = useState(false);
+  const google = row.key === CLE_GOOGLE;
 
   useEffect(() => {
     setTitle(row.title);
@@ -110,11 +118,15 @@ function TexteBandeau({
   return (
     <div className="card" style={{ padding: 14 }}>
       <label className="f">
-        <span>Titre affiché</span>
+        <span>{google ? "Titre pour Google" : "Titre affiché"}</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} />
       </label>
       <label className="f">
-        <span>Texte sous le titre</span>
+        <span>
+          {google
+            ? "Description pour Google (vide : composée d'après les collections)"
+            : "Texte sous le titre"}
+        </span>
         <textarea rows={3} value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
       </label>
       <button type="button" className="btn-dark" disabled={busy} onClick={() => void enregistrer()}>

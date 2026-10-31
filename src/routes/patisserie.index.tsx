@@ -45,20 +45,33 @@ export const Route = createFileRoute("/patisserie/")({
    * par le chargeur.
    */
   loader: async () => {
-    const { listCollections } = await import("@/api/collections");
-    const rows = await listCollections().catch(() => []);
-    return rows
-      .filter((c) => c.published && !c.hidden)
-      .sort((a, b) => a.sort_order - b.sort_order)
-      .map((c) => ({ label: c.label, path: `/patisserie/${c.slug}` }));
+    const [{ listCollections }, { listPageBanners }] = await Promise.all([
+      import("@/api/collections"),
+      import("@/api/banners"),
+    ]);
+    const [rows, bandeaux] = await Promise.all([
+      listCollections().catch(() => []),
+      listPageBanners().catch(() => []),
+    ]);
+    const seo = bandeaux.find((b) => b.key === "patisserie-seo");
+    return {
+      collections: rows
+        .filter((c) => c.published && !c.hidden)
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((c) => ({ label: c.label, path: `/patisserie/${c.slug}` })),
+      seoTitle: seo?.title.trim() ?? "",
+      seoDescription: seo?.subtitle.trim() ?? "",
+    };
   },
   head: ({ loaderData }) => {
-    const description = descriptionDepuis(loaderData ?? []);
+    const collections = loaderData?.collections ?? [];
+    const title = loaderData?.seoTitle || TITLE;
+    const description = loaderData?.seoDescription || descriptionDepuis(collections);
     return {
       meta: [
-        { title: TITLE },
+        { title },
         { name: "description", content: description },
-        { property: "og:title", content: TITLE },
+        { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${SITE.url}/patisserie` },
@@ -77,8 +90,8 @@ export const Route = createFileRoute("/patisserie/")({
           "@type": "ItemList",
           name: "Collections — Pâtisserie Tunisienne",
           url: `${SITE.url}/patisserie`,
-          numberOfItems: (loaderData ?? []).length,
-          itemListElement: (loaderData ?? []).map((c, i) => ({
+          numberOfItems: collections.length,
+          itemListElement: collections.map((c, i) => ({
             "@type": "ListItem",
             position: i + 1,
             name: c.label,
@@ -96,6 +109,8 @@ function Page() {
   const catalog = useCatalog(baseProducts);
   // Le visuel du haut est piloté depuis le back-office (page « patisserie »).
   const banniere = usePageBannerImage("patisserie");
+  const toutes = usePageBanner("patisserie-toutes", banniere);
+  const titreToutes = toutes.title || "Toutes nos pâtisseries";
   const etatBase = useEtatBase();
   const saisons = useSeasons();
   const list = useMemo(
@@ -126,13 +141,13 @@ function Page() {
     return (
       <CategoryPage
         jsonLdPath="/patisserie"
-        title="Toutes nos pâtisseries"
-        subtitle="Toute la pâtisserie tunisienne Ö' Sweets, toutes collections confondues. Façonnée à la main chaque matin à Évry-Courcouronnes."
-        heroImage={banniere}
+        title={titreToutes}
+        subtitle={toutes.subtitle}
+        heroImage={toutes.image}
         breadcrumb={[
           { label: "Accueil", to: "/" },
           { label: "Pâtisserie Tunisienne", to: "/patisserie" },
-          { label: "Toutes nos pâtisseries" },
+          { label: titreToutes },
         ]}
         products={list}
         filters={{
