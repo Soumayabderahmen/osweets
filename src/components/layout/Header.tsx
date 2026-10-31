@@ -54,7 +54,7 @@ function usePatisserieCols(): MegaCol[] {
   const catalogue = useCatalog();
   const saisons = Array.from(useSeasonKeys(), (key) => ({ key }));
 
-  const { pastries, occasions } = patisserieMenuGroups(collections, catalogue, saisons, 4);
+  const { pastries, occasions } = patisserieMenuGroups(collections, catalogue, saisons);
 
   const cols: MegaCol[] = [
     {

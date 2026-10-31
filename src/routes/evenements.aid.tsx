@@ -108,7 +108,6 @@ function Page() {
             "coffret-aid",
             "coffret-prestige",
             "baklawa-pistache",
-            "mignardises-assortiment",
           ]}
         />
         <p className="text-center mt-6 text-sm text-charbon/60">

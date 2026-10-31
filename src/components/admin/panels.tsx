@@ -30,7 +30,7 @@ import { kgMainGrams, productBlockReason } from "@/lib/product-rules";
 import { KG_GRAM_CHOICES, auditPackaging, kgOptionPrice } from "@/lib/variant-label";
 import { formatGrams } from "@/lib/weight";
 import { compositionGramsTotal, scaleGramComposition } from "@/lib/composition";
-import type { Allergen, ProductVariant, SellMode } from "@/data/products";
+import { giftCategories, type Allergen, type ProductVariant, type SellMode } from "@/data/products";
 import { isStrictlyPositivePrice, parseFrenchNumber, parseFrenchPrice } from "@/lib/admin-values";
 import {
   adminImage,
@@ -179,6 +179,8 @@ export function PanelProduit({
     conservation: row?.conservation ?? "",
     delivery_mode: row?.delivery_mode ?? "",
     availability: (row?.availability ?? []).join("\n"),
+    flavors: (row?.flavors ?? []).join("\n"),
+    occasions: row?.occasions ?? [],
     composition: (row?.composition ?? []).join("\n"),
     ingredients: (row?.ingredients ?? []).join("\n"),
     allergens: row?.allergens ?? [],
@@ -293,6 +295,11 @@ export function PanelProduit({
               .split("\n")
               .map((x) => x.trim())
               .filter(Boolean),
+            flavors: d.flavors
+              .split("\n")
+              .map((x) => x.trim())
+              .filter(Boolean),
+            occasions: d.occasions,
             composition: d.composition
               .split("\n")
               .map((x) => x.trim())
@@ -1206,6 +1213,37 @@ export function PanelProduit({
               placeholder="Un ingrédient par ligne"
             />
           </label>
+          <label className="f">
+            <span>Parfums affichés sur la fiche</span>
+            <textarea
+              rows={3}
+              value={d.flavors}
+              onChange={(e) => set("flavors", e.target.value)}
+              placeholder="Un parfum par ligne"
+            />
+          </label>
+          <fieldset className="f">
+            <legend>Pages cadeaux où proposer ce produit</legend>
+            <div className="cols">
+              {giftCategories.map((c) => (
+                <label key={c.slug}>
+                  <input
+                    type="checkbox"
+                    checked={d.occasions.includes(c.slug)}
+                    onChange={() =>
+                      set(
+                        "occasions",
+                        d.occasions.includes(c.slug)
+                          ? d.occasions.filter((item) => item !== c.slug)
+                          : [...d.occasions, c.slug],
+                      )
+                    }
+                  />{" "}
+                  {c.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <fieldset className="f">
             <legend>Allergènes confirmés</legend>
             <div className="cols">

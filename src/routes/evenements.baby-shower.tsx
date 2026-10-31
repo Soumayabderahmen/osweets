@@ -129,7 +129,6 @@ function Page() {
         />
         <SuggestedProducts
           slugs={[
-            "mignardises-assortiment",
             "cake-vanille-amandes",
             "cake-pistache-fleur-oranger",
             "coffret-decouverte",

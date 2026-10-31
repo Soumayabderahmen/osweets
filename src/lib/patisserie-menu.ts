@@ -12,7 +12,6 @@ export function patisserieMenuGroups(
   collections: LiveCollection[],
   products: Product[],
   seasons: readonly { key: string }[],
-  limit = 4,
 ): PatisserieMenuGroups {
   const seasonKeys = new Set(seasons.map((season) => season.key));
   const patisserie = patisserieProducts(products);
@@ -26,8 +25,7 @@ export function patisserieMenuGroups(
 
   const pastries = collections
     .filter((collection) => !seasonKeys.has(collection.productKey))
-    .filter(visibleCollection)
-    .slice(0, limit);
+    .filter(visibleCollection);
 
   return { pastries, occasions };
 }

@@ -119,7 +119,6 @@ function Page() {
             "baklawa-pistache",
             "samsa-amandes",
             "kaak-warka",
-            "mignardises-assortiment",
           ]}
         />
         <p className="text-center mt-6 text-sm text-charbon/60">

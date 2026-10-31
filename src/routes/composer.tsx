@@ -25,7 +25,6 @@ const BOXES: Record<number, { label: string; tagline: string }> = {
 };
 
 const UNIT_PRICE = 3.5;
-const GIFT_WRAP_PRICE = 5;
 
 const boxPrice = (pieces: number) =>
   pieces * UNIT_PRICE + (pieces >= 36 ? 15 : pieces >= 24 ? 8 : pieces >= 18 ? 5 : 0);
@@ -56,7 +55,8 @@ export const Route = createFileRoute("/composer")({
 function Page() {
   const { size: sizeParam } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { addToCart } = useShop();
+  // L'écrin suit le prix des Réglages, comme l'emballage des fiches produit.
+  const { addToCart, giftWrapPrice } = useShop();
 
   const [size, setSize] = useState<number | null>(sizeParam ? Number(sizeParam) : null);
   const [step, setStep] = useState<1 | 2 | 3>(sizeParam ? 2 : 1);
@@ -112,7 +112,7 @@ function Page() {
     [picks, eligible],
   );
 
-  const totalPrice = (chosen?.price ?? 0) + (giftWrap ? GIFT_WRAP_PRICE : 0);
+  const totalPrice = (chosen?.price ?? 0) + (giftWrap ? giftWrapPrice : 0);
 
   const pickSize = (pieces: number) => {
     setSize(pieces);
@@ -140,7 +140,8 @@ function Page() {
       variantId: `${composition}${giftWrap ? "|cadeau" : ""}`,
       variantLabel: composition,
       name: `Coffret ${chosen.label} (${chosen.pieces} pièces)`,
-      price: totalPrice,
+      // Sans l'écrin : le panier l'ajoute lui-même via `gift.wrap` (giftTotal).
+      price: chosen.price,
       image: composerHero,
       unit: "coffret",
       gift: giftWrap ? { wrap: true, message: giftMessage || undefined } : undefined,
@@ -433,7 +434,7 @@ function Page() {
                     <Gift className="h-4 w-4 text-gold" /> C'est un cadeau — emballage premium
                   </span>
                   <span className="block text-charbon-soft">
-                    Écrin signé Ö' Sweets (+{GIFT_WRAP_PRICE} €)
+                    Écrin signé Ö' Sweets (+{formatPrice(giftWrapPrice)})
                   </span>
                 </span>
               </label>
@@ -453,7 +454,7 @@ function Page() {
                 {giftWrap && (
                   <div className="flex justify-between text-charbon">
                     <span>Emballage cadeau premium</span>
-                    <span>{GIFT_WRAP_PRICE} €</span>
+                    <span>{formatPrice(giftWrapPrice)}</span>
                   </div>
                 )}
               </div>

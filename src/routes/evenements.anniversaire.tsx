@@ -118,7 +118,6 @@ function Page() {
           slugs={[
             "gateau-licorne",
             "gateau-floral-adulte",
-            "mignardises-assortiment",
             "coffret-decouverte",
           ]}
         />

@@ -343,7 +343,7 @@ test("patisserie mega menu keeps four pastry collections and dynamic occasions",
 
   assert.deepEqual(
     groups.pastries.map((c) => c.productKey),
-    ["amandes", "test", "pistache", "perles"],
+    ["amandes", "test", "pistache", "perles", "tradition", "extra"],
   );
   assert.deepEqual(
     groups.occasions.map((c) => c.productKey),

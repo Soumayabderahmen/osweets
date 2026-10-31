@@ -79,7 +79,6 @@ function Page() {
           slugs={[
             "baklawa-pistache",
             "kaak-warka",
-            "mignardises-assortiment",
             "coffret-prestige",
           ]}
         />

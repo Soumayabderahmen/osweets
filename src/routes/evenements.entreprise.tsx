@@ -100,7 +100,6 @@ function Page() {
         <SuggestedProducts
           slugs={[
             "coffret-prestige",
-            "mignardises-assortiment",
             "coffret-decouverte",
             "coffret-aid",
           ]}

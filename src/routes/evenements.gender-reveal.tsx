@@ -109,13 +109,9 @@ function Page() {
             },
           ].map((s) => (
             <div key={s.n} className="bg-white border border-border p-8">
-              <div className="text-gold text-xs tracking-[0.3em] uppercase">
-                {s.n}
-              </div>
+              <div className="text-gold text-xs tracking-[0.3em] uppercase">{s.n}</div>
               <h3 className="font-display text-2xl mt-3">{s.t}</h3>
-              <p className="text-sm text-charbon/70 mt-3 leading-relaxed">
-                {s.d}
-              </p>
+              <p className="text-sm text-charbon/70 mt-3 leading-relaxed">{s.d}</p>
             </div>
           ))}
         </div>
@@ -132,9 +128,7 @@ function Page() {
               className={`p-6 text-left transition border-2 ${format.id === f.id ? "border-gold bg-beige" : "border-border bg-white hover:border-gold/50"}`}
             >
               <div className="font-display text-xl">{f.label}</div>
-              <div className="text-sm text-charbon/60 mt-2 leading-relaxed">
-                {f.desc}
-              </div>
+              <div className="text-sm text-charbon/60 mt-2 leading-relaxed">{f.desc}</div>
             </button>
           ))}
         </div>
@@ -142,10 +136,7 @@ function Page() {
 
       {/* Personnalisation */}
       <section className="container-os pb-20">
-        <SectionTitle
-          eyebrow="02 · Personnalisation"
-          title="Composez le décor"
-        />
+        <SectionTitle eyebrow="02 · Personnalisation" title="Composez le décor" />
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="space-y-6 bg-white border border-border p-8">
             <div>
@@ -163,9 +154,7 @@ function Page() {
                       className="block h-10 w-full rounded-sm"
                       style={{ background: c.color }}
                     />
-                    <div className="text-[10px] mt-1 text-charbon/70">
-                      {c.label}
-                    </div>
+                    <div className="text-[10px] mt-1 text-charbon/70">{c.label}</div>
                   </button>
                 ))}
               </div>
@@ -202,8 +191,7 @@ function Page() {
                 className="w-full accent-[var(--gold)]"
               />
               <div className="text-[11px] text-charbon/60 mt-1">
-                Suggéré : 16cm (8-12) · 20cm (15-25) · 24cm (25-40) · 2 étages
-                (40+)
+                Suggéré : 16cm (8-12) · 20cm (15-25) · 24cm (25-40) · 2 étages (40+)
               </div>
             </div>
 
@@ -233,14 +221,11 @@ function Page() {
           {/* Bloc réassurance confidentialité */}
           <div className="bg-charbon text-ivory p-10 flex flex-col justify-center">
             <Shield className="h-10 w-10 text-gold" />
-            <h3 className="font-display text-3xl mt-5 text-white">
-              La couleur reste un secret
-            </h3>
+            <h3 className="font-display text-3xl mt-5 text-white">La couleur reste un secret</h3>
             <p className="mt-4 text-ivory/80 font-light leading-relaxed">
-              Nous vous contactons en privé pour recevoir la couleur choisie. En
-              atelier, seule notre chef pâtissière a accès à l'information — le
-              gâteau est scellé, étiqueté de manière neutre, et livré à un tiers
-              de confiance de votre choix.
+              Nous vous contactons en privé pour recevoir la couleur choisie. En atelier, seule
+              notre chef pâtissière a accès à l'information — le gâteau est scellé, étiqueté de
+              manière neutre, et livré à un tiers de confiance de votre choix.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-ivory/75">
               <li>✦ Enveloppe scellée pour transmettre la couleur</li>
@@ -260,20 +245,17 @@ function Page() {
             className="w-full aspect-[4/3] object-cover"
           />
           <div>
-            <SectionTitle
-              eyebrow="Accessoires"
-              title="Coffret mini-douceurs rose & bleu"
-            />
+            <SectionTitle eyebrow="Accessoires" title="Coffret mini-douceurs rose & bleu" />
             <p className="text-charbon/70 leading-relaxed font-light">
-              Prolongez la surprise avec un assortiment de mignardises rose et
-              bleu à offrir à vos invités : macarons, sablés, cake pops.
+              Prolongez la surprise avec un assortiment de mignardises rose et bleu à offrir à vos
+              invités : macarons, sablés, cake pops.
             </p>
             <Link
-              to="/produits/$slug"
-              params={{ slug: "mignardises-assortiment" }}
+              to="/creation-sur-mesure"
+              search={{ type: undefined }}
               className="btn btn-outline-gold mt-6"
             >
-              Voir le coffret
+              Demander un assortiment
             </Link>
           </div>
         </div>
@@ -314,10 +296,7 @@ function Page() {
       {/* Preuve sociale */}
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle
-            eyebrow="Ils ont dit oui à la surprise"
-            title="Réalisations récentes"
-          />
+          <SectionTitle eyebrow="Ils ont dit oui à la surprise" title="Réalisations récentes" />
           <SocialProof
             images={[cakePistache, cakeVanille, mignardises, cakePistache]}
             testimonials={[
