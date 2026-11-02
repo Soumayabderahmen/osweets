@@ -19,7 +19,8 @@ import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
 import { getProductBySlug, resolveOldSlug } from "@/api/catalog";
 import { absUrl, jsonLdScript, productJsonLd, breadcrumb, SITE } from "@/lib/seo";
 import { weightOptions } from "@/lib/weight";
-import { OptionPicker, optionParts } from "@/components/OptionPicker";
+import { OptionPicker, OptionQuantityPicker, optionParts } from "@/components/OptionPicker";
+import { choixMultiple } from "@/lib/option-parts";
 import { quantityForProduct } from "@/lib/cart-rules";
 import {
   displayedProductPrice,
@@ -195,7 +196,13 @@ function Fiche({ base }: { base: Product }) {
   const variants = p.variants ?? [];
   const [variantId, setVariantId] = useState<string | null>(null);
   const variant = variants.find((v) => v.id === variantId) ?? null;
-  const needsVariant = variants.length > 0 && !variant;
+  // Pots, bols, grammages : une quantité par format (2 pots + 1 bol).
+  const multi = variants.length > 0 && choixMultiple(p);
+  const [qtyBy, setQtyBy] = useState<Record<string, number>>({});
+  const choisisMulti = variants.filter((v) => (qtyBy[v.id] ?? 0) > 0);
+  const totalMulti = choisisMulti.reduce((s, v) => s + qtyBy[v.id], 0);
+  const prixMulti = choisisMulti.reduce((s, v) => s + variantPrice(p, v) * qtyBy[v.id], 0);
+  const needsVariant = multi ? totalMulti === 0 : variants.length > 0 && !variant;
   // Vente au poids : 500 g / 1 kg… (uniquement si la fiche n'a pas de variantes)
   const grammages = weightOptions(p);
   const [weightId, setWeightId] = useState<string | null>(null);
@@ -312,36 +319,43 @@ function Fiche({ base }: { base: Product }) {
   }, [boutonEl]);
   const barreAchat = !p.noCart && !p.hidePrice && !pendingConfig && !outOfStock && !ajoutEnVue;
 
+  const ligne = (v: typeof variant, avecCadeau: boolean) => ({
+    slug: p.slug,
+    productId: p.id,
+    category: p.category,
+    // Le conditionnement s'affiche sur sa propre ligne (panier, commande).
+    name: p.name,
+    price: v ? variantPrice(p, v) : unitPrice,
+    image: v?.image ?? p.image,
+    variantId: v?.id ?? (grammages.length > 1 ? weightSel?.id : undefined),
+    variantLabel: v ? v.label : grammages.length > 1 ? weightSel?.label : undefined,
+    // Le format choisi remplace l'unité générique (« pot », « / 500 g »).
+    unit: v || grammages.length > 1 ? "" : p.unit,
+    stockQty: p.stockQty,
+    stockUnlimited: p.stockUnlimited,
+    inStock: p.inStock,
+    published: p.published,
+    archived: p.archived,
+    draft: p.draft,
+    noCart: p.noCart,
+    hidePrice: p.hidePrice,
+    seasonalOnly: p.seasonalOnly,
+    collections: p.collections,
+    prepLead: p.prepLead,
+    // Un seul emballage cadeau par ajout, quel que soit le nombre de formats.
+    gift: gift && avecCadeau ? { wrap: true, message: giftMessage.trim() || undefined } : undefined,
+  });
+
   const ajouter = () => {
     if (!available || needsVariant) return;
-    addToCart(
-      {
-        slug: p.slug,
-        productId: p.id,
-        category: p.category,
-        // Le conditionnement s'affiche sur sa propre ligne (panier, commande).
-        name: p.name,
-        price: unitPrice,
-        image: variant?.image ?? p.image,
-        variantId: variant?.id ?? (grammages.length > 1 ? weightSel?.id : undefined),
-        variantLabel: variant ? variant.label : grammages.length > 1 ? weightSel?.label : undefined,
-        // Le format choisi remplace l'unité générique (« pot », « / 500 g »).
-        unit: variant || grammages.length > 1 ? "" : p.unit,
-        stockQty: p.stockQty,
-        stockUnlimited: p.stockUnlimited,
-        inStock: p.inStock,
-        published: p.published,
-        archived: p.archived,
-        draft: p.draft,
-        noCart: p.noCart,
-        hidePrice: p.hidePrice,
-        seasonalOnly: p.seasonalOnly,
-        collections: p.collections,
-        prepLead: p.prepLead,
-        gift: gift ? { wrap: true, message: giftMessage.trim() || undefined } : undefined,
-      },
-      qty,
-    );
+    if (multi) {
+      for (const [i, v] of choisisMulti.entries()) {
+        if (!addToCart(ligne(v, i === 0), qtyBy[v.id])) return;
+      }
+      setQtyBy({});
+      return;
+    }
+    addToCart(ligne(variant, true), qty);
   };
 
   return (
@@ -553,13 +567,23 @@ function Fiche({ base }: { base: Product }) {
               <div className="text-[11px] uppercase tracking-[0.22em] text-gold mb-2.5">
                 {choiceLabel}
               </div>
-              <OptionPicker
-                product={p}
-                variants={variants}
-                selectedId={variantId}
-                onSelect={setVariantId}
-                name="fiche-option"
-              />
+              {multi ? (
+                <OptionQuantityPicker
+                  product={p}
+                  variants={variants}
+                  quantities={qtyBy}
+                  onChange={(id, n) => setQtyBy((q) => ({ ...q, [id]: n }))}
+                  maxTotal={maxQty}
+                />
+              ) : (
+                <OptionPicker
+                  product={p}
+                  variants={variants}
+                  selectedId={variantId}
+                  onSelect={setVariantId}
+                  name="fiche-option"
+                />
+              )}
 
               {/* Répartition par parfum du grammage choisi (assortiment) —
                   affichée sous le choix, là où la cliente vient de cliquer. */}
@@ -755,22 +779,24 @@ function Fiche({ base }: { base: Product }) {
           ) : (
             <>
               <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
-                <div className="inline-flex items-center border border-charbon shrink-0">
-                  <button
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    className="h-12 w-12 grid place-items-center hover:bg-sable"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-12 text-center font-price text-lg">{qty}</span>
-                  <button
-                    onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                    disabled={qty >= maxQty}
-                    className="h-12 w-12 grid place-items-center hover:bg-sable"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
+                {!multi && (
+                  <div className="inline-flex items-center border border-charbon shrink-0">
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="h-12 w-12 grid place-items-center hover:bg-sable"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-12 text-center font-price text-lg">{qty}</span>
+                    <button
+                      onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                      disabled={qty >= maxQty}
+                      className="h-12 w-12 grid place-items-center hover:bg-sable"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
                 <button
                   onClick={() => toggleFavorite(p.slug)}
                   className={`h-12 w-12 grid place-items-center border shrink-0 ${fav ? "border-gold bg-gold text-white" : "border-charbon hover:border-gold hover:text-gold"}`}
@@ -795,7 +821,9 @@ function Fiche({ base }: { base: Product }) {
                           ? "Indisponible hors saison"
                           : needsVariant
                             ? choiceLabel
-                            : "Ajouter au panier"}
+                            : multi
+                              ? `Ajouter au panier · ${formatPrice(prixMulti)}`
+                              : "Ajouter au panier"}
                 </button>
               </div>
               {pendingConfig && (
@@ -928,7 +956,7 @@ function Fiche({ base }: { base: Product }) {
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm text-charbon">{p.name}</div>
             <div className="font-price text-sm text-gold">
-              {needsVariant ? choiceLabel : `${formatPrice(unitPrice * qty)}`}
+              {needsVariant ? choiceLabel : formatPrice(multi ? prixMulti : unitPrice * qty)}
             </div>
           </div>
           <button

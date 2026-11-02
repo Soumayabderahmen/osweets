@@ -5,8 +5,10 @@ import { applyCartValidation, cartRequestSignature } from "@/lib/cart-patches";
 import { formatPrice, lineId, useShop, type CartItem } from "@/lib/shop-store";
 
 export { applyCartValidation } from "@/lib/cart-patches";
-export const cartValidationSummary = (cart: CartItem[]) =>
-  cart.map((i) => i.validationStatus?.message).filter((m): m is string => Boolean(m));
+// Deux formats d'un même produit (2 pots + 1 bol) donnent le même message : un seul suffit.
+export const cartValidationSummary = (cart: CartItem[]) => [
+  ...new Set(cart.map((i) => i.validationStatus?.message).filter((m): m is string => Boolean(m))),
+];
 export const linePriceLabel = (item: CartItem) => formatPrice(item.unitPriceSnapshot ?? item.price);
 
 export function useCartValidation() {

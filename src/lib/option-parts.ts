@@ -31,3 +31,11 @@ export function optionParts(
   if (v.weightG) details.push(`${v.weightG} g`);
   return { title: v.baseLabel?.trim() || v.label, details };
 }
+
+/**
+ * Plusieurs formats à la fois : chaque carte porte sa propre quantité
+ * (2 pots individuels + 1 bol familial). Un assortiment garde le choix
+ * unique, sa composition dépendant du grammage retenu.
+ */
+export const choixMultiple = (product: Pick<Product, "sellMode" | "productType">) =>
+  !!product.sellMode && product.productType !== "assortiment";

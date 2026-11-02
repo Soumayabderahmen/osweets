@@ -20,6 +20,7 @@ import { patisserieMenuGroups } from "../../src/lib/patisserie-menu.ts";
 import { canChangeOrderStatus, orderContactError, orderTotals } from "../../src/lib/order-rules.ts";
 import { boxPieces, boxPrice } from "../../src/lib/coffret.ts";
 import { cartFulfillment } from "../../src/lib/fulfillment.ts";
+import { choixMultiple } from "../../src/lib/option-parts.ts";
 import { parseFrenchPrice, isStrictlyPositivePrice } from "../../src/lib/admin-values.ts";
 import { currentUnitPrice } from "../../src/lib/cart-validation-pricing.ts";
 import { validateFulfillmentDate } from "../../src/lib/checkout-date.ts";
@@ -425,4 +426,11 @@ test("box prices are recomputed from the slug only for real formats", () => {
   assert.equal(boxPieces("box-7"), null);
   assert.equal(boxPrice(6), 21);
   assert.equal(boxPrice(24), 92);
+});
+
+test("formats sold by pot or weight can be mixed, an assortment cannot", () => {
+  assert.equal(choixMultiple({ sellMode: "pot" }), true);
+  assert.equal(choixMultiple({ sellMode: "kg" }), true);
+  assert.equal(choixMultiple({ sellMode: "kg", productType: "assortiment" }), false);
+  assert.equal(choixMultiple({}), false);
 });

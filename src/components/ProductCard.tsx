@@ -16,7 +16,8 @@ import { scaleGramComposition } from "@/lib/composition";
 import { WaitlistForm } from "@/components/patisserie/WaitlistForm";
 import { ProductImage } from "@/components/ProductImage";
 import { weightOptions, formatGrams } from "@/lib/weight";
-import { OptionPicker } from "@/components/OptionPicker";
+import { OptionPicker, OptionQuantityPicker } from "@/components/OptionPicker";
+import { choixMultiple } from "@/lib/option-parts";
 import { quantityForProduct } from "@/lib/cart-rules";
 import {
   displayedProductPrice,
@@ -561,7 +562,12 @@ function QuickView({
     product.productType === "assortiment" && variant?.grams
       ? scaleGramComposition(product.assortmentComposition ?? [], variant.grams)
       : [];
-  const needsVariant = variants.length > 0 && !variant;
+  // Une quantité par format, comme sur la fiche produit.
+  const multi = variants.length > 0 && choixMultiple(product);
+  const [qtyBy, setQtyBy] = useState<Record<string, number>>({});
+  const choisisMulti = variants.filter((v) => (qtyBy[v.id] ?? 0) > 0);
+  const prixMulti = choisisMulti.reduce((s, v) => s + variantPrice(product, v) * qtyBy[v.id], 0);
+  const needsVariant = multi ? choisisMulti.length === 0 : variants.length > 0 && !variant;
   const choiceLabel = variantChoiceLabel(variants, product.sellMode);
   // Vente au poids (500 g / 1 kg…) — même logique que la fiche produit.
   const grammages = weightOptions(product);
@@ -743,14 +749,25 @@ function QuickView({
                 <div className="mb-2 text-[11px] uppercase tracking-[0.22em] text-gold">
                   {choiceLabel}
                 </div>
-                <OptionPicker
-                  product={product}
-                  variants={variants}
-                  selectedId={variantId}
-                  onSelect={setVariantId}
-                  name="qv-option"
-                  compact
-                />
+                {multi ? (
+                  <OptionQuantityPicker
+                    product={product}
+                    variants={variants}
+                    quantities={qtyBy}
+                    onChange={(id, n) => setQtyBy((q) => ({ ...q, [id]: n }))}
+                    maxTotal={maxQty}
+                    compact
+                  />
+                ) : (
+                  <OptionPicker
+                    product={product}
+                    variants={variants}
+                    selectedId={variantId}
+                    onSelect={setVariantId}
+                    name="qv-option"
+                    compact
+                  />
+                )}
                 {assortmentComposition.length > 0 && (
                   <div className="mt-3 rounded-lg border border-beige bg-sable/60 p-3">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-gold">
@@ -834,36 +851,47 @@ function QuickView({
               {action === "cart" && (
                 <>
                   <div className="flex items-center gap-3">
-                    <div className="inline-flex items-center border border-charbon">
-                      <button
-                        type="button"
-                        aria-label="Diminuer la quantité"
-                        onClick={() => setQty((q) => Math.max(1, q - 1))}
-                        className="h-10 w-10 grid place-items-center hover:bg-sable"
-                      >
-                        −
-                      </button>
-                      <span className="w-10 text-center font-price">{qty}</span>
-                      <button
-                        type="button"
-                        aria-label="Augmenter la quantité"
-                        onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                        disabled={qty >= maxQty}
-                        className="h-10 w-10 grid place-items-center hover:bg-sable"
-                      >
-                        +
-                      </button>
-                    </div>
+                    {!multi && (
+                      <div className="inline-flex items-center border border-charbon">
+                        <button
+                          type="button"
+                          aria-label="Diminuer la quantité"
+                          onClick={() => setQty((q) => Math.max(1, q - 1))}
+                          className="h-10 w-10 grid place-items-center hover:bg-sable"
+                        >
+                          −
+                        </button>
+                        <span className="w-10 text-center font-price">{qty}</span>
+                        <button
+                          type="button"
+                          aria-label="Augmenter la quantité"
+                          onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                          disabled={qty >= maxQty}
+                          className="h-10 w-10 grid place-items-center hover:bg-sable"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                     <button
                       onClick={() => {
                         if (needsVariant) return;
+                        if (multi) {
+                          for (const v of choisisMulti) if (!onCart(v, qtyBy[v.id])) return;
+                          onClose();
+                          return;
+                        }
                         if (onCart(variant ?? weightVariant, qty)) onClose();
                       }}
                       disabled={needsVariant || maxQty <= 0}
                       className={`btn btn-gold flex-1 justify-center ${needsVariant || maxQty <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="h-4 w-4" />{" "}
-                      {maxQty <= 0 ? "Épuisé" : "Ajouter au panier"}
+                      {maxQty <= 0
+                        ? "Épuisé"
+                        : multi && !needsVariant
+                          ? `Ajouter · ${formatPrice(prixMulti)}`
+                          : "Ajouter au panier"}
                     </button>
                   </div>
                   {needsVariant && <p className="text-xs text-charbon/60">{choiceLabel}</p>}
