@@ -27,7 +27,14 @@ import {
 } from "@/lib/collection-presentation";
 import { toWindows, type SeasonWindow } from "@/lib/season";
 import { kgMainGrams, productBlockReason } from "@/lib/product-rules";
-import { KG_GRAM_CHOICES, auditPackaging, kgOptionPrice } from "@/lib/variant-label";
+import {
+  KG_GRAM_CHOICES,
+  auditPackaging,
+  kgOptionPrice,
+  kgPalierPrice,
+  optionLabel,
+  visibleOptions,
+} from "@/lib/variant-label";
 import { formatGrams } from "@/lib/weight";
 import { compositionGramsTotal, scaleGramComposition } from "@/lib/composition";
 import { giftCategories, type Allergen, type ProductVariant, type SellMode } from "@/data/products";
@@ -238,19 +245,17 @@ export function PanelProduit({
       const invalidGram = d.sell_options.find((o) => !o.grams || o.grams <= 0);
       if (invalidGram) return toast.error("Un grammage coché est invalide.");
     } else {
-      // Une fois un format/pot ajouté à la liste, il doit être complet —
-      // seule une liste VIDE représente l'état "configuration en attente".
-      const invalidOption = d.sell_options.find(
-        (o) => !o.label.trim() || !isStrictlyPositivePrice(o.price),
-      );
-      if (invalidOption) {
+      // Un format masqué peut attendre son prix ; un format visible doit
+      // être complet, puisque la cliente le voit.
+      if (d.sell_options.some((o) => !o.label.trim())) {
+        return toast.error("Chaque format doit avoir un nom — ou supprimez-le.");
+      }
+      if (d.sell_options.some((o) => !o.hidden && !isStrictlyPositivePrice(o.price))) {
         return toast.error(
-          d.sell_mode === "pot"
-            ? "Chaque pot doit avoir un nom et un prix supérieur à 0 € — ou retirez-le en attendant."
-            : "Chaque format doit avoir un nom et un prix supérieur à 0 € — ou retirez-le en attendant.",
+          "Un format visible n'a pas de prix : saisissez-le, ou masquez le format en attendant.",
         );
       }
-      if (d.sell_mode === "pot" && d.sell_options.some((o) => !o.weightG || o.weightG <= 0)) {
+      if (d.sell_mode === "pot" && d.sell_options.some((o) => o.weightG != null && o.weightG < 0)) {
         return toast.error(
           "Chaque pot doit avoir un poids/une contenance — ou retirez-le en attendant.",
         );
@@ -360,8 +365,21 @@ export function PanelProduit({
       "sell_options",
       d.sell_options.map((o, k) => (k === i ? { ...o, ...patch } : o)),
     );
+  // Un nouveau format naît masqué : il n'apparaît qu'une fois son prix saisi
+  // et l'interrupteur passé sur « Visible ».
   const ajouter = (label = "", price = 0) =>
-    set("sell_options", [...d.sell_options, { id: optionId(label, d.sell_options), label, price }]);
+    set("sell_options", [
+      ...d.sell_options,
+      { id: optionId(label, d.sell_options), label, price, hidden: true },
+    ]);
+  const deplacer = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= d.sell_options.length) return;
+    const next = [...d.sell_options];
+    [next[i], next[j]] = [next[j], next[i]];
+    set("sell_options", next);
+  };
+  const basculerVisible = (i: number) => majOption(i, { hidden: !d.sell_options[i].hidden });
   const retirer = (i: number) =>
     set(
       "sell_options",
@@ -372,10 +390,16 @@ export function PanelProduit({
   const basculerGramme = (grams: number) => {
     const at = d.sell_options.findIndex((o) => o.grams === grams);
     if (at >= 0) return retirer(at);
-    set("sell_options", [
-      ...d.sell_options,
-      { id: `g-${grams}`, label: formatGrams(grams), grams, piecesEstimate: null },
-    ]);
+    // Rangé à sa place par poids ; les flèches permettent ensuite un autre ordre.
+    const next = [...d.sell_options];
+    const pos = next.findIndex((o) => (o.grams ?? 0) > grams);
+    next.splice(pos < 0 ? next.length : pos, 0, {
+      id: `g-${grams}`,
+      label: formatGrams(grams),
+      grams,
+      piecesEstimate: null,
+    });
+    set("sell_options", next);
   };
   const majGramme = (grams: number, patch: Partial<ProductVariant>) =>
     set(
@@ -425,26 +449,6 @@ export function PanelProduit({
       grams == null || grams <= 0 ? rest : [...rest, { flavor, grams }],
     );
   };
-
-  /* -------- options de vente : format (petit / grand, deux blocs fixes) -------- */
-  const majFormat = (formatSize: "small" | "large", patch: Partial<ProductVariant>) => {
-    const id = formatSize === "small" ? "petit" : "grand";
-    const label = formatSize === "small" ? "Petit format" : "Grand format";
-    const existe = d.sell_options.some((o) => o.formatSize === formatSize);
-    if (!existe) {
-      set("sell_options", [...d.sell_options, { id, label, formatSize, price: 0, ...patch }]);
-    } else {
-      set(
-        "sell_options",
-        d.sell_options.map((o) => (o.formatSize === formatSize ? { ...o, ...patch } : o)),
-      );
-    }
-  };
-  const retirerFormat = (formatSize: "small" | "large") =>
-    set(
-      "sell_options",
-      d.sell_options.filter((o) => o.formatSize !== formatSize),
-    );
 
   const zero = !d.stock_unlimited && d.stock_qty === 0;
 
@@ -632,15 +636,11 @@ export function PanelProduit({
       </div>
 
       {/* ------------------------------- prix -------------------------------- */}
-      {d.sell_mode && d.sell_options.length === 0 && (
+      {d.sell_mode && visibleOptions(d.sell_options).length === 0 && (
         <div className="livwarn" style={{ marginBottom: 12 }}>
           Configuration requise :{" "}
-          {d.sell_mode === "kg"
-            ? "aucun grammage n'est coché"
-            : d.sell_mode === "format"
-              ? "aucun format n'a de prix"
-              : "aucun contenant n'a de prix"}{" "}
-          — la fiche reste visible en boutique avec le statut « Tarif à venir », mais l'ajout au
+          {d.sell_mode === "kg" ? "aucun grammage n'est visible" : "aucun format n'est visible"} —
+          la fiche reste visible en boutique avec le statut « Tarif à venir », mais l'ajout au
           panier restera bloqué tant que ce n'est pas complété ci-dessous.
         </div>
       )}
@@ -686,11 +686,10 @@ export function PanelProduit({
       <div className="two">
         <label className="f">
           <span>{d.sell_mode === "kg" ? "Prix au kilo (€)" : "Prix"}</span>
-          {d.sell_mode === "format" || d.sell_mode === "pot" ? (
+          {d.sell_mode === "format" || d.sell_mode === "pot" || d.sell_mode === "piece" ? (
             <div className="pxnote">
-              {d.sell_mode === "format"
-                ? "Chaque format a son prix, ci-dessous."
-                : "Le prix vient des pots ci-dessous : c'est celui du plus petit qui s'affiche en boutique."}
+              Chaque format a son prix, ci-dessous. La boutique affiche « dès » le moins cher des
+              formats visibles.
             </div>
           ) : (
             <div style={{ position: "relative" }}>
@@ -721,9 +720,8 @@ export function PanelProduit({
           )}
           {d.sell_mode === "kg" && (
             <div className="hint">
-              C'est le prix d'1 kg. Le prix de chaque grammage coché ci-dessous se recalcule
-              automatiquement (jamais stocké séparément), y compris si vous modifiez ce prix plus
-              tard.
+              C'est le prix d'1 kg. Le prix de chaque grammage se calcule automatiquement et suit ce
+              prix si vous le modifiez — sauf si vous saisissez un prix à la main sur un grammage.
             </div>
           )}
         </label>
@@ -739,8 +737,9 @@ export function PanelProduit({
           >
             <option value="">— un seul prix —</option>
             <option value="kg">au kg</option>
-            <option value="format">par format (petit / grand)</option>
-            <option value="pot">par pot</option>
+            <option value="format">par format (nombre de personnes)</option>
+            <option value="pot">par contenant (pot, bol, verrine)</option>
+            <option value="piece">à la pièce</option>
           </select>
         </label>
       </div>
@@ -807,34 +806,50 @@ export function PanelProduit({
           ) : (
             <>
               <div className="st" style={{ marginTop: 4 }}>
-                Grammages vendus
+                Grammages enregistrés — dans l'ordre affiché en boutique
               </div>
-              {d.sell_options
-                .slice()
-                .sort((a, b) => (a.grams ?? 0) - (b.grams ?? 0))
-                .map((o) => {
-                  return (
-                    <div className="optcard" key={o.id}>
-                      <div className="oh">
-                        <span className="t">{formatGrams(o.grams ?? 0)}</span>
-                        <span
-                          className={`px${isStrictlyPositivePrice(d.price) ? "" : " todo"}`}
-                          style={{ marginLeft: "auto" }}
-                        >
-                          {isStrictlyPositivePrice(d.price)
-                            ? euro(kgOptionPrice(d.price, o.grams ?? 0))
-                            : "prix au kilo manquant"}
-                        </span>
-                        <button
-                          type="button"
-                          className="del"
-                          onClick={() => basculerGramme(o.grams ?? 0)}
-                          title="Retirer ce grammage"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <label className="minif" style={{ maxWidth: 220 }}>
+              {d.sell_options.map((o, i) => {
+                const calcule = isStrictlyPositivePrice(d.price)
+                  ? kgOptionPrice(d.price, o.grams ?? 0)
+                  : null;
+                const manuel = isStrictlyPositivePrice(o.manualPrice ?? 0);
+                const prix = manuel || calcule ? kgPalierPrice(d.price, o) : null;
+                return (
+                  <div className={`optcard${o.hidden ? " masque" : ""}`} key={o.id}>
+                    <div className="oh">
+                      <span className="t">{formatGrams(o.grams ?? 0)}</span>
+                      <span className={`px${prix ? "" : " todo"}`} style={{ marginLeft: "auto" }}>
+                        {prix ? euro(prix) : "prix au kilo manquant"}
+                        {manuel && <em className="manuel"> prix manuel</em>}
+                      </span>
+                      <ControlesFormat
+                        i={i}
+                        n={d.sell_options.length}
+                        hidden={!!o.hidden}
+                        prixOk={!!prix}
+                        onMove={(dir) => deplacer(i, dir)}
+                        onToggle={() => basculerVisible(i)}
+                        onRemove={() => retirer(i)}
+                      />
+                    </div>
+                    <div className="grid2">
+                      <label className="minif">
+                        <span>Prix à la main (facultatif)</span>
+                        <input
+                          inputMode="decimal"
+                          value={o.manualPrice == null ? "" : String(o.manualPrice)}
+                          onChange={(e) =>
+                            majGramme(o.grams ?? 0, {
+                              manualPrice:
+                                e.target.value.trim() === ""
+                                  ? null
+                                  : (parseFrenchPrice(e.target.value) ?? null),
+                            })
+                          }
+                          placeholder={calcule ? `calculé : ${euro(calcule)}` : "—"}
+                        />
+                      </label>
+                      <label className="minif">
                         <span>Pièces estimées (facultatif)</span>
                         <input
                           type="number"
@@ -849,11 +864,21 @@ export function PanelProduit({
                         />
                       </label>
                     </div>
-                  );
-                })}
+                    {manuel && (
+                      <button
+                        type="button"
+                        className="lienbtn"
+                        onClick={() => majGramme(o.grams ?? 0, { manualPrice: null })}
+                      >
+                        Revenir au prix calculé{calcule ? ` (${euro(calcule)})` : ""}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
               <div className="hint">
-                Le nombre de pièces est purement informatif : la cliente achète un poids, pas un
-                nombre de pièces.
+                « Masqué » : le grammage reste enregistré mais n'est pas proposé en boutique. Le
+                nombre de pièces est purement informatif : la cliente achète un poids.
               </div>
             </>
           )}
@@ -915,41 +940,24 @@ export function PanelProduit({
         </div>
       )}
 
-      {d.sell_mode === "pot" && (
+      {(d.sell_mode === "pot" || d.sell_mode === "format" || d.sell_mode === "piece") && (
         <div className="sellbox">
-          <div className="st">Les pots que la cliente peut choisir</div>
-          <LignesPot
+          <div className="st">
+            {d.sell_mode === "pot"
+              ? "Les contenants que la cliente peut choisir (pot, bol, verrine…)"
+              : d.sell_mode === "piece"
+                ? "Les lots de pièces que la cliente peut choisir"
+                : "Les formats que la cliente peut choisir"}
+          </div>
+          <LignesFormats
+            mode={d.sell_mode}
             options={d.sell_options}
             onChange={majOption}
             onRemove={retirer}
             onAdd={ajouter}
+            onMove={deplacer}
+            onToggle={basculerVisible}
           />
-        </div>
-      )}
-
-      {d.sell_mode === "format" && (
-        <div className="sellbox">
-          <div className="st">Petit format / Grand format</div>
-          <div className="hint" style={{ marginBottom: 10 }}>
-            Deux formats au maximum. Un format non rempli reste « à configurer » et n'est pas
-            proposé à la cliente.
-          </div>
-          <div className="fmtduo">
-            <BlocFormat
-              formatSize="small"
-              titre="Petit format"
-              option={d.sell_options.find((o) => o.formatSize === "small")}
-              onChange={(patch) => majFormat("small", patch)}
-              onRemove={() => retirerFormat("small")}
-            />
-            <BlocFormat
-              formatSize="large"
-              titre="Grand format"
-              option={d.sell_options.find((o) => o.formatSize === "large")}
-              onChange={(patch) => majFormat("large", patch)}
-              onRemove={() => retirerFormat("large")}
-            />
-          </div>
         </div>
       )}
 
@@ -1510,203 +1518,225 @@ function Reception({
   );
 }
 
-/** Mode `pot` : liste de contenants (nom + poids/contenance + prix), en nombre libre. */
-function LignesPot({
+/** Visible / masqué, ordre et suppression : les mêmes commandes sur chaque format. */
+function ControlesFormat({
+  i,
+  n,
+  hidden,
+  prixOk,
+  onMove,
+  onToggle,
+  onRemove,
+}: {
+  i: number;
+  n: number;
+  hidden: boolean;
+  /** Un format sans prix ne peut pas être rendu visible. */
+  prixOk: boolean;
+  onMove: (dir: -1 | 1) => void;
+  onToggle: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="fmtctl">
+      <button
+        type="button"
+        className={`vis${hidden ? "" : " on"}`}
+        aria-pressed={!hidden}
+        disabled={hidden && !prixOk}
+        title={
+          hidden && !prixOk
+            ? "Saisissez un prix avant d'afficher ce format"
+            : hidden
+              ? "Afficher ce format en boutique"
+              : "Masquer ce format (il reste enregistré)"
+        }
+        onClick={onToggle}
+      >
+        {hidden ? "Masqué" : "Visible"}
+      </button>
+      <button
+        type="button"
+        className="mv"
+        onClick={() => onMove(-1)}
+        disabled={i === 0}
+        aria-label="Monter ce format"
+      >
+        ↑
+      </button>
+      <button
+        type="button"
+        className="mv"
+        onClick={() => onMove(1)}
+        disabled={i === n - 1}
+        aria-label="Descendre ce format"
+      >
+        ↓
+      </button>
+      <button type="button" className="del" onClick={onRemove} title="Supprimer ce format">
+        ×
+      </button>
+    </span>
+  );
+}
+
+const nombreOuVide = (v: string) => (v === "" ? undefined : Number(v));
+
+/**
+ * Modes `pot`, `format` et `piece` : une liste libre de formats, chacun avec
+ * son nom, son détail (poids, personnes, pièces), son prix, son interrupteur
+ * visible / masqué et sa place dans l'ordre d'affichage.
+ */
+function LignesFormats({
+  mode,
   options,
   onChange,
   onRemove,
   onAdd,
+  onMove,
+  onToggle,
 }: {
+  mode: "pot" | "format" | "piece";
   options: ProductVariant[];
   onChange: (i: number, patch: Partial<ProductVariant>) => void;
   onRemove: (i: number) => void;
-  onAdd: () => void;
+  onAdd: (label?: string) => void;
+  onMove: (i: number, dir: -1 | 1) => void;
+  onToggle: (i: number) => void;
 }) {
+  const exemple =
+    mode === "pot" ? "Pot individuel" : mode === "piece" ? "Boîte de 12" : "Petit format";
   return (
     <>
       {options.length === 0 && (
         <div className="optcard empty">
           <div className="hint" style={{ margin: 0 }}>
-            Aucun contenant : la fiche reste visible avec la mention « Tarif à venir ».
+            Aucun format : la fiche reste visible avec la mention « Tarif à venir ».
           </div>
         </div>
       )}
-      {options.map((o, i) => (
-        <div className="optcard" key={o.id || i}>
-          <div className="oh">
-            <span className="t">{o.label.trim() || `Contenant ${i + 1}`}</span>
-            <span
-              className={`px${isStrictlyPositivePrice(o.price) && o.weightG ? "" : " todo"}`}
-              style={{ marginLeft: "auto" }}
-            >
-              {isStrictlyPositivePrice(o.price)
-                ? `${euro(o.price ?? 0)}${o.weightG ? ` · ${o.weightG} g` : " · poids manquant"}`
-                : "prix à saisir"}
-            </span>
-            <button type="button" className="del" onClick={() => onRemove(i)} title="Retirer">
-              ×
+      {options.map((o, i) => {
+        const prixOk = isStrictlyPositivePrice(o.price);
+        return (
+          <div className={`optcard${o.hidden ? " masque" : ""}`} key={o.id || i}>
+            <div className="oh">
+              <span className="t">{o.label.trim() || `Format ${i + 1}`}</span>
+              <span className={`px${prixOk ? "" : " todo"}`} style={{ marginLeft: "auto" }}>
+                {prixOk ? euro(o.price ?? 0) : "prix à saisir"}
+              </span>
+              <ControlesFormat
+                i={i}
+                n={options.length}
+                hidden={!!o.hidden}
+                prixOk={prixOk}
+                onMove={(dir) => onMove(i, dir)}
+                onToggle={() => onToggle(i)}
+                onRemove={() => onRemove(i)}
+              />
+            </div>
+            <div className="grid2">
+              <label className="minif">
+                <span>Nom du format</span>
+                <input
+                  value={o.label}
+                  onChange={(e) => onChange(i, { label: e.target.value })}
+                  placeholder={exemple}
+                />
+              </label>
+              <label className="minif">
+                <span>Prix (€)</span>
+                <input
+                  inputMode="decimal"
+                  value={o.price ? String(o.price) : ""}
+                  onChange={(e) => onChange(i, { price: parseFrenchPrice(e.target.value) ?? 0 })}
+                  placeholder="à renseigner"
+                />
+              </label>
+            </div>
+            <div className="grid2">
+              {mode === "pot" && (
+                <label className="minif">
+                  <span>Poids / contenance (g, facultatif)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={o.weightG ?? ""}
+                    onChange={(e) => onChange(i, { weightG: nombreOuVide(e.target.value) })}
+                    placeholder="180"
+                  />
+                </label>
+              )}
+              {mode === "format" && (
+                <>
+                  <label className="minif">
+                    <span>Personnes min.</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={o.servesMin ?? ""}
+                      onChange={(e) => onChange(i, { servesMin: nombreOuVide(e.target.value) })}
+                      placeholder="4"
+                    />
+                  </label>
+                  <label className="minif">
+                    <span>Personnes max. (facultatif)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={o.servesMax ?? ""}
+                      onChange={(e) => onChange(i, { servesMax: nombreOuVide(e.target.value) })}
+                      placeholder="6"
+                    />
+                  </label>
+                </>
+              )}
+              {(mode === "format" || mode === "piece" || mode === "pot") && (
+                <label className="minif">
+                  <span>Pièces {mode === "piece" ? "" : "(facultatif)"}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={o.pieces ?? ""}
+                    onChange={(e) => onChange(i, { pieces: nombreOuVide(e.target.value) ?? null })}
+                    placeholder="12"
+                  />
+                </label>
+              )}
+            </div>
+            <div className="hint" style={{ marginTop: 10 }}>
+              {o.hidden
+                ? prixOk
+                  ? "Masqué : enregistré, mais non proposé en boutique."
+                  : "Masqué en attendant son prix : saisissez-le, puis cliquez sur « Masqué » pour l'afficher."
+                : `En boutique : ${optionLabel(o)} — ${euro(o.price ?? 0)}`}
+            </div>
+          </div>
+        );
+      })}
+      {mode === "pot" ? (
+        // Raccourcis : le nom reste modifiable ensuite.
+        <div className="addrows">
+          {["Pot individuel", "Bol familial", "Verrine"].map((nom) => (
+            <button key={nom} type="button" className="addrow" onClick={() => onAdd(nom)}>
+              + {nom.split(" ")[0]}
             </button>
-          </div>
-          <div className="potgrid">
-            <label className="minif">
-              <span>Nom du contenant</span>
-              <input
-                value={o.label}
-                onChange={(e) => onChange(i, { label: e.target.value })}
-                placeholder="Pot individuel"
-              />
-            </label>
-            <label className="minif">
-              <span>Poids / contenance (g)</span>
-              <input
-                type="number"
-                min="0"
-                value={o.weightG ?? ""}
-                onChange={(e) =>
-                  onChange(i, {
-                    weightG: e.target.value === "" ? undefined : Number(e.target.value),
-                  })
-                }
-                placeholder="180"
-              />
-            </label>
-            <label className="minif">
-              <span>Prix (€)</span>
-              <input
-                inputMode="decimal"
-                value={String(o.price ?? "")}
-                onChange={(e) => onChange(i, { price: parseFrenchPrice(e.target.value) ?? 0 })}
-                placeholder="14,00"
-              />
-            </label>
-          </div>
+          ))}
+          <button type="button" className="addrow" onClick={() => onAdd()}>
+            + Autre contenant
+          </button>
         </div>
-      ))}
-      <button type="button" className="addrow" onClick={onAdd}>
-        + Ajouter un contenant
-      </button>
+      ) : (
+        <button type="button" className="addrow" onClick={() => onAdd()}>
+          + Ajouter un format
+        </button>
+      )}
       {options.length > 0 && (
         <div className="hint" style={{ marginTop: 10 }}>
-          Le premier contenant est celui proposé par défaut ; la vignette affiche le prix du pot le
-          moins cher.
+          Les flèches ↑ ↓ règlent l'ordre d'affichage en boutique. Un format masqué garde son prix
+          et ses réglages : il suffit de le réafficher.
         </div>
       )}
     </>
-  );
-}
-
-/** Mode `format` : un bloc fixe (Petit ou Grand), pas encore rempli tant qu'aucun prix n'est saisi. */
-function BlocFormat({
-  formatSize,
-  titre,
-  option,
-  onChange,
-  onRemove,
-}: {
-  formatSize: "small" | "large";
-  titre: string;
-  option?: ProductVariant;
-  onChange: (patch: Partial<ProductVariant>) => void;
-  onRemove: () => void;
-}) {
-  if (!option) {
-    return (
-      <div className="optcard empty">
-        <div className="oh">
-          <span className="t" style={{ color: "rgba(41,34,31,.45)" }}>
-            {titre}
-          </span>
-          <span className="px todo" style={{ marginLeft: "auto" }}>
-            non proposé
-          </span>
-        </div>
-        <button
-          type="button"
-          className="addrow"
-          style={{ marginTop: 0 }}
-          onClick={() => onChange({ formatSize, label: titre, price: 0 })}
-        >
-          + Configurer {titre.toLowerCase()}
-        </button>
-      </div>
-    );
-  }
-  const personnes = option.servesMin
-    ? `${option.servesMin}${
-        option.servesMax && option.servesMax !== option.servesMin ? `–${option.servesMax}` : ""
-      } personnes`
-    : null;
-  return (
-    <div className="optcard">
-      <div className="oh">
-        <span className="t">{titre}</span>
-        <span
-          className={`px${isStrictlyPositivePrice(option.price) ? "" : " todo"}`}
-          style={{ marginLeft: "auto" }}
-        >
-          {isStrictlyPositivePrice(option.price) ? euro(option.price ?? 0) : "prix à saisir"}
-        </span>
-        <button type="button" className="del" onClick={onRemove} title="Retirer ce format">
-          ×
-        </button>
-      </div>
-      <div className="grid2">
-        <label className="minif">
-          <span>Prix (€)</span>
-          <input
-            inputMode="decimal"
-            value={String(option.price ?? "")}
-            onChange={(e) => onChange({ price: parseFrenchPrice(e.target.value) ?? 0 })}
-            placeholder="42,00"
-          />
-        </label>
-        <label className="minif">
-          <span>Pièces (facultatif)</span>
-          <input
-            type="number"
-            min="0"
-            value={option.pieces ?? ""}
-            onChange={(e) =>
-              onChange({ pieces: e.target.value === "" ? undefined : Number(e.target.value) })
-            }
-            placeholder="12"
-          />
-        </label>
-      </div>
-      <div className="grid2">
-        <label className="minif">
-          <span>Personnes min.</span>
-          <input
-            type="number"
-            min="0"
-            value={option.servesMin ?? ""}
-            onChange={(e) =>
-              onChange({ servesMin: e.target.value === "" ? undefined : Number(e.target.value) })
-            }
-            placeholder="4"
-          />
-        </label>
-        <label className="minif">
-          <span>Personnes max.</span>
-          <input
-            type="number"
-            min="0"
-            value={option.servesMax ?? ""}
-            onChange={(e) =>
-              onChange({ servesMax: e.target.value === "" ? undefined : Number(e.target.value) })
-            }
-            placeholder="6"
-          />
-        </label>
-      </div>
-      <div className="hint" style={{ marginTop: 10 }}>
-        {isStrictlyPositivePrice(option.price)
-          ? `En boutique : ${[titre, personnes, option.pieces ? `${option.pieces} pièces` : null]
-              .filter(Boolean)
-              .join(" · ")} — ${euro(option.price ?? 0)}`
-          : "Prix manquant : ce format restera masqué tant qu'il n'a pas de prix."}
-      </div>
-    </div>
   );
 }
 
@@ -2092,7 +2122,7 @@ export function PanelCollection({
 /* =========================== PRODUITS D'UNE COLLECTION =========================== */
 
 function adminPrix(p: ProductRow) {
-  const opts = Array.isArray(p.sell_options) ? p.sell_options : [];
+  const opts = visibleOptions(p.sell_options);
   if (p.sell_mode === "kg" && opts.length > 0) {
     // Grammage de référence identique à la boutique (1 kg > 500 g > 100 g >
     // le plus élevé vendu) — jamais le moins cher, sinon l'admin et la
@@ -2101,7 +2131,7 @@ function adminPrix(p: ProductRow) {
       opts.map((o) => o.grams ?? 0).filter((g): g is number => typeof g === "number" && g > 0),
     );
     return isStrictlyPositivePrice(p.price) && main !== null
-      ? `${formatGrams(main)} · ${euro(kgOptionPrice(Number(p.price), main))}`
+      ? `${formatGrams(main)} · ${euro(kgPalierPrice(Number(p.price), opts.find((o) => o.grams === main) ?? { grams: main }))}`
       : "prix au kilo à définir";
   }
   if (opts.length > 0) {

@@ -1,5 +1,6 @@
 import type { Product, ProductVariant } from "../data/products";
 import { formatGrams } from "./weight.ts";
+import { personnesText } from "./variant-label.ts";
 
 /**
  * Découpage d'une option de vente en « titre » et « détails », pour un
@@ -23,10 +24,8 @@ export function optionParts(
     };
   }
   const details: string[] = [];
-  if (v.servesMin != null) {
-    const max = v.servesMax != null && v.servesMax !== v.servesMin ? `–${v.servesMax}` : "";
-    details.push(`${v.servesMin}${max} personnes`);
-  }
+  const personnes = personnesText(v.servesMin, v.servesMax);
+  if (personnes) details.push(personnes);
   if (v.pieces) details.push(`${v.pieces} pièces`);
   if (v.weightG) details.push(`${v.weightG} g`);
   return { title: v.baseLabel?.trim() || v.label, details };

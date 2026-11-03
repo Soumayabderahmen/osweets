@@ -2,7 +2,7 @@ import type { Product, ProductVariant, SellMode } from "../data/products";
 import type { CartLineStatus } from "./cart-rules";
 import { weightOptions } from "./weight.ts";
 import { formatGrams } from "./weight.ts";
-import { kgOptionPrice, optionLabel } from "./variant-label.ts";
+import { kgPalierPrice, optionLabel, visibleOptions } from "./variant-label.ts";
 
 export interface CartPricingRow {
   slug: string;
@@ -31,9 +31,11 @@ export interface CartPricingLine {
   variantLabel?: string;
 }
 
+/** Les formats vendables : un format masqué en back-office est refusé comme un format supprimé. */
 function sellOptions(row: CartPricingRow): ProductVariant[] {
-  if (Array.isArray(row.sell_options) && row.sell_options.length) return row.sell_options;
-  if (Array.isArray(row.variants) && row.variants.length) return row.variants;
+  if (Array.isArray(row.sell_options) && row.sell_options.length)
+    return visibleOptions(row.sell_options);
+  if (Array.isArray(row.variants) && row.variants.length) return visibleOptions(row.variants);
   return [];
 }
 
@@ -131,7 +133,9 @@ function currentKgPrice(
   const pricePerKg = Number(row.price ?? 0);
 
   const chosen = allowed.find(
-    (o) => o.id === line.variantId || (!!line.variantLabel && formatGrams(o.grams) === line.variantLabel),
+    (o) =>
+      o.id === line.variantId ||
+      (!!line.variantLabel && formatGrams(o.grams) === line.variantLabel),
   );
 
   if (!chosen) {
@@ -157,7 +161,7 @@ function currentKgPrice(
     };
   }
   return {
-    price: kgOptionPrice(pricePerKg, chosen.grams),
+    price: kgPalierPrice(pricePerKg, chosen),
     variantId: chosen.id,
     variantLabel: formatGrams(chosen.grams),
   };

@@ -9,9 +9,10 @@ import {
   type ProductCollection,
   type ProductFamily,
   type ProductVariant,
+  type SellMode,
 } from "@/data/products";
 import { resolveProductImage } from "@/lib/product-assets";
-import { optionLabel } from "@/lib/variant-label";
+import { optionLabel, visibleOptions } from "@/lib/variant-label";
 
 /** Une ligne de la table `products` — le catalogue vit désormais en base. */
 export interface ProductRow {
@@ -66,8 +67,8 @@ export interface ProductRow {
   requires_cold: boolean;
   customizable: boolean | null;
 
-  /** Comment la cliente choisit : '' | 'kg' | 'format' | 'pot'. */
-  sell_mode: "" | "kg" | "format" | "pot";
+  /** Comment la cliente choisit : '' | 'kg' | 'format' | 'pot' | 'piece'. */
+  sell_mode: SellMode;
   /** Les options proposées, dans l'ordre. La première est cochée par défaut. */
   sell_options: ProductVariant[];
 
@@ -128,13 +129,16 @@ export function rowToProduct(r: ProductRow): Product {
     draft: r.draft,
     flavors: list(r.flavors),
     // `sell_options` fait autorité ; `variants` reste lu pour les fiches
-    // enregistrées avant que la façon de vendre existe.
-    variants: (r.sell_options?.length
-      ? r.sell_options
-      : r.variants?.length
-        ? r.variants
-        : undefined
-    )?.map((option) => ({ ...option, baseLabel: option.label, label: optionLabel(option) })),
+    // enregistrées avant que la façon de vendre existe. Les formats masqués
+    // en back-office ne quittent jamais cette fonction : aucun écran de la
+    // boutique ne peut donc les proposer.
+    variants: list(
+      visibleOptions(r.sell_options?.length ? r.sell_options : r.variants).map((option) => ({
+        ...option,
+        baseLabel: option.label,
+        label: optionLabel(option),
+      })),
+    ),
     weight: r.weight ?? undefined,
     varieties: list(r.varieties),
     deliveryMode: r.delivery_mode ?? undefined,

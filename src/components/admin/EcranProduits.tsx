@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { addStock, duplicateProduct, setProductFlags } from "@/api/catalog";
 import type { ProductRow } from "@/lib/catalog";
 import type { CollectionRow } from "@/api/collections";
-import { kgOptionPrice } from "@/lib/variant-label";
+import { kgPalierPrice, visibleOptions } from "@/lib/variant-label";
 import { kgMainGrams } from "@/lib/product-rules";
 import { formatGrams } from "@/lib/weight";
 import { filterPatisserieRows } from "@/lib/patisserie-scope";
@@ -198,17 +198,21 @@ export function EcranProduits({
               // Même grammage de référence que la boutique (1 kg, sinon
               // 500 g, sinon 100 g, sinon le plus élevé vendu) : la liste
               // admin et la carte produit annoncent le même prix.
+              const kgVisibles = visibleOptions(r.sell_options);
               const kgFirstGram =
-                r.sell_mode === "kg" && Array.isArray(r.sell_options) && r.sell_options.length
+                r.sell_mode === "kg" && kgVisibles.length
                   ? kgMainGrams(
-                      r.sell_options
+                      kgVisibles
                         .map((o) => o.grams ?? 0)
                         .filter((g): g is number => typeof g === "number" && g > 0),
                     )
                   : null;
               const kgPrice =
                 kgFirstGram && Number.isFinite(kgFirstGram) && Number(r.price) > 0
-                  ? kgOptionPrice(Number(r.price), kgFirstGram)
+                  ? kgPalierPrice(
+                      Number(r.price),
+                      kgVisibles.find((o) => o.grams === kgFirstGram) ?? { grams: kgFirstGram },
+                    )
                   : null;
 
               return (

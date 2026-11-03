@@ -7,6 +7,7 @@
  * confirmation de commande passent tous par ce module : impossible de
  * diverger d'un écran à l'autre.
  */
+import type { SellMode } from "../data/products";
 import { formatGrams } from "./weight.ts";
 
 const FORMAT_RE =
@@ -24,6 +25,33 @@ export const KG_GRAM_CHOICES = [100, 200, 250, 300, 500, 750, 1000] as const;
  */
 export function kgOptionPrice(pricePerKg: number, grams: number): number {
   return Math.round(((pricePerKg * grams) / 1000) * 100) / 100;
+}
+
+/**
+ * Prix d'un palier `kg` tel qu'il est vendu : le prix saisi à la main par
+ * l'administratrice s'il existe, sinon le calcul depuis le prix au kilo.
+ */
+export function kgPalierPrice(
+  pricePerKg: number,
+  option: { grams?: number | null; manualPrice?: number | null },
+): number {
+  const manual = Number(option.manualPrice);
+  if (option.manualPrice != null && Number.isFinite(manual) && manual > 0) return manual;
+  return kgOptionPrice(pricePerKg, option.grams ?? 0);
+}
+
+/** Un format masqué en back-office reste en base, mais n'est jamais proposé. */
+export const isOptionVisible = (option: { hidden?: boolean | null }) => !option.hidden;
+
+export const visibleOptions = <T extends { hidden?: boolean | null }>(
+  options: readonly T[] | null | undefined,
+): T[] => (options ?? []).filter(isOptionVisible);
+
+/** « 1 personne », « 6 personnes », « 4–6 personnes ». */
+export function personnesText(min?: number | null, max?: number | null): string | null {
+  if (min == null) return null;
+  const range = max != null && max !== min ? `${min}–${max}` : `${min}`;
+  return `${range} ${range === "1" ? "personne" : "personnes"}`;
 }
 
 /**
@@ -52,13 +80,10 @@ export function optionLabel(option: {
   weightG?: number | null;
 }): string {
   const parts = [option.label];
-  const alreadyMentionsPersonnes = /personne|part\b/i.test(option.label);
+  // « 8 parts » dit déjà le nombre de personnes ; « Part individuelle », non.
+  const alreadyMentionsPersonnes = /personne|\d+\s*parts?\b/i.test(option.label);
   if (option.servesMin != null && !alreadyMentionsPersonnes) {
-    const range =
-      option.servesMax != null && option.servesMax !== option.servesMin
-        ? `${option.servesMin}–${option.servesMax}`
-        : `${option.servesMin}`;
-    parts.push(`${range} personnes`);
+    parts.push(personnesText(option.servesMin, option.servesMax) as string);
   } else if (!alreadyMentionsPersonnes) {
     const serves = option.serves?.trim();
     if (serves) parts.push(`Pour ${serves} personnes`);
@@ -78,10 +103,11 @@ export const POT_CHOICE_LABEL = "Choisissez votre contenant";
  * C'est elle qui fait autorité ; la lecture du texte ci-dessous n'est plus
  * qu'un repli pour les fiches du catalogue statique, qui n'ont pas de mode.
  */
-export const SELL_MODE_LABEL: Record<"kg" | "format" | "pot", string> = {
+export const SELL_MODE_LABEL: Record<Exclude<SellMode, "">, string> = {
   kg: QUANTITY_CHOICE_LABEL,
   format: FORMAT_CHOICE_LABEL,
   pot: POT_CHOICE_LABEL,
+  piece: FORMAT_CHOICE_LABEL,
 };
 
 export const isFormatVariants = (variants?: { label: string }[]) =>
@@ -94,10 +120,7 @@ export const isFormatVariants = (variants?: { label: string }[]) =>
  * Sans elle — fiches du catalogue statique — on retombe sur la lecture du
  * texte, avec ses approximations connues.
  */
-export const variantChoiceLabel = (
-  variants?: { label: string }[],
-  sellMode?: "" | "kg" | "format" | "pot",
-) =>
+export const variantChoiceLabel = (variants?: { label: string }[], sellMode?: SellMode) =>
   sellMode
     ? SELL_MODE_LABEL[sellMode]
     : isFormatVariants(variants)
@@ -112,7 +135,7 @@ export function selectorLabel(input: {
   variants?: { label: string }[];
   weightOptions?: unknown[];
   /** Façon de vendre décidée en back-office — prioritaire sur toute déduction. */
-  sellMode?: "" | "kg" | "format" | "pot";
+  sellMode?: SellMode;
 }): string | null {
   if (input.sellMode && input.variants?.length) return SELL_MODE_LABEL[input.sellMode];
   if (input.variants?.length) return variantChoiceLabel(input.variants);
@@ -170,21 +193,37 @@ export interface PackagingAudit {
  * (formats et parfums mélangés, prix manquant, grammage inutile…).
  */
 export function auditPackaging(input: {
-  variants?: { id?: string; label: string; price?: number | null }[] | null;
+  variants?: { id?: string; label: string; price?: number | null; hidden?: boolean }[] | null;
   weightOptions?: unknown[];
   weight?: string | null;
   pieces?: number | null;
   unit?: string | null;
   /** Mode `kg` : validation dédiée (grammes, pas de libellé/prix par option). */
-  sellMode?: "" | "kg" | "format" | "pot";
+  sellMode?: SellMode;
   pricePerKg?: number | null;
 }): PackagingAudit {
-  const variants = input.variants ?? [];
+  const masques = (input.variants ?? []).filter((v) => !isOptionVisible(v));
+  const variants = visibleOptions(input.variants);
+  const enAttente = masques.filter((v) => input.sellMode !== "kg" && !v.price).length;
+  const noteMasques = [
+    ...(masques.length
+      ? [
+          `${masques.length} format${masques.length > 1 ? "s" : ""} masqué${masques.length > 1 ? "s" : ""} : non proposé${masques.length > 1 ? "s" : ""} en boutique.`,
+        ]
+      : []),
+    ...(enAttente
+      ? [
+          `${enAttente} format${enAttente > 1 ? "s" : ""} attend${enAttente > 1 ? "ent" : ""} un prix avant de pouvoir être affiché${enAttente > 1 ? "s" : ""}.`,
+        ]
+      : []),
+  ];
 
   if (input.sellMode === "kg") {
     const warnings: string[] = [];
     const grams = (variants as { grams?: number }[]).map((v) => v.grams ?? 0);
-    if (!grams.length) warnings.push("Aucun grammage coché : rien n'est vendable pour l'instant.");
+    warnings.push(...noteMasques);
+    if (!grams.length)
+      warnings.push("Aucun grammage visible : rien n'est vendable pour l'instant.");
     if (grams.some((g) => !g || g <= 0)) warnings.push("Un grammage est invalide.");
     if (new Set(grams).size !== grams.length) warnings.push("Deux paliers ont le même grammage.");
     if (!input.pricePerKg || input.pricePerKg <= 0)
@@ -201,7 +240,7 @@ export function auditPackaging(input: {
     };
   }
 
-  const warnings: string[] = [];
+  const warnings: string[] = [...noteMasques];
   const formats = variants.filter((v) => FORMAT_RE.test(v.label));
 
   if (variants.length && formats.length && formats.length !== variants.length) {
@@ -219,7 +258,7 @@ export function auditPackaging(input: {
     servesMax?: number | null;
   })[];
   if (input.sellMode === "pot" && extended.some((v) => !v.weightG))
-    warnings.push("Un contenant n'a pas de poids/contenance.");
+    warnings.push("Un contenant n'a pas de poids : la fiche n'affichera que son nom.");
   if (
     input.sellMode === "format" &&
     extended.some((v) => {

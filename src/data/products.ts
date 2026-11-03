@@ -25,7 +25,7 @@ export type Category =
   | "anniversaire";
 
 /** Façon de vendre — voir `Product.sellMode`. */
-export type SellMode = "" | "kg" | "format" | "pot";
+export type SellMode = "" | "kg" | "format" | "pot" | "piece";
 
 export type ProductCollection =
   "amandes" | "pistache" | "perles" | "tradition" | "ramadan" | "aid" | "fin-annee";
@@ -74,6 +74,17 @@ export interface ProductVariant {
   piecesEstimate?: number | null;
   /** KG — composition facultative d'un mélange (ex. Dattes Farcies Variées), par parfum. */
   composition?: { flavor: string; pieces: number }[];
+  /**
+   * KG — prix saisi à la main pour ce palier. Absent : le prix se calcule
+   * depuis le prix au kilo (voir `kgPalierPrice()`).
+   */
+  manualPrice?: number | null;
+
+  /**
+   * Format masqué en back-office : il reste en base (prix, réglages) mais la
+   * boutique ne le propose pas et le serveur le refuse à la commande.
+   */
+  hidden?: boolean;
 }
 
 export interface AssortmentCompositionItem {
@@ -185,6 +196,7 @@ export interface Product {
    *   "kg"     elle choisit la quantité (100 g, 500 g, 1 kg…)
    *   "format" elle choisit la taille (4-6 personnes, 8-12 personnes…)
    *   "pot"    elle choisit la contenance (pot 100 g, pot 250 g…)
+   *   "piece"  elle choisit un lot de pièces (à l'unité, boîte de 12…)
    * Les options elles-mêmes vivent dans `variants`.
    */
   sellMode?: SellMode;

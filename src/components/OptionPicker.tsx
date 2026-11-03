@@ -34,10 +34,8 @@ export function OptionPicker({
   /** Version resserrée pour l'aperçu rapide. */
   compact?: boolean;
 }) {
-  const ordered =
-    product.sellMode === "kg"
-      ? [...variants].sort((a, b) => (a.grams ?? 0) - (b.grams ?? 0))
-      : variants;
+  // Ordre décidé dans l'admin (flèches ↑ ↓), y compris pour les grammages.
+  const ordered = variants;
 
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>
@@ -113,10 +111,8 @@ export function OptionQuantityPicker({
   maxTotal?: number;
   compact?: boolean;
 }) {
-  const ordered =
-    product.sellMode === "kg"
-      ? [...variants].sort((a, b) => (a.grams ?? 0) - (b.grams ?? 0))
-      : variants;
+  // Ordre décidé dans l'admin (flèches ↑ ↓), y compris pour les grammages.
+  const ordered = variants;
   const total = Object.values(quantities).reduce((s, n) => s + n, 0);
   const plein = total >= maxTotal;
   const bouton = compact ? "h-8 w-8" : "h-9 w-9";

@@ -29,33 +29,34 @@ import {
   productBlockReason,
   variantPrice,
 } from "@/lib/product-rules";
-import { QUANTITY_CHOICE_LABEL, packagingText, variantChoiceLabel } from "@/lib/variant-label";
+import {
+  QUANTITY_CHOICE_LABEL,
+  packagingText,
+  personnesText,
+  variantChoiceLabel,
+} from "@/lib/variant-label";
 
 /** Résumé du conditionnement affiché sur la carte, avant l'ouverture de la fiche. */
 function cardConditioning(product: Product): string | null {
   const variants = product.variants ?? [];
   if (!variants.length) return null;
   if (product.sellMode === "kg") {
-    return variants
-      .slice()
-      .sort((a, b) => (a.grams ?? 0) - (b.grams ?? 0))
-      .map((v) => formatGrams(v.grams ?? 0))
-      .join(" · ");
+    return variants.map((v) => formatGrams(v.grams ?? 0)).join(" · ");
   }
   if (product.sellMode === "pot") {
-    return variants
-      .filter((v) => v.weightG)
-      .map((v) => `${v.weightG} g`)
-      .join(" · ");
+    return variants.map((v) => (v.weightG ? `${v.weightG} g` : v.baseLabel || v.label)).join(" · ");
   }
   if (product.sellMode === "format") {
     return variants
       .map((v) => {
-        const range = v.servesMin
-          ? `${v.servesMin}${v.servesMax && v.servesMax !== v.servesMin ? `–${v.servesMax}` : ""} pers.`
-          : null;
+        const personnes = personnesText(v.servesMin, v.servesMax);
+        const range = personnes ? personnes.replace(/personnes?$/, "pers.") : null;
         const nom =
-          v.formatSize === "small" ? "Petit" : v.formatSize === "large" ? "Grand" : v.label;
+          v.formatSize === "small"
+            ? "Petit"
+            : v.formatSize === "large"
+              ? "Grand"
+              : v.baseLabel || v.label;
         return [nom, range].filter(Boolean).join(" · ");
       })
       .join("  ·  ");

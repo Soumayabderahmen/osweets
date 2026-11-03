@@ -1,7 +1,7 @@
 import type { Product, ProductVariant, SellMode } from "../data/products";
 import { isProductAvailableNow, type SeasonWindow } from "./season.ts";
 import { weightOptions } from "./weight.ts";
-import { kgOptionPrice } from "./variant-label.ts";
+import { kgPalierPrice } from "./variant-label.ts";
 
 /**
  * Prix réel d'une variante choisie, quel que soit le mode de vente.
@@ -14,7 +14,7 @@ export function variantPrice(
   variant: ProductVariant,
 ): number {
   if (product.sellMode === "kg" && variant.grams) {
-    return kgOptionPrice(numericPrice(product.price), variant.grams);
+    return kgPalierPrice(numericPrice(product.price), variant);
   }
   return numericPrice(variant.price);
 }
@@ -85,13 +85,14 @@ export function kgMainUnitLabel(grams: number): string {
  */
 export function kgMainSelection(p: {
   price?: number | string | null;
-  variants?: { grams?: number | null }[] | null;
+  variants?: { grams?: number | null; manualPrice?: number | null }[] | null;
 }): { grams: number; price: number } | null {
   const grams = kgGrams(p);
   const pricePerKg = numericPrice(p.price);
   const main = kgMainGrams(grams);
   if (main === null || pricePerKg <= 0) return null;
-  return { grams: main, price: kgOptionPrice(pricePerKg, main) };
+  const palier = (p.variants ?? []).find((v) => v.grams === main) ?? { grams: main };
+  return { grams: main, price: kgPalierPrice(pricePerKg, palier) };
 }
 
 export function displayedProductPrice(p: Product): number {

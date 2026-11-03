@@ -67,33 +67,48 @@ export function validateProductInput(
         throw new Error("Chaque format doit avoir un identifiant unique et non vide.");
       }
       ids.add(option.id.trim());
+      // Masqué : le format reste en base mais n'est pas proposé. Il peut
+      // donc attendre son prix ; un format VISIBLE, lui, doit être complet.
+      const hidden = option.hidden === true;
 
-      // Mode kg : un palier n'a pas de prix propre — il se calcule toujours
-      // depuis le prix au kilo (`values.price`) × grammes / 1000. Exiger un
-      // prix stocké ici casserait justement le principe du mode kg.
+      // Mode kg : le prix d'un palier se calcule depuis le prix au kilo
+      // (`values.price`) × grammes / 1000, sauf prix saisi à la main
+      // (`manualPrice`). L'ancien champ `price` n'est jamais conservé.
       if (isKg) {
         const grams = Number(option.grams);
         if (!Number.isFinite(grams) || grams <= 0) {
           throw new Error("Un grammage coché est invalide.");
+        }
+        let manualPrice: number | null = null;
+        if (option.manualPrice != null && String(option.manualPrice).trim() !== "") {
+          manualPrice = parseFrenchPrice(String(option.manualPrice));
+          if (manualPrice === null || !Number.isFinite(manualPrice) || manualPrice <= 0) {
+            throw new Error("Un prix saisi à la main doit être supérieur à 0 €.");
+          }
         }
         const { price: _storedKgPrice, ...withoutStoredPrice } = option;
         return {
           ...withoutStoredPrice,
           id: option.id.trim(),
           label: option.label?.trim() || "",
+          manualPrice,
+          hidden,
         };
       }
 
-      const price = parseFrenchPrice(String(option.price));
-      if (!option.label?.trim() || price === null || !Number.isFinite(price) || price <= 0) {
+      if (!option.label?.trim()) throw new Error("Chaque format doit avoir un nom.");
+      const parsed = parseFrenchPrice(String(option.price ?? ""));
+      const price = parsed !== null && Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+      if (!hidden && price <= 0) {
         throw new Error(
-          `Le format « ${option.label || "sans nom"} » doit avoir un prix supérieur à 0 €.`,
+          `Le format « ${option.label} » doit avoir un prix supérieur à 0 € pour être affiché — masquez-le en attendant.`,
         );
       }
-      if (values.sell_mode === "pot") {
+      // Contenant : le poids est facultatif (une verrine se vend souvent sans grammage).
+      if (values.sell_mode === "pot" && option.weightG != null && String(option.weightG) !== "") {
         const weightG = Number(option.weightG);
         if (!Number.isFinite(weightG) || weightG <= 0) {
-          throw new Error(`Le contenant « ${option.label} » doit avoir un poids/une contenance.`);
+          throw new Error(`Le poids du contenant « ${option.label} » est invalide.`);
         }
       }
       if (values.sell_mode === "format") {
@@ -105,7 +120,7 @@ export function validateProductInput(
           );
         }
       }
-      return { ...option, id: option.id.trim(), label: option.label.trim(), price };
+      return { ...option, id: option.id.trim(), label: option.label.trim(), price, hidden };
     });
   }
   /*

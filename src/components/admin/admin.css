@@ -1715,6 +1715,16 @@
   color: rgba(41, 34, 31, 0.45);
   margin-bottom: 6px;
 }
+.osadmin .addrows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.osadmin .addrows .addrow {
+  width: auto;
+  flex: 1 1 120px;
+  margin-top: 0;
+}
 .osadmin .addrow {
   margin-top: 6px;
   border: 1px dashed rgba(167, 145, 82, 0.5);
@@ -1880,6 +1890,95 @@
 .osadmin .optcard .oh .del:hover {
   color: #c0392b;
   background: rgba(192, 57, 43, 0.08);
+}
+.osadmin .optcard.masque {
+  background: repeating-linear-gradient(
+    135deg,
+    #fff,
+    #fff 8px,
+    rgba(41, 34, 31, 0.025) 8px,
+    rgba(41, 34, 31, 0.025) 16px
+  );
+  border-style: dashed;
+}
+.osadmin .optcard.masque .oh .t {
+  color: rgba(41, 34, 31, 0.55);
+}
+.osadmin .optcard .oh .px .manuel {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 11px;
+  color: rgba(41, 34, 31, 0.5);
+}
+.osadmin .fmtctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+}
+.osadmin .fmtctl .vis {
+  border: 1px solid rgba(41, 34, 31, 0.18);
+  background: #fff;
+  color: rgba(41, 34, 31, 0.6);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 30px;
+}
+.osadmin .fmtctl .vis.on {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #fff;
+}
+.osadmin .fmtctl .vis:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.osadmin .fmtctl .mv {
+  border: 0;
+  background: transparent;
+  color: rgba(41, 34, 31, 0.55);
+  font-size: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.osadmin .fmtctl .mv:hover:not(:disabled) {
+  background: rgba(41, 34, 31, 0.06);
+  color: var(--charbon);
+}
+.osadmin .fmtctl .mv:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.osadmin .fmtctl .del {
+  border: 0;
+  background: transparent;
+  color: rgba(41, 34, 31, 0.35);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.osadmin .fmtctl .del:hover {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+}
+.osadmin .lienbtn {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--gold-dark);
+  text-decoration: underline;
+  cursor: pointer;
 }
 .osadmin .minif {
   display: block;

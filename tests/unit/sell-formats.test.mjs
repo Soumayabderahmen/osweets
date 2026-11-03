@@ -296,13 +296,23 @@ test("REGRESSION: server validateProductInput still requires a price for format/
       ),
     /doit avoir un prix supérieur à 0/,
   );
+  // Le poids d'un contenant est facultatif (verrine) ; seul un poids invalide est refusé.
+  assert.doesNotThrow(() =>
+    validateProductInput(
+      { sell_mode: "pot", sell_options: [{ id: "pot", label: "Pot individuel", price: 14 }] },
+      [],
+    ),
+  );
   assert.throws(
     () =>
       validateProductInput(
-        { sell_mode: "pot", sell_options: [{ id: "pot", label: "Pot individuel", price: 14 }] },
+        {
+          sell_mode: "pot",
+          sell_options: [{ id: "pot", label: "Pot individuel", price: 14, weightG: 0 }],
+        },
         [],
       ),
-    /doit avoir un poids/,
+    /invalide/,
   );
 });
 
