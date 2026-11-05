@@ -3,6 +3,7 @@ import type { Product, ProductVariant } from "@/data/products";
 import { formatPrice } from "@/lib/shop-store";
 import { variantPrice } from "@/lib/product-rules";
 import { optionParts } from "@/lib/option-parts";
+import { PORTION_G } from "@/lib/assortiment-choix";
 
 export { optionParts };
 
@@ -169,6 +170,91 @@ export function OptionQuantityPicker({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * Assortiment composé : la cliente répartit ses portions de 200 g entre les
+ * parfums (1 kg = 5 portions). Même rendu que le choix par quantité.
+ */
+export function AssortimentPicker({
+  parfums,
+  nombres,
+  portions,
+  onChange,
+}: {
+  parfums: string[];
+  nombres: Record<string, number>;
+  portions: number;
+  onChange: (parfum: string, n: number) => void;
+}) {
+  const places = parfums.reduce((s, f) => s + (nombres[f] ?? 0), 0);
+  const reste = portions - places;
+  return (
+    <div className="mt-3 rounded-lg border border-border bg-sable/50 p-4">
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-gold">
+          Choisissez vos parfums
+        </span>
+        <span
+          className={`shrink-0 whitespace-nowrap text-xs ${reste ? "text-charbon-soft" : "text-gold"}`}
+        >
+          {places} / {portions} × {PORTION_G} g
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-charbon-soft">
+        {reste > 0
+          ? `Encore ${reste} portion${reste > 1 ? "s" : ""} de ${PORTION_G} g à répartir.`
+          : "Votre assortiment est complet."}
+      </p>
+      <div className="mt-3 space-y-1.5">
+        {parfums.map((f) => {
+          const n = nombres[f] ?? 0;
+          return (
+            <div
+              key={f}
+              className={`flex min-h-[52px] items-center gap-3 rounded-lg border px-4 py-2 transition-colors ${
+                n > 0 ? "border-gold bg-gold/[0.07]" : "border-border bg-white"
+              }`}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm leading-tight text-charbon">{f}</span>
+                <span className="mt-0.5 block text-xs leading-tight text-charbon-soft">
+                  {n > 0 ? `${n * PORTION_G} g` : `${PORTION_G} g la portion`}
+                </span>
+              </span>
+              <span className="inline-flex shrink-0 items-center rounded-full border border-charbon/20 bg-white">
+                <button
+                  type="button"
+                  aria-label={`Retirer une portion ${f}`}
+                  onClick={() => onChange(f, Math.max(0, n - 1))}
+                  disabled={n <= 0}
+                  className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none hover:bg-sable disabled:opacity-30"
+                >
+                  −
+                </button>
+                <span
+                  aria-live="polite"
+                  aria-label={`${f} : ${n}`}
+                  className="w-7 text-center font-price tabular-nums text-charbon"
+                >
+                  {n}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Ajouter une portion ${f}`}
+                  onClick={() => onChange(f, n + 1)}
+                  disabled={reste <= 0}
+                  className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none hover:bg-sable disabled:opacity-30"
+                >
+                  +
+                </button>
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

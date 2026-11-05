@@ -16,7 +16,13 @@ import { scaleGramComposition } from "@/lib/composition";
 import { WaitlistForm } from "@/components/patisserie/WaitlistForm";
 import { ProductImage } from "@/components/ProductImage";
 import { weightOptions, formatGrams } from "@/lib/weight";
-import { OptionPicker, OptionQuantityPicker } from "@/components/OptionPicker";
+import { AssortimentPicker, OptionPicker, OptionQuantityPicker } from "@/components/OptionPicker";
+import {
+  encoderChoix,
+  libelleChoix,
+  parfumsAssortiment,
+  portionsPour,
+} from "@/lib/assortiment-choix";
 import { choixMultiple } from "@/lib/option-parts";
 import { quantityForProduct } from "@/lib/cart-rules";
 import {
@@ -568,7 +574,29 @@ function QuickView({
   const [qtyBy, setQtyBy] = useState<Record<string, number>>({});
   const choisisMulti = variants.filter((v) => (qtyBy[v.id] ?? 0) > 0);
   const prixMulti = choisisMulti.reduce((s, v) => s + variantPrice(product, v) * qtyBy[v.id], 0);
-  const needsVariant = multi ? choisisMulti.length === 0 : variants.length > 0 && !variant;
+  // Assortiment composé : portions de 200 g réparties entre les parfums, comme sur la fiche.
+  const parfumsChoix =
+    product.productType === "assortiment" ? parfumsAssortiment(product.assortmentComposition) : [];
+  const portions = parfumsChoix.length ? portionsPour(variant?.grams) : 0;
+  const [nombres, setNombres] = useState<Record<string, number>>({});
+  useEffect(() => setNombres({}), [variantId]);
+  const compoIncomplete =
+    portions > 0 && parfumsChoix.reduce((s, f) => s + (nombres[f] ?? 0), 0) !== portions;
+  const variantCompose =
+    variant?.grams && portions > 0
+      ? {
+          ...variant,
+          id: encoderChoix(variant.id, parfumsChoix, nombres),
+          label: libelleChoix(
+            variant.grams,
+            parfumsChoix
+              .filter((f) => (nombres[f] ?? 0) > 0)
+              .map((f) => ({ parfum: f, n: nombres[f] })),
+          ),
+        }
+      : variant;
+  const needsVariant =
+    (multi ? choisisMulti.length === 0 : variants.length > 0 && !variant) || compoIncomplete;
   const choiceLabel = variantChoiceLabel(variants, product.sellMode);
   // Vente au poids (500 g / 1 kg…) — même logique que la fiche produit.
   const grammages = weightOptions(product);
@@ -769,7 +797,15 @@ function QuickView({
                     compact
                   />
                 )}
-                {assortmentComposition.length > 0 && (
+                {portions > 0 && (
+                  <AssortimentPicker
+                    parfums={parfumsChoix}
+                    nombres={nombres}
+                    portions={portions}
+                    onChange={(f, n) => setNombres((q) => ({ ...q, [f]: n }))}
+                  />
+                )}
+                {portions === 0 && assortmentComposition.length > 0 && (
                   <div className="mt-3 rounded-lg border border-beige bg-sable/60 p-3">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-gold">
                       Composition de votre assortiment
@@ -882,7 +918,7 @@ function QuickView({
                           onClose();
                           return;
                         }
-                        if (onCart(variant ?? weightVariant, qty)) onClose();
+                        if (onCart(variantCompose ?? weightVariant, qty)) onClose();
                       }}
                       disabled={needsVariant || maxQty <= 0}
                       className={`btn btn-gold flex-1 justify-center ${needsVariant || maxQty <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}

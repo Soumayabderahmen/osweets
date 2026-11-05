@@ -3,6 +3,7 @@ import type { CartLineStatus } from "./cart-rules";
 import { weightOptions } from "./weight.ts";
 import { formatGrams } from "./weight.ts";
 import { kgPalierPrice, optionLabel, visibleOptions } from "./variant-label.ts";
+import { decoderChoix, portionsPour, verifierChoix } from "./assortiment-choix.ts";
 
 export interface CartPricingRow {
   slug: string;
@@ -23,6 +24,8 @@ export interface CartPricingRow {
   weight?: string | null;
   hide_price?: boolean;
   no_cart?: boolean;
+  product_type?: string | null;
+  assortment_composition?: { flavor: string; grams?: number }[] | null;
 }
 
 export interface CartPricingLine {
@@ -131,11 +134,13 @@ function currentKgPrice(
     (o): o is ProductVariant & { grams: number } => typeof o.grams === "number" && o.grams > 0,
   );
   const pricePerKg = Number(row.price ?? 0);
+  // Assortiment composé : « g-1000~noix:2,abricot:3 » — le grammage, puis la répartition.
+  const { base, choix } = decoderChoix(line.variantId);
 
   const chosen = allowed.find(
     (o) =>
-      o.id === line.variantId ||
-      (!!line.variantLabel && formatGrams(o.grams) === line.variantLabel),
+      o.id === base ||
+      (!choix && !!line.variantLabel && formatGrams(o.grams) === line.variantLabel),
   );
 
   if (!chosen) {
@@ -158,6 +163,24 @@ function currentKgPrice(
         blocking: true,
         message: `${row.name} n'a pas encore de prix au kilo configuré : il n'est pas commandable pour l'instant.`,
       },
+    };
+  }
+  if (row.product_type === "assortiment" && portionsPour(chosen.grams) > 0) {
+    const verifie = choix && verifierChoix(chosen.grams, row.assortment_composition, choix);
+    if (!verifie || !verifie.ok) {
+      return {
+        price: kgPalierPrice(pricePerKg, chosen),
+        status: {
+          code: "format_removed",
+          blocking: true,
+          message: `${line.name} : la répartition des parfums n'est plus valable. Retirez-le du panier puis composez-le à nouveau.`,
+        },
+      };
+    }
+    return {
+      price: kgPalierPrice(pricePerKg, chosen),
+      variantId: line.variantId,
+      variantLabel: verifie.label,
     };
   }
   return {

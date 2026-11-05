@@ -19,8 +19,20 @@ import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
 import { getProductBySlug, resolveOldSlug } from "@/api/catalog";
 import { absUrl, jsonLdScript, productJsonLd, breadcrumb, SITE } from "@/lib/seo";
 import { weightOptions } from "@/lib/weight";
-import { OptionPicker, OptionQuantityPicker, optionParts } from "@/components/OptionPicker";
+import {
+  AssortimentPicker,
+  OptionPicker,
+  OptionQuantityPicker,
+  optionParts,
+} from "@/components/OptionPicker";
 import { choixMultiple } from "@/lib/option-parts";
+import {
+  PORTION_G,
+  encoderChoix,
+  libelleChoix,
+  parfumsAssortiment,
+  portionsPour,
+} from "@/lib/assortiment-choix";
 import { quantityForProduct } from "@/lib/cart-rules";
 import {
   displayedProductPrice,
@@ -36,11 +48,7 @@ import {
 import { QUANTITY_CHOICE_LABEL, packagingParts, variantChoiceLabel } from "@/lib/variant-label";
 import { BADGE_LABEL } from "@/components/ProductCard";
 import { useCollections } from "@/lib/collections";
-import {
-  familySuggestionGroups,
-  productTaxonomyLabel,
-  productTypeLabel,
-} from "@/lib/family-suggestions";
+import { productTaxonomyLabel } from "@/lib/family-suggestions";
 
 /**
  * Ce que le chargeur peut rapporter.
@@ -202,7 +210,16 @@ function Fiche({ base }: { base: Product }) {
   const choisisMulti = variants.filter((v) => (qtyBy[v.id] ?? 0) > 0);
   const totalMulti = choisisMulti.reduce((s, v) => s + qtyBy[v.id], 0);
   const prixMulti = choisisMulti.reduce((s, v) => s + variantPrice(p, v) * qtyBy[v.id], 0);
-  const needsVariant = multi ? totalMulti === 0 : variants.length > 0 && !variant;
+  // Assortiment composé : le grammage choisi se répartit en portions de 200 g entre les parfums.
+  const parfumsChoix =
+    p.productType === "assortiment" ? parfumsAssortiment(p.assortmentComposition) : [];
+  const portions = parfumsChoix.length ? portionsPour(variant?.grams) : 0;
+  const [nombres, setNombres] = useState<Record<string, number>>({});
+  useEffect(() => setNombres({}), [variantId]);
+  const portionsPlacees = parfumsChoix.reduce((s, f) => s + (nombres[f] ?? 0), 0);
+  const compoIncomplete = portions > 0 && portionsPlacees !== portions;
+  const needsVariant =
+    (multi ? totalMulti === 0 : variants.length > 0 && !variant) || compoIncomplete;
   // Vente au poids : 500 g / 1 kg… (uniquement si la fiche n'a pas de variantes)
   const grammages = weightOptions(p);
   const [weightId, setWeightId] = useState<string | null>(null);
@@ -231,16 +248,27 @@ function Fiche({ base }: { base: Product }) {
     .filter(
       (x): x is Product => Boolean(x) && x!.slug !== p.slug && isProductDiscoverable(x!, saisons),
     );
+  const siblings = familySiblings(p, catalog).filter((s) => isProductDiscoverable(s, saisons));
+  /*
+   * Sans choix du back-office : d'abord les fiches d'une même collection,
+   * puis celles des autres collections du même univers. Les autres parfums
+   * de la famille sont déjà sous la photo : ils ne viennent qu'en dernier.
+   */
+  const memeCollection = (x: Product) =>
+    (x.collections ?? []).some((c) => (p.collections ?? []).includes(c));
+  const autresFiches = catalog.filter(
+    (x) => x.slug !== p.slug && isProductDiscoverable(x, saisons),
+  );
+  const horsFamille = (x: Product) => !p.family || x.family !== p.family;
   const related = choisis.length
     ? choisis.slice(0, 4)
-    : catalog
-        .filter(
-          (x) =>
-            x.category === p.category && x.slug !== p.slug && isProductDiscoverable(x, saisons),
-        )
-        .slice(0, 4);
-  const siblings = familySiblings(p, catalog).filter((s) => isProductDiscoverable(s, saisons));
-  const suggestionGroups = familySuggestionGroups(p, catalog, saisons);
+    : [
+        ...autresFiches.filter((x) => horsFamille(x) && memeCollection(x)),
+        ...autresFiches.filter(
+          (x) => horsFamille(x) && !memeCollection(x) && x.category === p.category,
+        ),
+        ...autresFiches.filter((x) => !horsFamille(x)),
+      ].slice(0, 4);
   /*
    * Fiche « assortiment » d'une famille : elle appartient à une famille mais
    * ne porte pas de parfum à elle (ex. Dattes Farcies Variées). Même critère
@@ -327,8 +355,23 @@ function Fiche({ base }: { base: Product }) {
     name: p.name,
     price: v ? variantPrice(p, v) : unitPrice,
     image: v?.image ?? p.image,
-    variantId: v?.id ?? (grammages.length > 1 ? weightSel?.id : undefined),
-    variantLabel: v ? v.label : grammages.length > 1 ? weightSel?.label : undefined,
+    variantId:
+      v && portions > 0
+        ? encoderChoix(v.id, parfumsChoix, nombres)
+        : (v?.id ?? (grammages.length > 1 ? weightSel?.id : undefined)),
+    variantLabel:
+      v?.grams && portions > 0
+        ? libelleChoix(
+            v.grams,
+            parfumsChoix
+              .filter((f) => (nombres[f] ?? 0) > 0)
+              .map((f) => ({ parfum: f, n: nombres[f] })),
+          )
+        : v
+          ? v.label
+          : grammages.length > 1
+            ? weightSel?.label
+            : undefined,
     // Le format choisi remplace l'unité générique (« pot », « / 500 g »).
     unit: v || grammages.length > 1 ? "" : p.unit,
     stockQty: p.stockQty,
@@ -355,7 +398,8 @@ function Fiche({ base }: { base: Product }) {
       setQtyBy({});
       return;
     }
-    addToCart(ligne(variant, true), qty);
+    if (!addToCart(ligne(variant, true), qty)) return;
+    if (portions > 0) setNombres({});
   };
 
   return (
@@ -396,6 +440,37 @@ function Fiche({ base }: { base: Product }) {
               ) : null
             }
           />
+
+          {/* Autres parfums de la famille — sous la photo, comme dans l'aperçu rapide. */}
+          {p.family && siblings.length > 0 && (
+            <div className="mt-6 border-t border-line pt-5">
+              <div className="mb-3 text-[11px] uppercase tracking-[0.22em] text-charbon-soft">
+                Autres parfums — {nomFamille(p.family)}
+              </div>
+              <div className="flex flex-wrap gap-4">
+                {siblings.map((s) => (
+                  <Link
+                    key={s.slug}
+                    to="/produits/$slug"
+                    params={{ slug: s.slug }}
+                    className="group/sib w-16 text-center"
+                  >
+                    <span className="block h-16 w-16 overflow-hidden rounded-full bg-sand">
+                      <ProductImage
+                        src={s.image}
+                        alt={s.name}
+                        placeholderClassName="text-xl"
+                        className="transition-transform duration-700 group-hover/sib:scale-105"
+                      />
+                    </span>
+                    <span className="mt-1.5 block text-[11px] leading-snug text-charbon-soft transition-colors group-hover/sib:text-gold">
+                      {s.flavorLabel ?? s.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -493,73 +568,6 @@ function Fiche({ base }: { base: Product }) {
             <p>{p.description || p.shortDesc}</p>
           </div>
 
-          {p.family &&
-            (suggestionGroups.sameType.length > 0 || suggestionGroups.otherTypes.length > 0) && (
-              <div className="mt-8 space-y-7 border-t border-line pt-6">
-                {suggestionGroups.sameType.length > 0 && (
-                  <div>
-                    <div className="mb-4 text-[11px] uppercase tracking-[0.22em] text-charbon-soft">
-                      {p.family === "dattes-farcies"
-                        ? `Autres parfums — ${nomFamille(p.family)}`
-                        : `Autres parfums — ${p.productType ?? nomFamille(p.family)}`}
-                    </div>
-                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                      {suggestionGroups.sameType.map((s) => (
-                        <Link
-                          key={s.slug}
-                          to="/produits/$slug"
-                          params={{ slug: s.slug }}
-                          className="group rounded-lg border border-beige bg-white p-2 text-center transition hover:border-gold"
-                        >
-                          <span className="mx-auto block aspect-square w-full overflow-hidden rounded-md bg-sand">
-                            <ProductImage
-                              src={s.image}
-                              alt={s.name}
-                              placeholderClassName="text-2xl"
-                              className="transition-transform duration-700 group-hover:scale-105"
-                            />
-                          </span>
-                          <span className="mt-2 block text-[11px] leading-snug text-charbon-soft transition-colors group-hover:text-charbon">
-                            {s.flavorLabel ?? s.name}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {suggestionGroups.otherTypes.length > 0 && (
-                  <div>
-                    <div className="mb-4 text-[11px] uppercase tracking-[0.22em] text-charbon-soft">
-                      Dans la famille {nomFamille(p.family)}
-                    </div>
-                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                      {suggestionGroups.otherTypes.map((s) => (
-                        <Link
-                          key={s.slug}
-                          to="/produits/$slug"
-                          params={{ slug: s.slug }}
-                          className="group rounded-lg border border-beige bg-white p-2 text-center transition hover:border-gold"
-                        >
-                          <span className="mx-auto block aspect-square w-full overflow-hidden rounded-md bg-sand">
-                            <ProductImage
-                              src={s.image}
-                              alt={s.name}
-                              className="transition-transform duration-700 group-hover:scale-105"
-                            />
-                          </span>
-                          <span className="mt-2 block text-[11px] leading-snug text-charbon-soft">
-                            {p.family === "dattes-farcies"
-                              ? (s.flavorLabel ?? s.name)
-                              : (productTypeLabel(s.productType) ?? s.name)}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
           {/* Grammages / formats / contenants : composant partagé avec
               l'aperçu rapide, pour un rendu strictement identique. */}
           {variants.length > 0 && !!p.sellMode && !pendingConfig && (
@@ -587,7 +595,15 @@ function Fiche({ base }: { base: Product }) {
 
               {/* Répartition par parfum du grammage choisi (assortiment) —
                   affichée sous le choix, là où la cliente vient de cliquer. */}
-              {variant && selectedAssortmentComposition.length > 0 && (
+              {portions > 0 && (
+                <AssortimentPicker
+                  parfums={parfumsChoix}
+                  nombres={nombres}
+                  portions={portions}
+                  onChange={(f, n) => setNombres((q) => ({ ...q, [f]: n }))}
+                />
+              )}
+              {portions === 0 && variant && selectedAssortmentComposition.length > 0 && (
                 <div className="mt-3 rounded-lg border border-border bg-sable/50 p-4">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="text-[11px] uppercase tracking-[0.22em] text-gold">
@@ -820,7 +836,9 @@ function Fiche({ base }: { base: Product }) {
                         : !available
                           ? "Indisponible hors saison"
                           : needsVariant
-                            ? choiceLabel
+                            ? compoIncomplete
+                              ? `Encore ${portions - portionsPlacees} × ${PORTION_G} g à choisir`
+                              : choiceLabel
                             : multi
                               ? `Ajouter au panier · ${formatPrice(prixMulti)}`
                               : "Ajouter au panier"}
