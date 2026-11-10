@@ -18,7 +18,6 @@ import {
 // Visuals (real Ö' Sweets photos)
 import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg";
 import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg";
-import imgLogoBranding from "@/assets/logo-produit-branding-officiel.jpg";
 import imgAidCollection from "@/assets/collection-aid-eid-mubarak.jpg";
 import imgPlateauClassique from "@/assets/plateau-sale-classique.jpg";
 import imgPlateauPrestige from "@/assets/plateau-sale-prestige.jpg";
@@ -107,9 +106,7 @@ const gateauxCols: MegaCol[] = [
     items: [
       { to: "/gateaux/anniversaire", label: "Gâteaux d'anniversaire" },
       { to: "/gateaux/wedding-cakes", label: "Wedding Cakes" },
-      { to: "/packs/mariage", label: "Pack Mariage" },
-      { to: "/packs/fiancailles", label: "Pack Fiançailles" },
-      { to: "/packs/circoncision", label: "Pack Circoncision / Thour" },
+      // Les packs (mariage, fiançailles, circoncision) sont dans le menu Événements.
       { to: "/gateaux/fin-annee", label: "Gâteaux de fin d'année" },
       { to: "/gateaux/configurer", label: "Configurer mon gâteau →", highlight: true },
     ],
@@ -229,10 +226,8 @@ function seasonalBlock(): NavEntry["extraBlock"] | undefined {
 const evenementsCols: MegaCol[] = [
   {
     title: "Cérémonies",
+    // Mariage et fiançailles passent par leurs packs.
     items: [
-      { to: "/evenements/mariage", label: "Mariage" },
-      { to: "/evenements/fiancailles", label: "Fiançailles" },
-      { to: "/evenements/anniversaire", label: "Fête d'anniversaire" },
       { to: "/gateaux/wedding-cakes", label: "Wedding Cakes" },
       { to: "/packs/mariage", label: "Pack Mariage" },
       { to: "/packs/fiancailles", label: "Pack Fiançailles" },
@@ -242,6 +237,7 @@ const evenementsCols: MegaCol[] = [
   {
     title: "Naissance & célébrations",
     items: [
+      { to: "/evenements/anniversaire", label: "Fête d'anniversaire" },
       { to: "/evenements/baby-shower", label: "Baby Shower" },
       ...(FEATURES.genderReveal
         ? [{ to: "/evenements/gender-reveal", label: "Gender Reveal" }]
@@ -255,22 +251,6 @@ const evenementsCols: MegaCol[] = [
       { to: "/evenements/entreprise", label: "Événement d'entreprise" },
       { to: "/offre-professionnelle", label: "Offre professionnelle" },
       { to: "/creation-sur-mesure", label: "Création sur mesure →", highlight: true },
-    ],
-  },
-];
-
-// ─────────────────────────────────────────────────────────────
-// Menu 7 — La Maison (dropdown compact, 1 colonne)
-// ─────────────────────────────────────────────────────────────
-const maisonCols: MegaCol[] = [
-  {
-    title: "La Maison",
-    items: [
-      { to: "/la-maison", label: "Notre histoire" },
-      { to: "/la-maison#savoir-faire", label: "Notre savoir-faire" },
-      { to: "/la-maison#atelier", label: "Notre atelier" },
-      { to: "/la-maison#engagements", label: "Nos engagements" },
-      { to: "/contact", label: "Nous contacter" },
     ],
   },
 ];
@@ -346,16 +326,14 @@ const NAV_BASE: NavEntry[] = [
     },
   },
 
+  // Lien simple : la page La Maison réunit histoire, savoir-faire, atelier et engagements.
   {
     label: "La Maison",
     to: "/la-maison",
-    cols: maisonCols,
-    card: {
-      image: imgLogoBranding,
-      title: "L'esprit Ö' Sweets",
-      cta: "Notre histoire",
-      to: "/la-maison",
-    },
+  },
+  {
+    label: "Contact",
+    to: "/contact",
   },
 ];
 
@@ -916,15 +894,6 @@ export function Header() {
                       </li>
                     );
                   })}
-                  <li>
-                    <Link
-                      to="/contact"
-                      onClick={() => setMobileOpen(false)}
-                      className="block py-4 tracking-[0.2em] uppercase text-sm text-charbon"
-                    >
-                      Contact & Informations
-                    </Link>
-                  </li>
                 </ul>
 
                 <div className="mt-6 pt-6 border-t border-border flex flex-wrap items-center gap-4 text-sm text-charbon/70">
