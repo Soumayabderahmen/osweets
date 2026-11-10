@@ -10,7 +10,9 @@ import { useFamilyLabel } from "@/lib/families-hook";
 import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
 import { filterAvailable } from "@/lib/season";
 import { patisserieProducts } from "@/lib/patisserie";
-import { useCollection } from "@/lib/collections";
+import { useCollection, useCollections } from "@/lib/collections";
+import { useSeasonKeys } from "@/lib/seasons-hook";
+import { patisserieMenuGroups } from "@/lib/patisserie-menu";
 import { usePageBannerImage } from "@/lib/banners";
 
 interface CollectionPageProps {
@@ -57,6 +59,24 @@ export function CollectionPage({ collection, notice }: CollectionPageProps) {
 
   const saisons = useSeasons();
   const nomFamille = useFamilyLabel();
+  /*
+   * Les collections de la colonne « Nos pâtisseries » du menu (Pâtisseries
+   * orientales, Gâteaux d'occasion…) ont le bandeau photo et des boutons pour
+   * passer de l'une à l'autre. Les collections de fête (Ramadan, Aïd) gardent
+   * leur bandeau habituel. Même règle que le menu : rien n'est écrit en dur.
+   */
+  const toutes = useCollections();
+  const cleSaisons = useSeasonKeys();
+  const soeurs = useMemo(
+    () =>
+      patisserieMenuGroups(
+        toutes,
+        catalog,
+        Array.from(cleSaisons, (key) => ({ key })),
+      ).pastries,
+    [toutes, catalog, cleSaisons],
+  );
+  const dansLeMenu = soeurs.some((c) => c.key === collection);
   const def = useMemo(() => live ?? fallback, [fallback, live]);
   const list = useMemo(
     () => filterAvailable(patisserieProducts(catalog).filter(def.filter), saisons),
@@ -98,6 +118,13 @@ export function CollectionPage({ collection, notice }: CollectionPageProps) {
       title={def.h1}
       subtitle={def.subtitle}
       heroImage={live?.image ?? defaut}
+      bannerStyle={dansLeMenu ? "photo" : undefined}
+      bannerEyebrow="Pâtisserie tunisienne"
+      tabs={
+        dansLeMenu
+          ? soeurs.map((c) => ({ label: c.label, to: c.path, active: c.key === collection }))
+          : undefined
+      }
       breadcrumb={[
         { label: "Accueil", to: "/" },
         { label: "Pâtisserie Tunisienne", to: "/patisserie" },

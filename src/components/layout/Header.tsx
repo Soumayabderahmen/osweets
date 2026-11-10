@@ -20,6 +20,8 @@ import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg"
 import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg";
 import imgLogoBranding from "@/assets/logo-produit-branding-officiel.jpg";
 import imgAidCollection from "@/assets/collection-aid-eid-mubarak.jpg";
+import imgPlateauClassique from "@/assets/plateau-sale-classique.jpg";
+import imgPlateauPrestige from "@/assets/plateau-sale-prestige.jpg";
 // imgPastillesPistache retiré : plus utilisé après masquage de la carte Gâteaux placeholder.
 // NOTE: pas de photo confirmée pour "sables-tartinable-fond" ni "plateau-noir-assortiment-large"
 // ni "collection-aid-plateau-detail" ni "plateau-or-amandes-detail" — placeholder utilisé.
@@ -32,6 +34,8 @@ type NavEntry = {
   to: string;
   cols?: MegaCol[];
   card?: MegaCard;
+  /** Plusieurs cartes à droite (ex. les deux plateaux salés). */
+  cards?: MegaCard[];
   extraBlock?: { title: string; text: string; ctaLabel: string; to: string; image?: string };
   bottomCta?: BottomCta;
 };
@@ -151,31 +155,17 @@ const coffretsCols: MegaCol[] = [
 // ─────────────────────────────────────────────────────────────
 // Menu 4 — Salé
 // ─────────────────────────────────────────────────────────────
+// Les deux plateaux de la liste des prix de l'atelier (40 pièces chacun).
 const epicerieFineCols: MegaCol[] = [
   {
-    title: "Nos plateaux",
+    title: "Plateaux salés",
     items: [
-      { to: "/sale?cat=traditionnel", label: "Salé traditionnel" },
-      { to: "/sale?cat=prestige", label: "Salé prestige" },
-      { to: "/sale?cat=assortis", label: "Plateaux assortis" },
+      { to: "/produits/plateau-sale-classique", label: "Plateau Classique · 40 pièces" },
+      { to: "/produits/plateau-sale-prestige", label: "Plateau Prestige · 40 pièces" },
+      { to: "/devis", label: "Demander un devis →", highlight: true },
     ],
   },
-  {
-    title: "Formats individuels",
-    items: [
-      { to: "/sale?cat=individuel", label: "Salé individuel" },
-      { to: "/sale?cat=verrines", label: "Verrines salées" },
-    ],
-  },
-  {
-    title: "Événements",
-    items: [
-      { to: "/sale/mariage", label: "Salé pour mariage" },
-      { to: "/sale/fiancailles", label: "Salé pour fiançailles" },
-      { to: "/devis", label: "Demander un devis →" },
-    ],
-  },
-].filter((c) => c.items.length > 0);
+];
 
 // ─────────────────────────────────────────────────────────────
 // Menu 5 — Cadeaux
@@ -318,8 +308,23 @@ const NAV_BASE: NavEntry[] = [
     label: "Salé",
     to: "/sale",
     cols: epicerieFineCols,
-    // Pas de photo produit épicerie confirmée → carte masquée.
-    bottomCta: { label: "Voir toute la sélection salée →", to: "/sale" },
+    cards: [
+      {
+        image: imgPlateauClassique,
+        title: "Plateau Classique",
+        text: "40 pièces · 45 €",
+        cta: "Voir le plateau",
+        to: "/produits/plateau-sale-classique",
+      },
+      {
+        image: imgPlateauPrestige,
+        title: "Plateau Prestige",
+        text: "40 pièces · 55 €",
+        cta: "Voir le plateau",
+        to: "/produits/plateau-sale-prestige",
+      },
+    ],
+    bottomCta: { label: "Voir les plateaux salés →", to: "/sale" },
   },
   {
     label: "Cadeaux",
@@ -656,7 +661,7 @@ export function Header() {
               <>
                 <div className="grid grid-cols-12 gap-0 py-2">
                   <div
-                    className={`grid ${current.card || current.extraBlock ? "col-span-8" : "col-span-12"} ${({ 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" } as Record<number, string>)[Math.min(Math.max(current.cols.length, 1), 4)]}`}
+                    className={`grid ${current.card || current.cards?.length || current.extraBlock ? "col-span-8" : "col-span-12"} ${({ 1: "grid-cols-1", 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" } as Record<number, string>)[Math.min(Math.max(current.cols.length, 1), 4)]}`}
                   >
                     {current.cols.map((col, i) => (
                       <div
@@ -696,42 +701,45 @@ export function Header() {
                     ))}
                   </div>
 
-                  {(current.card || current.extraBlock) && (
+                  {(current.card || current.cards?.length || current.extraBlock) && (
                     <div className="col-span-4 space-y-4 p-7">
-                      {current.card && (
-                        <Link
-                          to={current.card.to}
-                          onClick={() => setHovered(null)}
-                          className="block group"
-                        >
-                          <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sable">
-                            {current.card.image ? (
-                              <img
-                                src={current.card.image}
-                                alt={current.card.title}
-                                loading="lazy"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="w-full h-full grid place-items-center text-[11px] uppercase tracking-[0.25em] text-charbon/40 text-center px-6">
-                                Photo à venir
-                              </div>
-                            )}
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charbon/70 to-transparent p-4">
-                              <div className="font-display text-white text-lg leading-tight">
-                                {current.card.title}
-                              </div>
-                              {current.card.text && (
-                                <p className="text-white/80 text-xs mt-1 font-light">
-                                  {current.card.text}
-                                </p>
+                      {[...(current.card ? [current.card] : []), ...(current.cards ?? [])].map(
+                        (card) => (
+                          <Link
+                            key={card.to}
+                            to={card.to}
+                            onClick={() => setHovered(null)}
+                            className="block group"
+                          >
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-sable">
+                              {card.image ? (
+                                <img
+                                  src={card.image}
+                                  alt={card.title}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="w-full h-full grid place-items-center text-[11px] uppercase tracking-[0.25em] text-charbon/40 text-center px-6">
+                                  Photo à venir
+                                </div>
                               )}
-                              <span className="mt-2 inline-block text-[10px] tracking-[0.3em] uppercase text-gold-light border-b border-gold-light/60 pb-0.5">
-                                {current.card.cta} →
-                              </span>
+                              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charbon/70 to-transparent p-4">
+                                <div className="font-display text-white text-lg leading-tight">
+                                  {card.title}
+                                </div>
+                                {card.text && (
+                                  <p className="text-white/80 text-xs mt-1 font-light">
+                                    {card.text}
+                                  </p>
+                                )}
+                                <span className="mt-2 inline-block text-[10px] tracking-[0.3em] uppercase text-gold-light border-b border-gold-light/60 pb-0.5">
+                                  {card.cta} →
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </Link>
+                          </Link>
+                        ),
                       )}
                       {current.extraBlock && (
                         <div className="rounded-xl bg-beige border border-gold/30 p-5">

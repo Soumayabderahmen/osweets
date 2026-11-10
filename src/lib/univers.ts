@@ -25,7 +25,7 @@ const PAR_CATEGORIE: Record<Category, Univers> = {
   cake: { name: "Gâteaux", path: "/gateaux" },
   anniversaire: { name: "Gâteaux", path: "/gateaux" },
   coffret: { name: "Cadeaux", path: "/cadeaux" },
-  sale: { name: "Épicerie salée", path: "/sale" },
+  sale: { name: "Salé", path: "/sale" },
   "pack-fiancailles": { name: "Packs événements", path: "/packs/fiancailles" },
 };
 

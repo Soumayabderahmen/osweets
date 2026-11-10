@@ -53,6 +53,16 @@ export interface CategoryPageProps {
   /** Bandeau libre affiché sous le fil d'ariane. */
   notice?: ReactNode;
   collectionContext?: { key: string; label: string };
+  /**
+   * « photo » : grande photo assombrie, titre centré dessus (pages des
+   * collections du menu Pâtisserie et page Salé). Sans valeur : le bandeau
+   * sable habituel, texte à gauche et photo à droite.
+   */
+  bannerStyle?: "photo";
+  /** Petit surtitre au-dessus du titre du bandeau photo. */
+  bannerEyebrow?: string;
+  /** Boutons de navigation entre pages sœurs, sous le bandeau. */
+  tabs?: { label: string; to: string; active?: boolean }[];
 }
 
 // Les six allergènes déclarés dans le catalogue. Le soja manquait :
@@ -136,6 +146,77 @@ function CollectionBanner({
   );
 }
 
+/** Bandeau photo : la photo pleine largeur, assombrie, et le titre centré dessus. */
+function PhotoBanner({
+  title,
+  subtitle,
+  image,
+  eyebrow,
+}: {
+  title: string;
+  subtitle?: string;
+  image?: string;
+  eyebrow?: string;
+}) {
+  return (
+    <section className="container-os pt-2">
+      <div className="relative overflow-hidden bg-charbon">
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            aria-hidden="true"
+            className="h-[240px] w-full object-cover brightness-[0.62] md:h-[320px]"
+          />
+        ) : (
+          <div className="h-[240px] md:h-[320px]" />
+        )}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center text-white">
+          {eyebrow && (
+            <span className="text-[11px] uppercase tracking-[0.22em] text-gold-light">
+              {eyebrow}
+            </span>
+          )}
+          {/* Couleur posée sur le titre lui-même : le style global des h1 l'emporte sinon. */}
+          <h1 className="mt-2 font-display text-[34px] leading-tight text-white md:text-[48px]">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-2 max-w-xl text-sm leading-relaxed opacity-90 md:text-[15px]">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Boutons ronds sous le bandeau, pour passer d'une collection sœur à l'autre. */
+function SisterTabs({ tabs }: { tabs: { label: string; to: string; active?: boolean }[] }) {
+  return (
+    <nav
+      aria-label="Collections"
+      className="container-os flex flex-wrap justify-center gap-2.5 pt-7"
+    >
+      {tabs.map((t) => (
+        <Link
+          key={t.to}
+          to={t.to}
+          aria-current={t.active ? "page" : undefined}
+          className={`rounded-full border px-[18px] py-2 text-sm transition-colors ${
+            t.active
+              ? "border-charbon bg-charbon text-ivory"
+              : "border-beige bg-white text-charbon hover:border-gold"
+          }`}
+        >
+          {t.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 function matchesGroup(p: Product, g: ExtraFilterGroup, selection: string | string[]): boolean {
   const productVal = g.get(p);
   if (g.type === "multi") {
@@ -163,6 +244,9 @@ export function CategoryPage({
   emptyState,
   notice,
   collectionContext,
+  bannerStyle,
+  bannerEyebrow,
+  tabs,
 }: CategoryPageProps) {
   /**
    * Filtre « Mis en avant » : proposé seulement si au moins deux pastilles
@@ -374,7 +458,18 @@ export function CategoryPage({
       withoutPrefix: true,
     });
 
-  const banner = <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />;
+  const banner =
+    bannerStyle === "photo" ? (
+      <>
+        <PhotoBanner title={title} subtitle={subtitle} image={heroImage} eyebrow={bannerEyebrow} />
+        {tabs && tabs.length > 1 && <SisterTabs tabs={tabs} />}
+      </>
+    ) : (
+      <>
+        <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />
+        {tabs && tabs.length > 1 && <SisterTabs tabs={tabs} />}
+      </>
+    );
 
   const Grid = (
     <>
