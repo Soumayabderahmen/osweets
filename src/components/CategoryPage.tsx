@@ -53,13 +53,7 @@ export interface CategoryPageProps {
   /** Bandeau libre affiché sous le fil d'ariane. */
   notice?: ReactNode;
   collectionContext?: { key: string; label: string };
-  /**
-   * « photo » : grande photo assombrie, titre centré dessus (pages des
-   * collections du menu Pâtisserie et page Salé). Sans valeur : le bandeau
-   * sable habituel, texte à gauche et photo à droite.
-   */
-  bannerStyle?: "photo";
-  /** Petit surtitre au-dessus du titre du bandeau photo. */
+  /** Petit surtitre au-dessus du titre du bandeau (« Collection » par défaut). */
   bannerEyebrow?: string;
   /** Boutons de navigation entre pages sœurs, sous le bandeau. */
   tabs?: { label: string; to: string; active?: boolean }[];
@@ -102,52 +96,10 @@ const isInStock = (p: Product) =>
   p.inStock !== false && (p.stockUnlimited !== false || (p.stockQty ?? 0) > 0);
 
 /**
- * Bandeau de collection — référence base44 : fond sable pleine largeur,
- * texte à gauche (7/12), photo à droite (5/12), hauteur minimale 180px.
+ * Bandeau des pages catégorie et de la page Pâtisserie : la photo pleine
+ * largeur, assombrie, et le titre centré dessus en blanc.
  */
-function CollectionBanner({
-  title,
-  subtitle,
-  image,
-}: {
-  title: string;
-  subtitle?: string;
-  image?: string;
-}) {
-  return (
-    <section className="bg-sable">
-      <div className="container-os min-h-[180px] py-12 lg:py-16">
-        <div className="grid items-center gap-8 md:grid-cols-12">
-          <div className="md:col-span-7">
-            <span className="text-[11px] uppercase tracking-[0.25em] text-gold">Collection</span>
-            <h1 className="mt-3 font-display text-[32px] leading-tight text-charbon md:text-[40px]">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-4 max-w-lg text-sm leading-relaxed text-charbon-soft md:text-[15px]">
-                {subtitle}
-              </p>
-            )}
-          </div>
-          <div className="hidden md:col-span-5 md:block">
-            <div className="h-[200px] overflow-hidden rounded-xl bg-beige">
-              {image ? (
-                <img src={image} alt="" aria-hidden="true" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <span className="select-none font-display text-7xl text-gold/30">Ö</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/** Bandeau photo : la photo pleine largeur, assombrie, et le titre centré dessus. */
-function PhotoBanner({
+export function PhotoBanner({
   title,
   subtitle,
   image,
@@ -244,8 +196,7 @@ export function CategoryPage({
   emptyState,
   notice,
   collectionContext,
-  bannerStyle,
-  bannerEyebrow,
+  bannerEyebrow = "Collection",
   tabs,
 }: CategoryPageProps) {
   /**
@@ -458,18 +409,12 @@ export function CategoryPage({
       withoutPrefix: true,
     });
 
-  const banner =
-    bannerStyle === "photo" ? (
-      <>
-        <PhotoBanner title={title} subtitle={subtitle} image={heroImage} eyebrow={bannerEyebrow} />
-        {tabs && tabs.length > 1 && <SisterTabs tabs={tabs} />}
-      </>
-    ) : (
-      <>
-        <CollectionBanner title={title} subtitle={subtitle} image={heroImage} />
-        {tabs && tabs.length > 1 && <SisterTabs tabs={tabs} />}
-      </>
-    );
+  const banner = (
+    <>
+      <PhotoBanner title={title} subtitle={subtitle} image={heroImage} eyebrow={bannerEyebrow} />
+      {tabs && tabs.length > 1 && <SisterTabs tabs={tabs} />}
+    </>
+  );
 
   const Grid = (
     <>

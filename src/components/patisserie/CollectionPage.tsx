@@ -61,9 +61,8 @@ export function CollectionPage({ collection, notice }: CollectionPageProps) {
   const nomFamille = useFamilyLabel();
   /*
    * Les collections de la colonne « Nos pâtisseries » du menu (Pâtisseries
-   * orientales, Gâteaux d'occasion…) ont le bandeau photo et des boutons pour
-   * passer de l'une à l'autre. Les collections de fête (Ramadan, Aïd) gardent
-   * leur bandeau habituel. Même règle que le menu : rien n'est écrit en dur.
+   * orientales, Gâteaux d'occasion…) ont des boutons pour passer de l'une à
+   * l'autre. Même règle que le menu : rien n'est écrit en dur.
    */
   const toutes = useCollections();
   const cleSaisons = useSeasonKeys();
@@ -118,7 +117,6 @@ export function CollectionPage({ collection, notice }: CollectionPageProps) {
       title={def.h1}
       subtitle={def.subtitle}
       heroImage={live?.image ?? defaut}
-      bannerStyle={dansLeMenu ? "photo" : undefined}
       bannerEyebrow="Pâtisserie tunisienne"
       tabs={
         dansLeMenu

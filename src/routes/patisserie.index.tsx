@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { products as baseProducts } from "@/data/products";
-import { CategoryPage, type ExtraFilterGroup } from "@/components/CategoryPage";
+import { CategoryPage, PhotoBanner, type ExtraFilterGroup } from "@/components/CategoryPage";
 import { useCatalog, useEtatBase } from "@/lib/catalog";
 import { useSeasons } from "@/lib/seasons-hook";
 import { PatisserieIndisponible } from "@/components/patisserie/Indisponible";
@@ -225,33 +225,12 @@ function CollectionsIndex({
       </div>
 
       {/* Bandeau — même gabarit que les pages collection */}
-      <section className="bg-sable">
-        <div className="container-os min-h-[180px] py-12 lg:py-16">
-          <div className="grid items-center gap-8 md:grid-cols-12">
-            <div className="md:col-span-7">
-              <span className="text-[11px] uppercase tracking-[0.25em] text-gold">Nos univers</span>
-              <h1 className="mt-3 font-display text-[32px] leading-tight text-charbon md:text-[40px]">
-                {entete.title}
-              </h1>
-              {entete.subtitle && (
-                <p className="mt-4 max-w-lg text-sm leading-relaxed text-charbon-soft md:text-[15px]">
-                  {entete.subtitle}
-                </p>
-              )}
-            </div>
-            <div className="hidden md:col-span-5 md:block">
-              <div className="h-[200px] overflow-hidden rounded-xl bg-beige">
-                <img
-                  src={banniere}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PhotoBanner
+        title={entete.title}
+        subtitle={entete.subtitle}
+        image={banniere}
+        eyebrow="Nos univers"
+      />
 
       {/* Les 6 collections */}
       <section className="container-os py-12 lg:py-16">

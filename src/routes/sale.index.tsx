@@ -75,7 +75,6 @@ function SalePage() {
         title={sub.label}
         subtitle={sub.subtitle}
         heroImage={bandeauSale}
-        bannerStyle="photo"
         bannerEyebrow="Salé"
         tabs={[
           { label: "Tous les plateaux", to: "/sale", active: cat === "all" },
