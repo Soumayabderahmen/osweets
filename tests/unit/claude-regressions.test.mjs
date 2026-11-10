@@ -256,9 +256,7 @@ test("B-05 B-06 I-10 I-11 all public entry points use the same blocking states",
     );
   }
 });
-test("I-16 price guarantee information includes expiry and stock limitation", () => {
+test("I-16 price guarantee information shows the expiry date in one short line", () => {
   const notice = priceLockNotice(line);
-  assert.match(notice, /16\/09\/2026/);
-  assert.match(notice, /14:00/);
-  assert.match(notice, /sans réservation de stock/);
+  assert.equal(notice, "Prix garanti jusqu'au 16/09/2026.");
 });

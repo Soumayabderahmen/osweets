@@ -84,12 +84,12 @@ export function isPriceLockExpired(line: CartLineLike, now = new Date()): boolea
 export function priceLockNotice(line: CartLineLike): string {
   const lockedAt = validDate(line.priceLockedAt);
   if (!lockedAt) return "Le prix sera vérifié avant de continuer.";
+  // Une ligne courte sous chaque article : la date suffit à la cliente.
   const end = new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "short",
-    timeStyle: "short",
     timeZone: "Europe/Paris",
   }).format(new Date(lockedAt.getTime() + PRICE_LOCK_MS));
-  return `Prix conservé jusqu'au ${end} (heure de Paris), sans réservation de stock. Après 15 jours, le prix est actualisé avec notification de l'ancien et du nouveau prix.`;
+  return `Prix garanti jusqu'au ${end}.`;
 }
 
 export function needsFullCartRefresh(line: CartLineLike, now = new Date()): boolean {
