@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { rowToProduct, type ProductRow } from "@/lib/catalog";
 import { productBlockReason } from "@/lib/product-rules";
+import { resolveProductImage } from "@/lib/product-assets";
 import type { CollectionRow } from "@/api/collections";
 import type { FamilyRow } from "@/api/families";
 import type { WaitlistRow } from "@/api/waitlist";
@@ -22,6 +23,7 @@ export type EcranKey =
   | "bord"
   | "collections"
   | "produits"
+  | "sale"
   | "familles"
   | "campagnes"
   | "commandes"
@@ -34,7 +36,14 @@ export type FiltreProduits = "tous" | "aconfigurer" | "epuises" | "archives";
 
 /** Ce qu'un panneau latéral doit afficher. */
 export type PanneauDemande =
-  | { type: "produit"; row: ProductRow | null; famille?: string; collection?: string }
+  | {
+      type: "produit";
+      row: ProductRow | null;
+      famille?: string;
+      collection?: string;
+      /** Catégorie d'une fiche neuve — « sale » depuis l'écran Plateaux salés. */
+      categorie?: string;
+    }
   | { type: "collection"; row: CollectionRow | null }
   | { type: "collection-products"; row: CollectionRow }
   | { type: "collection-add-products"; row: CollectionRow }
@@ -86,8 +95,14 @@ export const aConfigurer = (r: ProductRow) =>
 export const alertes = (rows: ProductRow[]) =>
   enBoutique(rows).filter((r) => !r.stock_unlimited && (r.stock_qty ?? 0) <= (r.stock_alert ?? 0));
 
+/**
+ * La photo d'une fiche, comme la boutique la voit : le téléversement, sinon
+ * la photo livrée avec le site (ex. les plateaux salés), sinon le fichier
+ * du même nom versé en base.
+ */
 export const adminImage = (p: Pick<ProductRow, "image_url" | "image_key">) =>
-  p.image_url || (p.image_key ? `/api/public/media/${p.image_key}` : "");
+  resolveProductImage(p.image_url, p.image_key) ||
+  (p.image_key ? `/api/public/media/${p.image_key}` : "");
 
 /** Pastille promotionnelle : la valeur en base, et ce qu'on en lit à l'écran. */
 export const BADGES: Record<string, string> = {

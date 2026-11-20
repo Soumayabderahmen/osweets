@@ -58,13 +58,22 @@ function manqueTarif(r: ProductRow): string {
 export function EcranProduits({
   ctx,
   filtreInitial = "tous",
+  univers = "patisserie",
 }: {
   ctx: Contexte;
   filtreInitial?: FiltreProduits;
+  /** « sale » : l'écran Plateaux salés, même liste et même éditeur. */
+  univers?: "patisserie" | "sale";
 }) {
   const [filtre, setFiltre] = useState<FiltreProduits>(filtreInitial);
   const { collections, familles, recherche, recharger, ouvrir } = ctx;
-  const produits = useMemo(() => filterPatisserieRows(ctx.produits), [ctx.produits]);
+  const produits = useMemo(
+    () =>
+      univers === "sale"
+        ? ctx.produits.filter((r) => r.category === "sale")
+        : filterPatisserieRows(ctx.produits),
+    [ctx.produits, univers],
+  );
   const inFlight = useRef(new Set<string>());
   const [busyStock, setBusyStock] = useState<string[]>([]);
   const changeStock = async (row: ProductRow, delta: number) => {
@@ -121,9 +130,15 @@ export function EcranProduits({
       (r) => !collections.some((c) => (r.collections ?? []).includes(c.product_key)),
     );
     if (orphelins.length)
-      g.push({ cle: "__sans", label: "Sans collection", col: null, items: orphelins });
+      g.push({
+        cle: "__sans",
+        // Les plateaux salés n'ont pas de collection : ils forment leur propre liste.
+        label: univers === "sale" ? "Plateaux salés" : "Sans collection",
+        col: null,
+        items: orphelins,
+      });
     return g;
-  }, [lignes, collections]);
+  }, [lignes, collections, univers]);
 
   const familleLabel = (key: string | null) =>
     key ? (familles.find((f) => f.key === key)?.label ?? key) : null;
@@ -170,7 +185,9 @@ export function EcranProduits({
               </button>
             ) : (
               <span className="n" style={{ marginLeft: "auto" }}>
-                n'apparaissent que sur la page complète
+                {univers === "sale"
+                  ? "page Salé et menu Salé de la boutique"
+                  : "n'apparaissent que sur la page complète"}
               </span>
             )}
           </div>
@@ -183,9 +200,13 @@ export function EcranProduits({
                       .filter(Boolean)
                       .join(" · ")
                   : null,
-                (r.collections ?? []).length
-                  ? (r.collections ?? []).join(", ")
-                  : "aucune collection",
+                univers === "sale"
+                  ? r.pieces
+                    ? `${r.pieces} pièces`
+                    : null
+                  : (r.collections ?? []).length
+                    ? (r.collections ?? []).join(", ")
+                    : "aucune collection",
               ]
                 .filter(Boolean)
                 .join(" — ");

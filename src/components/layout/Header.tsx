@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useShop } from "@/lib/shop-store";
 import { useCollections } from "@/lib/collections";
 import { useCatalog } from "@/lib/catalog";
+import { saleShortLine, useSaleProducts } from "@/lib/sale";
 import { useSeasonKeys } from "@/lib/seasons-hook";
 import { usePageBanner } from "@/lib/banners";
 import { patisserieMenuGroups } from "@/lib/patisserie-menu";
@@ -19,8 +20,6 @@ import {
 import imgCoffretMignardises from "@/assets/coffret-or-mignardises-chocolat.jpg";
 import imgMignardisesMariage from "@/assets/mignardises-tulle-mariage.jpg";
 import imgAidCollection from "@/assets/collection-aid-eid-mubarak.jpg";
-import imgPlateauClassique from "@/assets/plateau-sale-classique.jpg";
-import imgPlateauPrestige from "@/assets/plateau-sale-prestige.jpg";
 // imgPastillesPistache retiré : plus utilisé après masquage de la carte Gâteaux placeholder.
 // NOTE: pas de photo confirmée pour "sables-tartinable-fond" ni "plateau-noir-assortiment-large"
 // ni "collection-aid-plateau-detail" ni "plateau-or-amandes-detail" — placeholder utilisé.
@@ -152,17 +151,37 @@ const coffretsCols: MegaCol[] = [
 // ─────────────────────────────────────────────────────────────
 // Menu 4 — Salé
 // ─────────────────────────────────────────────────────────────
-// Les deux plateaux de la liste des prix de l'atelier (40 pièces chacun).
-const epicerieFineCols: MegaCol[] = [
-  {
-    title: "Plateaux salés",
-    items: [
-      { to: "/produits/plateau-sale-classique", label: "Plateau Classique · 40 pièces" },
-      { to: "/produits/plateau-sale-prestige", label: "Plateau Prestige · 40 pièces" },
-      { to: "/devis", label: "Demander un devis →", highlight: true },
-    ],
-  },
-];
+/**
+ * Le menu Salé : les plateaux de l'admin, avec leur photo, leur nombre de
+ * pièces et leur prix. Un plateau ajouté ou masqué là-bas change le menu.
+ */
+function useSaleMenu(): { cols: MegaCol[]; cards: MegaCard[] } {
+  const plateaux = useSaleProducts();
+  return useMemo(
+    () => ({
+      cols: [
+        {
+          title: "Plateaux salés",
+          items: [
+            ...plateaux.map((p) => ({
+              to: `/produits/${p.slug}`,
+              label: p.pieces ? `${p.name} · ${p.pieces} pièces` : p.name,
+            })),
+            { to: "/devis", label: "Demander un devis →", highlight: true },
+          ],
+        },
+      ],
+      cards: plateaux.slice(0, 2).map((p) => ({
+        image: p.image || undefined,
+        title: p.name,
+        text: saleShortLine(p),
+        cta: "Voir le plateau",
+        to: `/produits/${p.slug}`,
+      })),
+    }),
+    [plateaux],
+  );
+}
 
 // ─────────────────────────────────────────────────────────────
 // Menu 5 — Cadeaux
@@ -285,23 +304,7 @@ const NAV_BASE: NavEntry[] = [
   {
     label: "Salé",
     to: "/sale",
-    cols: epicerieFineCols,
-    cards: [
-      {
-        image: imgPlateauClassique,
-        title: "Plateau Classique",
-        text: "40 pièces · 45 €",
-        cta: "Voir le plateau",
-        to: "/produits/plateau-sale-classique",
-      },
-      {
-        image: imgPlateauPrestige,
-        title: "Plateau Prestige",
-        text: "40 pièces · 55 €",
-        cta: "Voir le plateau",
-        to: "/produits/plateau-sale-prestige",
-      },
-    ],
+    // Colonnes et cartes : les plateaux de l'admin (voir useSaleMenu).
     bottomCta: { label: "Voir les plateaux salés →", to: "/sale" },
   },
   {
@@ -410,27 +413,30 @@ export function Header() {
    * ce chantier ne les concerne pas.
    */
   const colsPatisserie = usePatisserieCols();
+  const menuSale = useSaleMenu();
   const megaPatisserie = usePageBanner("patisserie-mega-menu-occasions");
   const NAV = useMemo(
     () =>
       NAV_BASE.map((n) =>
-        n.label === "Pâtisserie Tunisienne"
-          ? {
-              ...n,
-              cols: colsPatisserie,
-              card: megaPatisserie.image
-                ? {
-                    image: megaPatisserie.image,
-                    title: megaPatisserie.title || "L'atelier",
-                    text: megaPatisserie.subtitle || "Fait main",
-                    cta: "",
-                    to: "/patisserie",
-                  }
-                : undefined,
-            }
-          : n,
+        n.label === "Salé"
+          ? { ...n, cols: menuSale.cols, cards: menuSale.cards }
+          : n.label === "Pâtisserie Tunisienne"
+            ? {
+                ...n,
+                cols: colsPatisserie,
+                card: megaPatisserie.image
+                  ? {
+                      image: megaPatisserie.image,
+                      title: megaPatisserie.title || "L'atelier",
+                      text: megaPatisserie.subtitle || "Fait main",
+                      cta: "",
+                      to: "/patisserie",
+                    }
+                  : undefined,
+              }
+            : n,
       ),
-    [colsPatisserie, megaPatisserie.image, megaPatisserie.subtitle, megaPatisserie.title],
+    [colsPatisserie, menuSale, megaPatisserie.image, megaPatisserie.subtitle, megaPatisserie.title],
   );
 
   const current = NAV.find((n) => n.label === hovered);

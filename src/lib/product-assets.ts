@@ -40,6 +40,8 @@ import a_pMignardises from "@/assets/p-mignardises.jpg";
 import a_pSamsa from "@/assets/p-samsa.jpg";
 import a_pastillesPistacheChocolat from "@/assets/pastilles-pistache-chocolat.jpg";
 import a_plateauOrAssortimentSignature from "@/assets/plateau-or-assortiment-signature.jpg";
+import a_plateauSaleClassique from "@/assets/plateau-sale-classique.jpg";
+import a_plateauSalePrestige from "@/assets/plateau-sale-prestige.jpg";
 import a_weddingBuffet from "@/assets/wedding-buffet.jpg";
 
 /** Nom de fichier → URL construite par Vite. */
@@ -76,6 +78,8 @@ export const PRODUCT_ASSETS: Record<string, string> = {
   "p-samsa.jpg": a_pSamsa,
   "pastilles-pistache-chocolat.jpg": a_pastillesPistacheChocolat,
   "plateau-or-assortiment-signature.jpg": a_plateauOrAssortimentSignature,
+  "plateau-sale-classique.jpg": a_plateauSaleClassique,
+  "plateau-sale-prestige.jpg": a_plateauSalePrestige,
   "wedding-buffet.jpg": a_weddingBuffet,
 };
 

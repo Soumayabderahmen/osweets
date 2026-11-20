@@ -1,41 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { useMemo } from "react";
-import { products, type Product } from "@/data/products";
 import { CategoryPage } from "@/components/CategoryPage";
 import bandeauSale from "@/assets/bandeau-plateaux-sales.jpg";
 import { SITE } from "@/lib/seo";
+import { useSaleProducts } from "@/lib/sale";
 
-type SubKey = "all" | "classique" | "prestige";
-
-const has = (p: Product, t: string) => !!p.themes?.includes(t);
-
-const subCategories: Record<
-  SubKey,
-  { label: string; subtitle: string; filter: (p: Product) => boolean }
-> = {
-  all: {
-    label: "Plateaux salés",
-    subtitle: "Deux plateaux de 40 pièces, préparés le jour même pour vos réceptions.",
-    filter: (p) =>
-      p.category === "sale" && (has(p, "plateau-classique") || has(p, "plateau-prestige")),
-  },
-  classique: {
-    label: "Plateau Classique",
-    subtitle: "40 pièces : fricassés, mini hamburgers, tacos et brik dannouni.",
-    filter: (p) => has(p, "plateau-classique"),
-  },
-  prestige: {
-    label: "Plateau Prestige",
-    subtitle:
-      "40 pièces : quiches au poulet, crevettes panées, mini sandwichs au saumon et croquants au gouda.",
-    filter: (p) => has(p, "plateau-prestige"),
-  },
-};
-
+/*
+ * Les plateaux viennent de l'admin (fiches « salé » de la base) : un
+ * plateau ajouté, renommé ou masqué là-bas change cette page et ses
+ * boutons sans toucher au code. `cat` désigne un plateau par son adresse ;
+ * les anciens liens (?cat=classique, ?cat=prestige) restent valables.
+ */
 const searchSchema = z.object({
-  cat: fallback(z.enum(["all", "classique", "prestige"]), "all").default("all"),
+  cat: fallback(z.string(), "all").default("all"),
 });
 
 export const Route = createFileRoute("/sale/")({
@@ -46,13 +24,13 @@ export const Route = createFileRoute("/sale/")({
       {
         name: "description",
         content:
-          "Plateau Classique (40 pièces, 45 €) et Plateau Prestige (40 pièces, 55 €). Retrait à l'atelier ou livraison locale — préparation le jour même.",
+          "Plateaux salés de 40 pièces : fricassés, mini hamburgers, quiches, crevettes panées. Retrait à l'atelier ou livraison locale — préparation le jour même.",
       },
       { property: "og:title", content: "Plateaux salés — Classique et Prestige | Ö' Sweets" },
       {
         property: "og:description",
         content:
-          "Fricassés, mini hamburgers, quiches, crevettes panées : deux plateaux de 40 pièces. Retrait atelier ou livraison locale.",
+          "Fricassés, mini hamburgers, quiches, crevettes panées : nos plateaux de 40 pièces. Retrait atelier ou livraison locale.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: `${SITE.url}/sale` },
@@ -65,28 +43,35 @@ export const Route = createFileRoute("/sale/")({
 
 function SalePage() {
   const { cat } = Route.useSearch();
-  const sub = subCategories[cat as SubKey];
-  const filtered = useMemo(() => products.filter(sub.filter), [sub]);
+  const plateaux = useSaleProducts();
+  const choisi = plateaux.find((p) => p.slug === cat || p.slug === `plateau-sale-${cat}`);
+  const affiches = choisi ? [choisi] : plateaux;
 
   return (
     <div>
       <CategoryPage
         jsonLdPath="/sale"
-        title={sub.label}
-        subtitle={sub.subtitle}
+        title={choisi?.name ?? "Plateaux salés"}
+        subtitle={
+          choisi?.shortDesc ??
+          "Nos plateaux de pièces salées, préparés le jour même pour vos réceptions."
+        }
         heroImage={bandeauSale}
         bannerEyebrow="Salé"
         tabs={[
-          { label: "Tous les plateaux", to: "/sale", active: cat === "all" },
-          { label: "Plateau Classique", to: "/sale?cat=classique", active: cat === "classique" },
-          { label: "Plateau Prestige", to: "/sale?cat=prestige", active: cat === "prestige" },
+          { label: "Tous les plateaux", to: "/sale", active: !choisi },
+          ...plateaux.map((p) => ({
+            label: p.name,
+            to: `/sale?cat=${p.slug}`,
+            active: choisi?.slug === p.slug,
+          })),
         ]}
         breadcrumb={[
           { label: "Accueil", to: "/" },
           { label: "Salé", to: "/sale" },
-          ...(cat !== "all" ? [{ label: sub.label }] : []),
+          ...(choisi ? [{ label: choisi.name }] : []),
         ]}
-        products={filtered}
+        products={affiches}
         filters={{ stock: true, price: true, allergens: true }}
       />
 

@@ -10,8 +10,6 @@ import cakeVanille from "@/assets/cake-vanille.jpg";
 import cakePistache from "@/assets/cake-pistache.jpg";
 import cakeNoisette from "@/assets/cake-noisette.jpg";
 import coffret from "@/assets/cat-coffrets.jpg";
-import plateauClassique from "@/assets/plateau-sale-classique.jpg";
-import plateauPrestige from "@/assets/plateau-sale-prestige.jpg";
 
 export type Allergen = "gluten" | "lait" | "oeuf" | "fruits-coque" | "sesame" | "soja";
 export type Category =
@@ -830,61 +828,9 @@ export const products: Product[] = [
   },
   // ============ COLLECTIONS TUNISIENNES — TRADITION / RAMADAN / AÏD ============
   // ---- Fiches créées pour compléter la collection Ramadan (prix & photos à renseigner en admin) ----
-  // ============ SALÉ — PLATEAUX (liste des prix de l'atelier) ============
-  {
-    slug: "plateau-sale-classique",
-    name: "Plateau Classique",
-    category: "sale",
-    price: 45,
-    image: plateauClassique,
-    shortDesc: "40 pièces : fricassés, mini hamburgers, tacos et brik dannouni.",
-    description:
-      "Un plateau de 40 pièces salées assorties : fricassés, mini hamburgers, tacos et brik dannouni. Préparé le jour de votre réception.",
-    composition: ["Fricassés", "Mini hamburgers", "Tacos", "Brik dannouni"],
-    ingredients: [],
-    allergens: [],
-    conservation: "Produit frais, à consommer le jour même.",
-    inStock: true,
-    pieces: 40,
-    minQuantity: "1 plateau (40 pièces)",
-    prepLead: "Préparé le jour de la réception — commande à passer à l'avance.",
-    deliveryMode:
-      "Retrait à l'atelier ou livraison locale (frais kilométriques). Pas d'expédition nationale.",
-    localOnly: true,
-    themes: ["plateau-classique", "sale-mariage", "sale-fiancailles"],
-    occasions: ["mariage", "fiancailles"],
-    badge: "nouveau",
-  },
-  {
-    slug: "plateau-sale-prestige",
-    name: "Plateau Prestige",
-    category: "sale",
-    price: 55,
-    image: plateauPrestige,
-    shortDesc:
-      "40 pièces : quiches au poulet, crevettes panées, mini sandwichs au saumon et croquants au gouda.",
-    description:
-      "Un plateau de 40 pièces salées pour vos réceptions soignées : quiches au poulet, crevettes panées, mini sandwichs au saumon et croquants au gouda. Préparé le jour de votre réception.",
-    composition: [
-      "Quiches au poulet",
-      "Crevettes panées",
-      "Mini sandwichs au saumon",
-      "Croquants au gouda",
-    ],
-    ingredients: [],
-    allergens: [],
-    conservation: "Produit frais, à consommer le jour même.",
-    inStock: true,
-    pieces: 40,
-    minQuantity: "1 plateau (40 pièces)",
-    prepLead: "Préparé le jour de la réception — commande à passer à l'avance.",
-    deliveryMode:
-      "Retrait à l'atelier ou livraison locale (frais kilométriques). Pas d'expédition nationale.",
-    localOnly: true,
-    themes: ["plateau-prestige", "sale-mariage", "sale-fiancailles"],
-    occasions: ["mariage", "fiancailles", "entreprise"],
-    badge: "nouveau",
-  },
+  // ============ SALÉ — PLATEAUX ============
+  // Les plateaux salés sont des fiches de la base, gérées dans l'admin
+  // (migration 031) : voir src/lib/sale.ts.
 
   // ---- Collection Ramadan — fiches complémentaires (prix & photos à renseigner en admin) ----
   // ---- Famille KOUNEFA — un parfum = une fiche produit (plus de sélecteur) ----

@@ -25,7 +25,10 @@ export function EcranBord({ ctx }: { ctx: Contexte }) {
   const epuises = vivants.filter((r) => !dispo(r));
   const faibles = vivants.filter(bas);
   const archives = produits.filter((r) => r.archived);
-  const sansCollection = vivants.filter((r) => !(r.collections ?? []).length);
+  // Les plateaux salés n'ont pas de collection par nature : ils ne sont pas en défaut.
+  const sansCollection = vivants.filter(
+    (r) => r.category !== "sale" && !(r.collections ?? []).length,
+  );
   const sansTarif = produits.filter(aConfigurer);
   const nouvelles = commandes.filter((o) => o.status === "nouvelle");
   const max = Math.max(

@@ -131,6 +131,7 @@ export function Panneau({
         onClose={onClose}
         famille={demande.famille}
         collection={demande.collection}
+        categorie={demande.categorie}
       />
     );
   if (demande.type === "collection")
@@ -160,6 +161,7 @@ export function PanelProduit({
   onClose,
   famille,
   collection,
+  categorie,
 }: {
   row: ProductRow | null;
   ctx: Contexte;
@@ -168,13 +170,15 @@ export function PanelProduit({
   famille?: string;
   /** Collection pré-cochée — on arrive depuis une collection. */
   collection?: string;
+  /** Catégorie d'une fiche neuve (« sale » : un plateau salé). */
+  categorie?: string;
 }) {
   const { collections, familles, recharger, reglages } = ctx;
   const [busy, setBusy] = useState(false);
   const [d, setD] = useState(() => ({
     name: row?.name ?? "",
     slug: row?.slug ?? "",
-    category: row?.category ?? "traditionnelle",
+    category: row?.category ?? categorie ?? "traditionnelle",
     sort_order: row?.sort_order ?? 0,
     disclaimer: row?.disclaimer ?? "",
     price: Number(row?.price ?? 0),
@@ -208,10 +212,10 @@ export function PanelProduit({
     stock_unlimited: row?.stock_unlimited ?? true,
     ship_pickup: row?.ship_pickup ?? true,
     ship_local: row?.ship_local ?? true,
-    ship_national: row?.ship_national ?? true,
+    ship_national: row?.ship_national ?? categorie !== "sale",
     prep_lead: row?.prep_lead ?? "",
     seasonal_only: row?.seasonal_only ?? false,
-    local_only: row?.local_only ?? false,
+    local_only: row?.local_only ?? categorie === "sale",
     no_cart: row?.no_cart ?? false,
     hide_price: row?.hide_price ?? false,
     requires_cold: row?.requires_cold ?? false,

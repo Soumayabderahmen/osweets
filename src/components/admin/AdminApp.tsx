@@ -26,6 +26,7 @@ import {
 } from "./screens";
 import { EcranCampagnes } from "./EcranCampagnes";
 import { EcranProduits } from "./EcranProduits";
+import { filterPatisserieRows } from "@/lib/patisserie-scope";
 import { EcranReglages } from "./EcranReglages";
 import { PanelAlertes, Panneau } from "./panels";
 import "./admin.css";
@@ -44,6 +45,12 @@ const ECRANS = {
     fil: "Pâtisserie Tunisienne",
     recherche: true,
     bouton: "+ Nouveau produit",
+  },
+  sale: {
+    titre: "Plateaux salés",
+    fil: "Salé",
+    recherche: true,
+    bouton: "+ Nouveau plateau",
   },
   familles: {
     titre: "Familles & parfums",
@@ -144,12 +151,15 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
 
   const meta = ECRANS[ecran];
   const nbAlertes = useMemo(() => alertes(produits).length, [produits]);
-  const vivants = enBoutique(produits);
+  // Le compteur « Produits » ne compte que la Pâtisserie ; les plateaux salés ont le leur.
+  const vivants = filterPatisserieRows(enBoutique(produits));
+  const plateaux = enBoutique(produits).filter((r) => r.category === "sale");
 
   /** Le bouton d'action du haut dépend de l'écran ouvert. */
   const nouveau = () => {
     if (ecran === "collections") return setPanneau({ type: "collection", row: null });
     if (ecran === "familles") return setPanneau({ type: "famille", row: null });
+    if (ecran === "sale") return setPanneau({ type: "produit", row: null, categorie: "sale" });
     setPanneau({ type: "produit", row: null });
   };
 
@@ -237,6 +247,13 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
                   Ramadan &amp; Aïd
                 </SubItem>
               </div>
+            </div>
+
+            <div className="navgroup">
+              <h4>Salé</h4>
+              <NavItem actif={ecran === "sale"} onClick={() => aller("sale")} ico="◇">
+                Plateaux salés ({plateaux.length})
+              </NavItem>
             </div>
 
             <div className="navgroup">
@@ -354,6 +371,8 @@ export function AdminApp({ email, onSignOut }: { email: string; onSignOut: () =>
               <EcranBord ctx={ctx} />
             ) : ecran === "produits" ? (
               <EcranProduits key={filtreProduits} ctx={ctx} filtreInitial={filtreProduits} />
+            ) : ecran === "sale" ? (
+              <EcranProduits key={`sale-${filtreProduits}`} ctx={ctx} univers="sale" />
             ) : ecran === "collections" ? (
               <EcranCollections ctx={ctx} />
             ) : ecran === "familles" ? (
