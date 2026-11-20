@@ -226,9 +226,8 @@ function seasonalBlock(): NavEntry["extraBlock"] | undefined {
 const evenementsCols: MegaCol[] = [
   {
     title: "Cérémonies",
-    // Mariage et fiançailles passent par leurs packs.
+    // Mariage et fiançailles passent par leurs packs ; Wedding Cakes reste dans Gâteaux.
     items: [
-      { to: "/gateaux/wedding-cakes", label: "Wedding Cakes" },
       { to: "/packs/mariage", label: "Pack Mariage" },
       { to: "/packs/fiancailles", label: "Pack Fiançailles" },
       { to: "/packs/circoncision", label: "Pack Circoncision / Thour" },
@@ -247,7 +246,6 @@ const evenementsCols: MegaCol[] = [
   {
     title: "Inspiration & pro",
     items: [
-      { to: "/evenements/presentations", label: "Nos présentations →", highlight: true },
       { to: "/evenements/entreprise", label: "Événement d'entreprise" },
       { to: "/offre-professionnelle", label: "Offre professionnelle" },
       { to: "/creation-sur-mesure", label: "Création sur mesure →", highlight: true },
