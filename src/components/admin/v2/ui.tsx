@@ -8,6 +8,9 @@ import type { Contexte } from "../core";
  */
 
 const TRACES: Record<string, string> = {
+  grille:
+    '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  personne: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
   chevG: '<path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>',
   chevB: '<path d="m6 9 6 6 6-6"/>',
   burger: '<path d="M4 6h16M4 12h16M4 18h16"/>',
@@ -103,6 +106,8 @@ export interface Preset {
   univers?: "patisserie" | "sale";
   collection?: string;
   famille?: string;
+  /** L'étape de la fenêtre à ouvrir (4 = « Où l'afficher »). */
+  etape?: number;
 }
 
 export const V2Context = createContext<V2 | null>(null);
@@ -138,21 +143,17 @@ export function Toasts({ liste, retirer }: { liste: Toast[]; retirer: (id: numbe
 
 /* ------------------------------------------------------------------ aide */
 
-const CLE_AIDES = "osweets-admin-aides-masquees";
-const lireMasquees = (): string[] => {
-  try {
-    return JSON.parse(localStorage.getItem(CLE_AIDES) ?? "[]");
-  } catch {
-    return [];
-  }
-};
-
-/** L'encadré « Comment faire ? » en haut d'un écran ; masquable, et ça se retient. */
+/** « Comment faire ? » : replié en un petit lien, les étapes s'ouvrent au clic. */
 export function Aide({ cle, lignes }: { cle: string; lignes: ReactNode[] }) {
-  const [masquee, setMasquee] = useState(() => lireMasquees().includes(cle));
-  if (masquee) return null;
+  const [ouverte, setOuverte] = useState(false);
+  if (!ouverte)
+    return (
+      <button type="button" className="aide-mini" data-aide={cle} onClick={() => setOuverte(true)}>
+        <Ic n="info" /> Comment faire ?
+      </button>
+    );
   return (
-    <div className="aide-ecran">
+    <div className="aide-ecran" data-aide={cle}>
       <span className="rond">
         <Ic n="info" />
       </span>
@@ -164,19 +165,8 @@ export function Aide({ cle, lignes }: { cle: string; lignes: ReactNode[] }) {
           ))}
         </ol>
       </div>
-      <button
-        type="button"
-        className="masquer"
-        onClick={() => {
-          setMasquee(true);
-          try {
-            localStorage.setItem(CLE_AIDES, JSON.stringify([...lireMasquees(), cle]));
-          } catch {
-            /* stockage indisponible : l'aide reviendra au prochain chargement */
-          }
-        }}
-      >
-        Masquer
+      <button type="button" className="masquer" onClick={() => setOuverte(false)}>
+        Fermer
       </button>
     </div>
   );

@@ -14,7 +14,7 @@ import { filterPatisserieRows } from "@/lib/patisserie-scope";
 import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/order-rules";
 import { FULFILLMENT_LABELS } from "@/lib/fulfillment";
 import { products as statiques, giftCategories } from "@/data/products";
-import { adminImage, dispo, enBoutique } from "../core";
+import { adminImage, dispo, enBoutique, type EcranKey } from "../core";
 import { Aide, Ic, Inter, euro, prixListe, slugifier, useV2 } from "./ui";
 
 /* ================================================================ outils */
@@ -163,17 +163,114 @@ export function EcranAccueil({ aller }: { aller: (e: string, filtre?: string) =>
 
 /* ================================================================ Produits (Pâtisserie, Salé) */
 
+/* ================================================================ En-tête de la Pâtisserie */
+
+const SOUS_PAT: Record<string, string> = {
+  produits: "Cliquez sur un prix pour le changer.",
+  familles: "Le même produit en plusieurs parfums.",
+  collections: "Ce que vos clientes voient dans le menu.",
+  campagnes: "Les dates d'ouverture de Ramadan et de l'Aïd.",
+};
+
+/** Commun aux écrans de la Pâtisserie Tunisienne : titre, bouton d'ajout, onglets. */
+export function SectionPat({ ecran, action }: { ecran: string; action?: React.ReactNode }) {
+  const { ctx } = useV2();
+  const pats = filterPatisserieRows(ctx.produits).filter((r) => !r.archived);
+  const ONGLETS: [EcranKey, string, string, number][] = [
+    ["produits", "sac", "Produits", pats.length],
+    ["familles", "famille", "Familles", ctx.familles.length],
+    ["collections", "menuSite", "Rubriques du menu", ctx.collections.length],
+  ];
+  return (
+    <section className="sect">
+      <div className="sect-haut">
+        <span className="sect-ic">
+          <Ic n="sac" />
+        </span>
+        <div className="sect-titre">
+          <h1>Pâtisserie Tunisienne</h1>
+          <p>{SOUS_PAT[ecran]}</p>
+        </div>
+        <div className="sect-actions">
+          <a
+            className="btn second"
+            href="/patisserie"
+            target="_blank"
+            rel="noreferrer"
+            style={{ textDecoration: "none" }}
+          >
+            <Ic n="lien" /> Voir sur le site
+          </a>
+          {action}
+        </div>
+      </div>
+      <nav className="sect-onglets">
+        {ONGLETS.map(([k, icone, n, c]) => (
+          <button
+            type="button"
+            key={k}
+            className={`sect-onglet${ecran === k ? " on" : ""}`}
+            onClick={() => ctx.aller(k)}
+          >
+            <Ic n={icone} />
+            {n}
+            <small>{c}</small>
+          </button>
+        ))}
+      </nav>
+    </section>
+  );
+}
+
+/* ================================================================ Produits (Pâtisserie, Salé) */
+
+const TRIS: Record<string, string> = {
+  menu: "Ordre du menu",
+  nom: "Nom (A → Z)",
+  prixHaut: "Prix croissant",
+  prixBas: "Prix décroissant",
+};
+const COMPARER: Record<string, (a: ProductRow, b: ProductRow) => number> = {
+  nom: (a, b) => a.name.localeCompare(b.name, "fr"),
+  prixHaut: (a, b) => Number(a.price) - Number(b.price),
+  prixBas: (a, b) => Number(b.price) - Number(a.price),
+};
+const HORS = "Pas dans le menu";
+const lireVue = (): "liste" | "grille" => {
+  try {
+    return localStorage.getItem("os-vue") === "grille" ? "grille" : "liste";
+  } catch {
+    return "liste";
+  }
+};
+
 export function EcranListe({
   univers,
   filtreInitial,
+  rubrique = "",
+  setRubrique,
 }: {
   univers: "patisserie" | "sale";
   filtreInitial?: string;
+  /** Rubrique choisie (clé du menu, « hors » pour les produits hors menu). */
+  rubrique?: string;
+  setRubrique?: (r: string) => void;
 }) {
   const { ctx, modifier, message } = useV2();
+  const pat = univers === "patisserie";
   const [filtre, setFiltre] = useState(filtreInitial ?? "tout");
   const [recherche, setRecherche] = useState("");
+  const [tri, setTri] = useState("menu");
+  const [vue, setVueEtat] = useState(lireVue);
   const [prixEnCours, setPrixEnCours] = useState<string | null>(null);
+  const setVue = (v: "liste" | "grille") => {
+    setVueEtat(v);
+    try {
+      localStorage.setItem("os-vue", v);
+    } catch {
+      /* le choix vaut pour cette visite */
+    }
+  };
 
   const duUnivers = useMemo(
     () =>
@@ -185,27 +282,41 @@ export function EcranListe({
   );
   const FILTRES: [string, string, (r: ProductRow) => boolean][] = [
     ["tout", "Tout", () => true],
+    ["enligne", "En ligne", enLigne],
     ["masques", "Cachés", (r) => !enLigne(r)],
     ["sansphoto", "Sans photo", (r) => !adminImage(r)],
   ];
   const f = (FILTRES.find((x) => x[0] === filtre) ?? FILTRES[0])[2];
-  const liste = duUnivers
-    .filter(f)
-    .filter((r) => !recherche || r.name.toLowerCase().includes(recherche.toLowerCase()));
   const rubriques = [...ctx.collections].sort((a, b) => a.sort_order - b.sort_order);
   const visibles = rubriques.filter((c) => c.published && !c.hidden);
   const premiere = (r: ProductRow) =>
     visibles.find((c) => (r.collections ?? []).includes(c.product_key));
+  const horsMenu = (r: ProductRow) => !premiere(r);
+  const filtres = duUnivers.filter(f);
+  let liste = filtres.filter(
+    (r) => !recherche || r.name.toLowerCase().includes(recherche.toLowerCase()),
+  );
+  if (pat && rubrique === "hors") liste = liste.filter(horsMenu);
+  else if (pat && rubrique) liste = liste.filter((r) => (r.collections ?? []).includes(rubrique));
+  const nomChoisi =
+    rubrique === "hors" ? HORS : (rubriques.find((c) => c.product_key === rubrique)?.label ?? "");
 
   const groupes: [string, ProductRow[]][] = [];
-  if (univers === "patisserie") {
-    for (const c of visibles) {
-      const items = liste.filter((r) => premiere(r)?.id === c.id);
-      if (items.length) groupes.push([c.label, items]);
-    }
-    const hors = liste.filter((r) => !premiere(r));
-    if (hors.length) groupes.push(["Pas dans le menu", hors]);
-  } else if (liste.length) groupes.push(["Plateaux salés", liste]);
+  const pousse = (t: string, items: ProductRow[]) => items.length && groupes.push([t, items]);
+  if (tri !== "menu")
+    pousse(
+      nomChoisi || (pat ? "Tous les produits" : "Plateaux salés"),
+      [...liste].sort(COMPARER[tri]),
+    );
+  else if (pat && rubrique) pousse(nomChoisi, liste);
+  else if (pat) {
+    for (const c of visibles)
+      pousse(
+        c.label,
+        liste.filter((r) => premiere(r)?.id === c.id),
+      );
+    pousse(HORS, liste.filter(horsMenu));
+  } else pousse("Plateaux salés", liste);
 
   const nomFamille = (k: string) => ctx.familles.find((x) => x.key === k)?.label ?? k;
   const nomRubrique = (k: string) => rubriques.find((c) => c.product_key === k)?.label ?? k;
@@ -234,27 +345,94 @@ export function EcranListe({
         await saveProduct({ data: { id: r.id, values: { price: avant } } });
         await ctx.recharger();
       });
-    } catch (e) {
-      message(e instanceof Error ? e.message : "Prix non enregistré.");
+    } catch (err) {
+      message(err instanceof Error ? err.message : "Prix non enregistré.");
     }
   };
 
-  const titre = univers === "sale" ? "Salé" : "Pâtisserie Tunisienne";
-  return (
-    <>
-      <Entete
-        titre={titre}
-        sous={`Les produits de la partie « ${titre} » du site. Cliquez sur un prix pour le changer.`}
-        bouton={
+  const prixCellule = (r: ProductRow) => {
+    const prix = prixListe(r);
+    return (
+      <div className="prix col-prix">
+        {prixEnCours === r.id ? (
+          <>
+            <input
+              autoFocus
+              inputMode="decimal"
+              defaultValue={String(Number(r.price)).replace(".", ",")}
+              onKeyDown={(ev) => {
+                if (ev.key === "Enter") void changerPrix(r, ev.currentTarget.value);
+                if (ev.key === "Escape") setPrixEnCours(null);
+              }}
+              onBlur={(ev) => void changerPrix(r, ev.currentTarget.value)}
+            />
+            <small>€{r.sell_mode === "kg" ? " / kg" : ""}</small>
+          </>
+        ) : (
           <button
             type="button"
-            className="btn principal"
-            onClick={() => modifier(null, { univers })}
+            title={prix.modifiable ? "Changer le prix" : "Prix par format : « Modifier »"}
+            onClick={() => (prix.modifiable ? setPrixEnCours(r.id) : modifier(r))}
           >
-            <Ic n="plus" /> Ajouter {univers === "sale" ? "un plateau" : "une pâtisserie"}
+            {prix.texte}
           </button>
-        }
-      />
+        )}
+      </div>
+    );
+  };
+  const action = (r: ProductRow) =>
+    pat && horsMenu(r) ? (
+      <button
+        type="button"
+        className="btn principal petit"
+        title="Choisir dans quelle rubrique du menu il apparaît"
+        onClick={() => modifier(r, { etape: 4 })}
+      >
+        <Ic n="menuSite" /> Ranger
+      </button>
+    ) : (
+      <button type="button" className="btn second petit" onClick={() => modifier(r)}>
+        <Ic n="crayon" /> Modifier
+      </button>
+    );
+  const vignette = (r: ProductRow) => {
+    const img = adminImage(r);
+    return img ? <img src={img} alt="" /> : <span className="sansphoto">Ajouter une photo</span>;
+  };
+  const etiquetteFamille = (r: ProductRow) =>
+    r.family ? (
+      <span className="etiq fam">
+        {nomFamille(r.family)}
+        {r.flavor_label ? ` · ${r.flavor_label}` : ""}
+      </span>
+    ) : null;
+
+  const ajouter = (
+    <button
+      type="button"
+      className="btn principal"
+      onClick={() =>
+        modifier(null, {
+          univers,
+          collection: pat && rubrique && rubrique !== "hors" ? rubrique : undefined,
+        })
+      }
+    >
+      <Ic n="plus" /> Ajouter {univers === "sale" ? "un plateau" : "une pâtisserie"}
+    </button>
+  );
+
+  return (
+    <>
+      {pat ? (
+        <SectionPat ecran="produits" action={ajouter} />
+      ) : (
+        <Entete
+          titre="Salé"
+          sous="Les plateaux de la partie « Salé » du site. Cliquez sur un prix pour le changer."
+          bouton={ajouter}
+        />
+      )}
       <Aide
         cle="produits"
         lignes={[
@@ -263,123 +441,180 @@ export function EcranListe({
           "Pour tout le reste (photo, texte, rubriques) : « Modifier ».",
         ]}
       />
-      <div className="barre">
-        <div className="filtres">
-          {FILTRES.map(([k, l, fn]) => (
+      <div className="outils-liste">
+        <div className="outils-ligne">
+          <div className="filtres">
+            {FILTRES.map(([k, l, fn]) => (
+              <button
+                type="button"
+                key={k}
+                className={`filtre${filtre === k ? " on" : ""}`}
+                onClick={() => setFiltre(k)}
+              >
+                {l}
+                <small>{duUnivers.filter(fn).length}</small>
+              </button>
+            ))}
+          </div>
+          <label className="recherche">
+            <Ic n="loupe" />
+            <input
+              placeholder="Chercher un produit…"
+              value={recherche}
+              onChange={(ev) => setRecherche(ev.target.value)}
+            />
+          </label>
+          <label className="choix-tri">
+            Trier
+            <select value={tri} onChange={(ev) => setTri(ev.target.value)}>
+              {Object.entries(TRIS).map(([k, n]) => (
+                <option key={k} value={k}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="vues">
             <button
               type="button"
-              key={k}
-              className={`filtre${filtre === k ? " on" : ""}`}
-              onClick={() => setFiltre(k)}
+              className={vue === "liste" ? "on" : ""}
+              onClick={() => setVue("liste")}
+              title="En lignes"
+              aria-label="Afficher en lignes"
             >
-              {l}
-              <small>{duUnivers.filter(fn).length}</small>
+              <Ic n="liste" />
             </button>
-          ))}
+            <button
+              type="button"
+              className={vue === "grille" ? "on" : ""}
+              onClick={() => setVue("grille")}
+              title="En cartes"
+              aria-label="Afficher en cartes"
+            >
+              <Ic n="grille" />
+            </button>
+          </div>
         </div>
-        <label className="recherche">
-          <Ic n="loupe" />
-          <input
-            placeholder="Chercher un produit…"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-          />
-        </label>
+        {pat && setRubrique && (
+          <div className="puces">
+            <button
+              type="button"
+              className={`puce${!rubrique ? " on" : ""}`}
+              onClick={() => setRubrique("")}
+            >
+              Toutes les rubriques<small>{filtres.length}</small>
+            </button>
+            {visibles.map((c) => (
+              <button
+                type="button"
+                key={c.id}
+                className={`puce${ctx.saisons.some((s) => s.season_key === c.product_key) ? " fete" : ""}${rubrique === c.product_key ? " on" : ""}`}
+                onClick={() => setRubrique(c.product_key)}
+              >
+                <span className="pt" />
+                {c.label}
+                <small>
+                  {filtres.filter((r) => (r.collections ?? []).includes(c.product_key)).length}
+                </small>
+              </button>
+            ))}
+            {duUnivers.some(horsMenu) && (
+              <button
+                type="button"
+                className={`puce${rubrique === "hors" ? " on" : ""}`}
+                onClick={() => setRubrique("hors")}
+              >
+                {HORS}
+                <small>{filtres.filter(horsMenu).length}</small>
+              </button>
+            )}
+          </div>
+        )}
       </div>
       {groupes.length ? (
         groupes.map(([titreGroupe, items]) => (
-          <div className="carte groupe" key={titreGroupe}>
+          <div className={`carte groupe${titreGroupe === HORS ? " hors" : ""}`} key={titreGroupe}>
             <h3>
               {titreGroupe}{" "}
               <em>
                 {items.length} produit{items.length > 1 ? "s" : ""}
               </em>
             </h3>
-            <div className="thead">
-              <span>Produit</span>
-              <span>Prix</span>
-              <span>Sur le site</span>
-              <span />
-            </div>
-            <div className="liste">
-              {items.map((r) => {
-                const prix = prixListe(r);
-                const img = adminImage(r);
-                return (
-                  <div className={`ligne${enLigne(r) ? "" : " masque"}`} key={r.id}>
-                    <div className="produit">
-                      <div className="vign">
-                        {img ? (
-                          <img src={img} alt="" />
-                        ) : (
-                          <span className="sansphoto">Ajouter une photo</span>
-                        )}
-                      </div>
-                      <div className="nomprod">
+            {titreGroupe === HORS && (
+              <div className="conseil hors-menu">
+                <Ic n="info" />
+                <span>
+                  <b>Vos clientes ne trouvent pas ces produits dans le menu.</b> Aucune rubrique
+                  visible ne les montre. Pour les ranger : « Ranger » puis cochez une rubrique — ou
+                  cachez-les s'ils ne sont plus vendus.
+                </span>
+              </div>
+            )}
+            {vue === "grille" ? (
+              <div className="grille-produits">
+                {items.map((r) => (
+                  <div className={`carte-produit${enLigne(r) ? "" : " masque"}`} key={r.id}>
+                    <div className="cp-photo">
+                      {vignette(r)}
+                      {!enLigne(r) && <span className="etat">Caché</span>}
+                    </div>
+                    <div className="cp-corps">
+                      <div className="cp-nom">
                         <b>{r.name}</b>
                         <div className="etiquettes">
-                          {r.family && (
-                            <span className="etiq fam">
-                              {nomFamille(r.family)}
-                              {r.flavor_label ? ` · ${r.flavor_label}` : ""}
-                            </span>
-                          )}
-                          {univers === "patisserie" ? (
-                            (r.collections ?? []).map((c) => (
-                              <span className="etiq" key={c}>
-                                {nomRubrique(c)}
-                              </span>
-                            ))
-                          ) : r.pieces ? (
-                            <span className="etiq">{r.pieces} pièces</span>
-                          ) : null}
-                          {!img && <span className="etiq avert">Sans photo</span>}
+                          {etiquetteFamille(r)}
+                          {!adminImage(r) && <span className="etiq avert">Sans photo</span>}
                         </div>
                       </div>
-                    </div>
-                    <div className="prix col-prix">
-                      {prixEnCours === r.id ? (
-                        <>
-                          <input
-                            autoFocus
-                            inputMode="decimal"
-                            defaultValue={String(Number(r.price)).replace(".", ",")}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") void changerPrix(r, e.currentTarget.value);
-                              if (e.key === "Escape") setPrixEnCours(null);
-                            }}
-                            onBlur={(e) => void changerPrix(r, e.currentTarget.value)}
-                          />
-                          <small>€{r.sell_mode === "kg" ? " / kg" : ""}</small>
-                        </>
-                      ) : (
-                        <button
-                          type="button"
-                          title={
-                            prix.modifiable ? "Changer le prix" : "Prix par format : « Modifier »"
-                          }
-                          onClick={() => (prix.modifiable ? setPrixEnCours(r.id) : modifier(r))}
-                        >
-                          {prix.texte}
-                        </button>
-                      )}
-                    </div>
-                    <div className="col-visible">
-                      <Inter on={enLigne(r)} onClick={() => void basculer(r)} />
-                    </div>
-                    <div className="col-action">
-                      <button
-                        type="button"
-                        className="btn second petit"
-                        onClick={() => modifier(r)}
-                      >
-                        <Ic n="crayon" /> Modifier
-                      </button>
+                      {prixCellule(r)}
+                      <div className="cp-actions">
+                        <Inter on={enLigne(r)} onClick={() => void basculer(r)} />
+                        {action(r)}
+                      </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="thead">
+                  <span>Produit</span>
+                  <span>Prix</span>
+                  <span>Sur le site</span>
+                  <span />
+                </div>
+                <div className="liste">
+                  {items.map((r) => (
+                    <div className={`ligne${enLigne(r) ? "" : " masque"}`} key={r.id}>
+                      <div className="produit">
+                        <div className="vign">{vignette(r)}</div>
+                        <div className="nomprod">
+                          <b>{r.name}</b>
+                          <div className="etiquettes">
+                            {etiquetteFamille(r)}
+                            {pat ? (
+                              (r.collections ?? []).map((c) => (
+                                <span className="etiq" key={c}>
+                                  {nomRubrique(c)}
+                                </span>
+                              ))
+                            ) : r.pieces ? (
+                              <span className="etiq">{r.pieces} pièces</span>
+                            ) : null}
+                            {!adminImage(r) && <span className="etiq avert">Sans photo</span>}
+                          </div>
+                        </div>
+                      </div>
+                      {prixCellule(r)}
+                      <div className="col-visible">
+                        <Inter on={enLigne(r)} onClick={() => void basculer(r)} />
+                      </div>
+                      <div className="col-action">{action(r)}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         ))
       ) : (
@@ -408,10 +643,9 @@ export function EcranFamillesV2() {
   };
   return (
     <>
-      <Entete
-        titre="Familles"
-        sous="Le même produit en plusieurs parfums, regroupé."
-        bouton={
+      <SectionPat
+        ecran="familles"
+        action={
           <button type="button" className="btn principal" onClick={() => setNouvelle(true)}>
             <Ic n="plus" /> Nouvelle famille
           </button>
@@ -584,6 +818,7 @@ export function EcranRubriques() {
         <div className="corps">
           <h4>{c.label}</h4>
           <p>{c.subtitle || c.description}</p>
+          {saisons.has(c.product_key) && <DatesFete cle={c.product_key} />}
           <div className="pied">
             <Inter
               on={visible(c)}
@@ -608,10 +843,9 @@ export function EcranRubriques() {
   };
   return (
     <>
-      <Entete
-        titre="Rubriques du menu"
-        sous="Les rubriques que vos clientes voient dans le menu « Pâtisserie Tunisienne »."
-        bouton={
+      <SectionPat
+        ecran="collections"
+        action={
           <button
             type="button"
             className="btn principal"
@@ -628,6 +862,7 @@ export function EcranRubriques() {
           "Pour mettre un produit dans une rubrique (ex. Ramadan) : « Ses produits », puis cochez-le.",
           "Pour créer un produit directement dans une rubrique : « + Ajouter un produit ici ».",
           "Pour changer le nom, le texte ou la photo : cliquez sur la photo.",
+          "Ramadan et Aïd s'ouvrent et se ferment tout seuls : leurs dates se changent sur leur carte (« Changer »).",
         ]}
       />
       <div className="apercu-menu">
@@ -654,6 +889,32 @@ export function EcranRubriques() {
       )}
       {ouverte && <FenetreSesProduits rubrique={ouverte} onClose={() => setOuverte(null)} />}
     </>
+  );
+}
+
+const dateFete = (iso: string) =>
+  new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+  });
+
+/** Les dates d'une fête, sur sa carte ; « Changer » ouvre l'écran des fenêtres. */
+function DatesFete({ cle }: { cle: string }) {
+  const { ctx } = useV2();
+  const s = ctx.saisons.find((x) => x.season_key === cle);
+  if (!s) return null;
+  return (
+    <div className="dates-fete">
+      <Ic n="horloge" />
+      <span>
+        Du <b>{dateFete(s.starts_on)}</b> au <b>{dateFete(s.ends_on)}</b>
+        {s.preorder_days ? ` · ouverte ${s.preorder_days} j avant` : ""}
+        {s.active ? "" : " · désactivée"}
+      </span>
+      <button type="button" className="lien-mini" onClick={() => ctx.aller("campagnes")}>
+        Changer
+      </button>
+    </div>
   );
 }
 

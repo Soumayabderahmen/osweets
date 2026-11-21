@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ProductRow } from "@/lib/catalog";
 import { Ic } from "./ui";
+import { initiales } from "./Profil";
 
 /*
  * Le menu de gauche (repliable), la barre du haut et « Aller à… » (Ctrl K),
@@ -76,6 +77,10 @@ export function Menu({
   basculer,
   palette,
   email,
+  nom,
+  rubriques = [],
+  rubrique = "",
+  allerRubrique,
   onSignOut,
 }: {
   sections: Section[];
@@ -90,6 +95,11 @@ export function Menu({
   basculer: () => void;
   palette: () => void;
   email: string;
+  nom?: string | null;
+  /** Les rubriques du menu du site, montrées sous « Produits ». */
+  rubriques?: { cle: string; nom: string; n: number; fete: boolean }[];
+  rubrique?: string;
+  allerRubrique?: (cle: string) => void;
   onSignOut: () => void;
 }) {
   const [fermees, setFermees] = useState<Set<number>>(new Set());
@@ -101,15 +111,34 @@ export function Menu({
 
   const sousLiens = (sous: [string, string][]) =>
     sous.map(([sk, sn]) => (
-      <button
-        type="button"
-        key={sk}
-        className={`sous-lien${ecran === sk ? " on" : ""}`}
-        onClick={() => aller(sk)}
-      >
-        {sn}
-        <small>{comptes[sk] ?? ""}</small>
-      </button>
+      <div key={sk} style={{ display: "contents" }}>
+        <button
+          type="button"
+          className={`sous-lien${ecran === sk && !(sk === "produits" && rubrique) ? " on" : ""}${sk === "produits" && ecran === "produits" && rubrique ? " parent" : ""}`}
+          onClick={() => aller(sk)}
+        >
+          {sn}
+          <small>{comptes[sk] ?? ""}</small>
+        </button>
+        {sk === "produits" && rubriques.length > 0 && allerRubrique && (
+          <div className="sous-sous">
+            {rubriques.map((r) => (
+              <button
+                type="button"
+                key={r.cle}
+                className={`sous-lien${r.fete ? " fete" : ""}${ecran === "produits" && rubrique === r.cle ? " on" : ""}`}
+                onClick={() => allerRubrique(r.cle)}
+              >
+                <span className="nm">
+                  <span className="pt" />
+                  {r.nom}
+                </span>
+                <small>{r.n}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     ));
 
   return (
@@ -219,13 +248,23 @@ export function Menu({
           <span>Voir ma boutique</span>
         </a>
         <div className="compte">
-          <span className="avatar" title={email}>
-            {initiales(email)}
-          </span>
-          <div className="qui">
-            <b>Ö' Sweets</b>
+          <button
+            type="button"
+            className="avatar"
+            title="Mon profil"
+            onClick={() => aller("profil")}
+          >
+            {initiales(nom, email)}
+          </button>
+          <button
+            type="button"
+            className={`qui${ecran === "profil" ? " on" : ""}`}
+            title="Mon profil"
+            onClick={() => aller("profil")}
+          >
+            <b>{nom || "Ö' Sweets"}</b>
             <small>{email}</small>
-          </div>
+          </button>
           <button type="button" className="bouton-rond" onClick={onSignOut} title="Se déconnecter">
             <Ic n="sortie" />
           </button>
@@ -234,14 +273,6 @@ export function Menu({
     </div>
   );
 }
-
-const initiales = (email: string) =>
-  (
-    email
-      .split("@")[0]
-      .replace(/[^a-z]/gi, "")
-      .slice(0, 2) || "ÖS"
-  ).toUpperCase();
 
 export interface Alerte {
   cle: string;
@@ -256,6 +287,7 @@ export function BarreHaut({
   titre,
   alertes,
   email,
+  nom,
   ouvrirTiroir,
   palette,
   aller,
@@ -265,6 +297,7 @@ export function BarreHaut({
   titre: string;
   alertes: Alerte[];
   email: string;
+  nom?: string | null;
   ouvrirTiroir: () => void;
   palette: () => void;
   aller: (e: string) => void;
@@ -370,17 +403,20 @@ export function BarreHaut({
             onClick={() => setOuvert((o) => (o === "compte" ? null : "compte"))}
             title="Mon compte"
           >
-            {initiales(email)}
+            {initiales(nom, email)}
           </button>
           <div className="deroulant">
             <div className="compte" style={{ padding: "8px 10px 10px" }}>
-              <span className="avatar">{initiales(email)}</span>
+              <span className="avatar">{initiales(nom, email)}</span>
               <div className="qui">
-                <b>Ö' Sweets</b>
+                <b>{nom || "Ö' Sweets"}</b>
                 <small>{email}</small>
               </div>
             </div>
             <hr />
+            <button type="button" className="item" onClick={() => choisir(() => aller("profil"))}>
+              <Ic n="personne" /> Mon profil
+            </button>
             <button type="button" className="item" onClick={() => choisir(() => aller("reglages"))}>
               <Ic n="reglage" /> Réglages
             </button>

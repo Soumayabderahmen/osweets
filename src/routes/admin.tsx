@@ -57,7 +57,8 @@ function AdminPage() {
 
   return (
     <AdminV2
-      email={admin.email}
+      admin={admin}
+      onAdminChange={setAdmin}
       onSignOut={async () => {
         await signOut();
         setAdmin(null);

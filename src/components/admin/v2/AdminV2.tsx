@@ -25,8 +25,11 @@ import {
   EcranPartie,
   EcranReglagesV2,
   EcranRubriques,
+  SectionPat,
   type Partie,
 } from "./Ecrans";
+import { EcranProfil } from "./Profil";
+import type { AdminIdentity } from "@/api/auth";
 import { Ic, Toasts, V2Context, type Preset, type Toast } from "./ui";
 import "../admin.css";
 import "../admin2.css";
@@ -47,6 +50,7 @@ type Ecran =
   | "reglages"
   | "bandeaux"
   | "attente"
+  | "profil"
   | Partie;
 
 /** Le menu de gauche suit le menu du site : chaque partie au même endroit. */
@@ -63,7 +67,6 @@ const SECTIONS: { titre: string; items: [Ecran, string, string, [Ecran, string][
           ["produits", "Produits"],
           ["familles", "Familles"],
           ["collections", "Rubriques du menu"],
-          ["campagnes", "Ramadan & Aïd"],
         ],
       ],
       ["gateaux", "gateau", "Gâteaux"],
@@ -108,12 +111,23 @@ const NOMS: Record<Ecran, string> = {
   commandes: "Commandes",
   attente: "Liste d'attente",
   reglages: "Réglages",
+  profil: "Mon profil",
 };
 /** Les écrans de l'ancienne administration, gardés tels quels dans le nouveau cadre. */
 const ANCIENS: Ecran[] = ["campagnes", "bandeaux", "attente"];
 
-export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => void }) {
+export function AdminV2({
+  admin,
+  onAdminChange,
+  onSignOut,
+}: {
+  admin: AdminIdentity;
+  onAdminChange: (a: AdminIdentity) => void;
+  onSignOut: () => void;
+}) {
+  const { email, displayName: nom } = admin;
   const [ecran, setEcran] = useState<Ecran>("accueil");
+  const [rubrique, setRubrique] = useState("");
   const [filtre, setFiltre] = useState<string | undefined>();
   const [panneau, setPanneau] = useState<PanneauDemande | null>(null);
   const [fenetre, setFenetre] = useState<{
@@ -173,6 +187,7 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
     (e: string, f?: string) => {
       setEcran((e === "bord" ? "accueil" : e) as Ecran);
       setFiltre(f);
+      setRubrique("");
       setTiroir(false);
       window.scrollTo({ top: 0 });
     },
@@ -266,6 +281,21 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
         ]
       : []),
   ];
+  const allerRubrique = (cle: string) => {
+    aller("produits");
+    setRubrique(cle);
+  };
+  const cleSaisons = new Set(saisons.map((s) => s.season_key));
+  const patVivants = filterPatisserieRows(produits).filter((r) => !r.archived);
+  const rubriquesMenu = [...collections]
+    .filter((c) => c.published && !c.hidden)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((c) => ({
+      cle: c.product_key,
+      nom: c.label,
+      n: patVivants.filter((r) => (r.collections ?? []).includes(c.product_key)).length,
+      fete: cleSaisons.has(c.product_key),
+    }));
   const nomEcran = NOMS[ecran];
   const dansPat = PATISSERIE.includes(ecran);
 
@@ -276,7 +306,13 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
   ) : ecran === "accueil" ? (
     <EcranAccueil aller={aller} />
   ) : ecran === "produits" ? (
-    <EcranListe key={`p-${filtre}`} univers="patisserie" filtreInitial={filtre} />
+    <EcranListe
+      key={`p-${filtre}`}
+      univers="patisserie"
+      filtreInitial={filtre}
+      rubrique={rubrique}
+      setRubrique={setRubrique}
+    />
   ) : ecran === "sale" ? (
     <EcranListe key={`s-${filtre}`} univers="sale" filtreInitial={filtre} />
   ) : ecran === "familles" ? (
@@ -285,15 +321,21 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
     <EcranRubriques />
   ) : ecran === "commandes" ? (
     <EcranCommandesV2 />
+  ) : ecran === "profil" ? (
+    <EcranProfil admin={admin} onChange={onAdminChange} />
   ) : ecran === "reglages" ? (
     <EcranReglagesV2 key={JSON.stringify(reglages)} aller={aller} />
   ) : ANCIENS.includes(ecran) ? (
     <>
-      <div className="entete">
-        <div>
-          <h1 className="titre">{nomEcran}</h1>
+      {ecran === "campagnes" ? (
+        <SectionPat ecran="campagnes" />
+      ) : (
+        <div className="entete">
+          <div>
+            <h1 className="titre">{nomEcran}</h1>
+          </div>
         </div>
-      </div>
+      )}
       <div className="osadmin ancien">
         {ecran === "campagnes" ? (
           <EcranCampagnes ctx={ctx} />
@@ -325,6 +367,10 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
               basculer={menu.basculer}
               palette={() => setPalette(true)}
               email={email}
+              nom={nom}
+              rubriques={rubriquesMenu}
+              rubrique={rubrique}
+              allerRubrique={allerRubrique}
               onSignOut={onSignOut}
             />
           </nav>
@@ -343,32 +389,12 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
               titre={nomEcran}
               alertes={alertes}
               email={email}
+              nom={nom}
               ouvrirTiroir={() => menu.setTiroir(true)}
               palette={() => setPalette(true)}
               aller={aller}
               onSignOut={onSignOut}
             />
-            {dansPat && (
-              <div className="filtres onglets-pat">
-                {(
-                  [
-                    ["produits", "Produits"],
-                    ["familles", "Familles"],
-                    ["collections", "Rubriques du menu"],
-                    ["campagnes", "Ramadan & Aïd"],
-                  ] as [Ecran, string][]
-                ).map(([k, n]) => (
-                  <button
-                    type="button"
-                    key={k}
-                    className={`filtre${ecran === k ? " on" : ""}`}
-                    onClick={() => aller(k)}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            )}
             {reglages.holidayMode && (
               <div className="conseil" style={{ marginBottom: 18 }}>
                 <Ic n="info" />

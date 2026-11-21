@@ -140,7 +140,7 @@ export function FenetreProduit({
 }) {
   const { ctx, message } = useV2();
   const [b, setB] = useState<Brouillon>(() => depuis(row, preset, ctx.produits));
-  const [etape, setEtape] = useState(1);
+  const [etape, setEtape] = useState(preset?.etape ?? 1);
   const [busy, setBusy] = useState(false);
   const [photo, setPhoto] = useState<{ apercu: string; fichier: File } | null>(null);
   const [nouvelleFam, setNouvelleFam] = useState("");
