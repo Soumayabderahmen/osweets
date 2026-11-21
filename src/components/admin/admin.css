@@ -2353,3 +2353,250 @@
   margin: 10px 12px 12px;
   cursor: pointer;
 }
+
+/* =============================================================
+   Thème « Soft UI » — prototype validé (prototype-admin/)
+
+   Fond gris très clair, cartes blanches à ombre douce, titres
+   en gras bleu-gris, dégradés aux couleurs or d'Ö' Sweets.
+   Cette couche se pose sur le dessin existant : elle ne change
+   aucune structure, seulement les couleurs, la typographie et
+   les boutons.
+   ============================================================= */
+.osadmin {
+  --ui-fond: #f8f9fa;
+  --ui-texte: #67748e;
+  --ui-fonce: #344767;
+  --ui-gris: #a0aabb;
+  --ui-bord: #d2d6da;
+  --ui-deg-or: linear-gradient(310deg, #8c7840 0%, #d4bf86 100%);
+  --ui-deg-fonce: linear-gradient(310deg, #141727 0%, #3a416f 100%);
+  background: var(--ui-fond);
+  color: var(--ui-texte);
+}
+.osadmin h1,
+.osadmin h2,
+.osadmin h3,
+.osadmin h4,
+.osadmin .display {
+  font-family: Inter, system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--ui-fonce);
+}
+.osadmin .brand .n {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 500;
+}
+
+/* Menu de gauche : il flotte sur le fond, chaque entrée a son carré d'icône */
+.osadmin .side {
+  background: transparent;
+  box-shadow: none;
+}
+.osadmin .navgroup h4 {
+  color: var(--ui-gris);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.osadmin .navitem {
+  color: var(--ui-texte);
+}
+.osadmin .navitem:hover {
+  color: var(--ui-fonce);
+  background: rgba(255, 255, 255, 0.6);
+}
+.osadmin .navitem .ico {
+  background: #fff;
+  color: var(--ui-fonce);
+}
+.osadmin .navitem .ico svg {
+  width: 16px;
+  height: 16px;
+}
+.osadmin .navitem.on {
+  color: var(--ui-fonce);
+  font-weight: 600;
+}
+.osadmin .navitem.on .ico {
+  background: var(--ui-deg-or);
+}
+.osadmin .navitem .bientot {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ui-gris);
+  border: 1px solid #e3e6ea;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.osadmin .navitem .badge {
+  background: linear-gradient(310deg, #ea0606, #ff667c);
+  color: #fff;
+}
+.osadmin .subitem {
+  color: var(--ui-texte);
+}
+.osadmin .subitem.on {
+  color: var(--ui-fonce);
+}
+.osadmin .helpcard {
+  background: var(--ui-deg-or);
+  position: relative;
+  overflow: hidden;
+}
+.osadmin .helpcard::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+.osadmin .helpcard .t {
+  font-family: Inter, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+.osadmin .helpcard p {
+  color: rgba(255, 255, 255, 0.9);
+}
+.osadmin .helpcard a {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 12px;
+  background: #fff;
+  color: var(--ui-fonce);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+/* Barre du haut */
+.osadmin .top .crumb {
+  color: var(--ui-gris);
+}
+
+/* Boutons : capitales, dégradé or, ombre qui grandit au survol */
+.osadmin .btn-dark {
+  background: var(--ui-deg-or);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 11px 20px;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.osadmin .btn-dark:hover {
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow:
+    0 7px 14px -3px rgba(0, 0, 0, 0.14),
+    0 3px 6px -2px rgba(0, 0, 0, 0.08);
+}
+.osadmin .btn-ghost {
+  color: var(--ui-fonce);
+  letter-spacing: 0.04em;
+}
+
+/* Filtres : des onglets en pilule sur un fond gris */
+.osadmin .chips {
+  display: inline-flex;
+  gap: 2px;
+  background: #eef0f3;
+  border-radius: 12px;
+  padding: 4px;
+}
+.osadmin .chip {
+  background: transparent;
+  box-shadow: none;
+  color: var(--ui-fonce);
+  font-size: 13px;
+  border-radius: 8px;
+}
+.osadmin .chip.on {
+  background: #fff;
+  color: var(--ui-fonce);
+  font-weight: 600;
+  box-shadow: var(--soft);
+}
+
+/* Interrupteurs sombres, comme Soft UI */
+.osadmin .sw.on .track {
+  background: var(--ui-deg-fonce);
+}
+.osadmin .sw {
+  color: var(--ui-texte);
+}
+
+/* Chiffres du tableau de bord : carré en dégradé or */
+.osadmin .kpi .l {
+  color: var(--ui-texte);
+}
+.osadmin .kpi .v {
+  color: var(--ui-fonce);
+}
+.osadmin .kpi .ic {
+  background: var(--ui-deg-or);
+}
+.osadmin .kpi.warn .ic {
+  background: linear-gradient(310deg, #f53939, #fbcf33);
+}
+.osadmin .card .sub {
+  color: var(--ui-texte);
+}
+.osadmin .grouphead h3 {
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ui-fonce);
+  font-weight: 700;
+}
+
+/* Champs de formulaire */
+.osadmin .f input:focus,
+.osadmin .f select:focus,
+.osadmin .f textarea:focus {
+  border-color: #d4bf86;
+  box-shadow: 0 0 0 2px #f7f2e6;
+}
+
+/* Écran « bientôt dans l'admin » */
+.osadmin .bientot-liste {
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+}
+.osadmin .bientot-liste div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #eef0f3;
+  font-size: 14px;
+  color: var(--ui-fonce);
+}
+.osadmin .bientot-liste div:last-child {
+  border-bottom: 0;
+}
+.osadmin .bientot-liste b {
+  font-weight: 700;
+}
+
+/* Sur téléphone, le menu devient un tiroir : il lui faut un fond plein. */
+@media (max-width: 900px) {
+  .osadmin .side {
+    background: var(--ui-fond);
+    box-shadow:
+      0 20px 27px 0 rgba(0, 0, 0, 0.05),
+      8px 0 30px rgba(0, 0, 0, 0.12);
+  }
+}

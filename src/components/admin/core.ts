@@ -29,7 +29,14 @@ export type EcranKey =
   | "commandes"
   | "attente"
   | "bandeaux"
-  | "reglages";
+  | "reglages"
+  // Parties du site pas encore pilotées par l'admin (voir EcranBientot).
+  | "gateaux"
+  | "coffrets"
+  | "cadeaux"
+  | "evenements"
+  | "maison"
+  | "contact";
 
 /** Les puces de filtre de l'écran Produits. */
 export type FiltreProduits = "tous" | "aconfigurer" | "epuises" | "archives";

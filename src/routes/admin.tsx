@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { currentAdmin, signIn, signOut, type AdminIdentity } from "@/api/auth";
-import { AdminApp } from "@/components/admin/AdminApp";
+import { AdminV2 } from "@/components/admin/v2/AdminV2";
 import "@/components/admin/admin.css";
 
 export const Route = createFileRoute("/admin")({
@@ -11,6 +11,12 @@ export const Route = createFileRoute("/admin")({
     meta: [
       { title: "Administration — Ö' Sweets" },
       { name: "robots", content: "noindex, nofollow" },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@400;500&display=swap",
+      },
     ],
   }),
   component: AdminPage,
@@ -50,7 +56,7 @@ function AdminPage() {
   if (!admin) return <Connexion onConnecte={setAdmin} />;
 
   return (
-    <AdminApp
+    <AdminV2
       email={admin.email}
       onSignOut={async () => {
         await signOut();
@@ -79,7 +85,10 @@ function Connexion({ onConnecte }: { onConnecte: (a: AdminIdentity) => void }) {
   };
 
   return (
-    <div className="osadmin" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
+    <div
+      className="osadmin"
+      style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}
+    >
       <div style={{ width: "100%", maxWidth: 380 }}>
         <div className="brand" style={{ padding: 0, marginBottom: 24 }}>
           <div className="n display" style={{ fontSize: 32 }}>
@@ -109,7 +118,12 @@ function Connexion({ onConnecte }: { onConnecte: (a: AdminIdentity) => void }) {
               onChange={(e) => setMotDePasse(e.target.value)}
             />
           </label>
-          <button type="submit" className="btn-dark" disabled={busy} style={{ width: "100%", padding: "12px 20px" }}>
+          <button
+            type="submit"
+            className="btn-dark"
+            disabled={busy}
+            style={{ width: "100%", padding: "12px 20px" }}
+          >
             {busy ? "Connexion…" : "Se connecter"}
           </button>
         </form>
