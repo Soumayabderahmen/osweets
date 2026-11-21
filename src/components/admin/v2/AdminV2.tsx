@@ -14,6 +14,9 @@ import { EcranCampagnes } from "../EcranCampagnes";
 import { EcranBandeaux } from "../EcranBandeaux";
 import { PanelAlertes, Panneau } from "../panels";
 import { FenetreProduit } from "./FenetreProduit";
+import { BarreHaut, Menu, Palette, useMenu, type Alerte } from "./Navigation";
+import { filterPatisserieRows } from "@/lib/patisserie-scope";
+import { adminImage, enBoutique } from "../core";
 import {
   EcranAccueil,
   EcranCommandesV2,
@@ -120,6 +123,8 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
   } | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const suivant = useRef(1);
+  const menu = useMenu();
+  const [palette, setPalette] = useState(false);
 
   const [produits, setProduits] = useState<ProductRow[]>([]);
   const [collections, setCollections] = useState<CollectionRow[]>([]);
@@ -163,11 +168,31 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
     void recharger();
   }, [recharger]);
 
-  const aller = useCallback((e: string, f?: string) => {
-    setEcran((e === "bord" ? "accueil" : e) as Ecran);
-    setFiltre(f);
-    window.scrollTo({ top: 0 });
-  }, []);
+  const { setTiroir } = menu;
+  const aller = useCallback(
+    (e: string, f?: string) => {
+      setEcran((e === "bord" ? "accueil" : e) as Ecran);
+      setFiltre(f);
+      setTiroir(false);
+      window.scrollTo({ top: 0 });
+    },
+    [setTiroir],
+  );
+
+  useEffect(() => {
+    const touche = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPalette((p) => !p);
+        return;
+      }
+      if (e.key === "Escape") menu.setTiroir(false);
+      const cible = document.activeElement?.tagName ?? "";
+      if (e.key === "[" && !/INPUT|TEXTAREA|SELECT/.test(cible) && !menu.telephone) menu.basculer();
+    };
+    window.addEventListener("keydown", touche);
+    return () => window.removeEventListener("keydown", touche);
+  }, [menu]);
 
   const retirer = useCallback((id: number) => setToasts((l) => l.filter((t) => t.id !== id)), []);
   const message = useCallback(
@@ -201,6 +226,46 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
   };
 
   const nouvelles = commandes.filter((c) => c.status === "nouvelle").length;
+  const comptes = {
+    produits: filterPatisserieRows(produits).filter((r) => !r.archived).length,
+    familles: familles.length,
+    collections: collections.length,
+  };
+  const sansPhoto = enBoutique(produits).filter(
+    (r) => r.published && !r.draft && !adminImage(r),
+  ).length;
+  const alertes: Alerte[] = [
+    ...commandes
+      .filter((c) => c.status === "nouvelle")
+      .map((c) => ({
+        cle: c.id,
+        texte: `Nouvelle commande ${c.number}`,
+        detail: `${c.first_name} ${c.last_name}`.trim(),
+        aller: () => aller("commandes"),
+      })),
+    ...(sansPhoto
+      ? [
+          {
+            cle: "sansphoto",
+            texte: `${sansPhoto} produit${sansPhoto > 1 ? "s" : ""} sans photo`,
+            detail: "Une photo aide beaucoup à vendre.",
+            couleur: "ambre" as const,
+            aller: () => aller("produits", "sansphoto"),
+          },
+        ]
+      : []),
+    ...(attente.length
+      ? [
+          {
+            cle: "attente",
+            texte: `${attente.length} cliente${attente.length > 1 ? "s" : ""} en liste d'attente`,
+            detail: "À prévenir quand le produit revient.",
+            couleur: "ambre" as const,
+            aller: () => aller("attente"),
+          },
+        ]
+      : []),
+  ];
   const nomEcran = NOMS[ecran];
   const dansPat = PATISSERIE.includes(ecran);
 
@@ -246,99 +311,43 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
   return (
     <V2Context.Provider value={v2}>
       <div className="os2">
-        <div className="app">
+        <div className={`app${menu.replie ? " replie" : ""}${menu.tiroir ? " tiroir" : ""}`}>
           <nav className="menu" id="menu">
-            <div className="marque">
-              <span className="logo">Ö</span>
-              <div>
-                <b>Ö' Sweets</b>
-                <span>Mon espace</span>
-              </div>
-            </div>
-            <div className="separateur" />
-            {SECTIONS.map((sec) => (
-              <div key={sec.titre || "haut"} style={{ display: "contents" }}>
-                {sec.titre && <div className="sec">{sec.titre}</div>}
-                {sec.items.map(([k, icone, nom, sous]) => {
-                  const actif = sous ? dansPat : ecran === k;
-                  return (
-                    <div key={k} style={{ display: "contents" }}>
-                      <button
-                        type="button"
-                        className={`lien${actif ? " on" : ""}`}
-                        onClick={() => aller(k)}
-                      >
-                        <span className="ibox">
-                          <Ic n={icone} />
-                        </span>
-                        <span>{nom}</span>
-                        {k === "commandes" && nouvelles > 0 && (
-                          <span className="pastille">{nouvelles}</span>
-                        )}
-                        {k === "attente" && attente.length > 0 && (
-                          <span className="pastille">{attente.length}</span>
-                        )}
-                        {sous && <span className="chev">⌄</span>}
-                      </button>
-                      {sous && actif && (
-                        <div className="sous-liens">
-                          {sous.map(([sk, sn]) => (
-                            <button
-                              type="button"
-                              key={sk}
-                              className={`sous-lien${ecran === sk ? " on" : ""}`}
-                              onClick={() => aller(sk)}
-                            >
-                              {sn}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-            <div className="bas">
-              <div className="aide-carte">
-                <span className="ibox">
-                  <Ic n="info" />
-                </span>
-                <b>Besoin d'aide ?</b>
-                <span>Chaque page explique ses gestes en haut.</span>
-                <a className="voir-site" href="/" target="_blank" rel="noreferrer">
-                  <Ic n="lien" /> Voir ma boutique
-                </a>
-              </div>
-              <button
-                type="button"
-                className="compte"
-                onClick={onSignOut}
-                style={{ border: 0, background: "none", width: "100%" }}
-              >
-                {email} · Se déconnecter
-              </button>
-            </div>
+            <Menu
+              sections={SECTIONS}
+              ecran={ecran}
+              sousActifs={PATISSERIE}
+              aller={aller}
+              comptes={comptes}
+              pastilles={{ commandes: nouvelles, attente: attente.length }}
+              replie={menu.replie}
+              telephone={menu.telephone}
+              basculer={menu.basculer}
+              palette={() => setPalette(true)}
+              email={email}
+              onSignOut={onSignOut}
+            />
           </nav>
+          <div className="voile-menu" onClick={() => menu.setTiroir(false)} />
 
           <main className="contenu" id="ecran">
-            <div className="topbar">
-              <div>
-                <small>
-                  Ö' Sweets / {dansPat && <>Pâtisserie Tunisienne / </>}
-                  <b>{nomEcran}</b>
-                </small>
-                <strong>{nomEcran}</strong>
-              </div>
-              <div className="droite">
-                <span>
-                  <Ic n="maison" /> Atelier d'Évry
-                </span>
-                <span>
-                  <Ic n="recu" /> {nouvelles} nouvelle{nouvelles > 1 ? "s" : ""}
-                </span>
-              </div>
-            </div>
+            <BarreHaut
+              fil={
+                dansPat
+                  ? [
+                      ["produits", "Pâtisserie Tunisienne"],
+                      [ecran, nomEcran],
+                    ]
+                  : [[ecran, nomEcran]]
+              }
+              titre={nomEcran}
+              alertes={alertes}
+              email={email}
+              ouvrirTiroir={() => menu.setTiroir(true)}
+              palette={() => setPalette(true)}
+              aller={aller}
+              onSignOut={onSignOut}
+            />
             {dansPat && (
               <div className="filtres onglets-pat">
                 {(
@@ -398,6 +407,15 @@ export function AdminV2({ email, onSignOut }: { email: string; onSignOut: () => 
           />
         )}
         <Toasts liste={toasts} retirer={retirer} />
+        {palette && (
+          <Palette
+            sections={SECTIONS}
+            produits={produits}
+            aller={aller}
+            modifier={(row) => v2.modifier(row)}
+            onClose={() => setPalette(false)}
+          />
+        )}
       </div>
 
       {panneau && (
