@@ -112,9 +112,7 @@ function Page() {
                 style={{ background: t.color }}
               />
               <div className="font-display text-sm mt-3">{t.label}</div>
-              <div className="text-[11px] text-charbon/60 mt-1 leading-relaxed">
-                {t.desc}
-              </div>
+              <div className="text-[11px] text-charbon/60 mt-1 leading-relaxed">{t.desc}</div>
             </button>
           ))}
         </div>
@@ -128,15 +126,10 @@ function Page() {
           desc="Une sélection curée pour composer votre table de fête."
         />
         <SuggestedProducts
-          slugs={[
-            "cake-vanille-amandes",
-            "cake-pistache-fleur-oranger",
-            "coffret-decouverte",
-          ]}
+          slugs={["cake-vanille-amandes", "cake-pistache-fleur-oranger", "coffret-decouverte"]}
         />
         <p className="text-center mt-6 text-sm text-charbon/60">
-          + Number cakes personnalisés, cake pops décorés et boîtes cadeaux
-          invité(e)s sur demande.
+          + Number cakes personnalisés, cake pops décorés et boîtes cadeaux invité(e)s sur demande.
         </p>
       </section>
 
@@ -155,13 +148,10 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12">
           <div>
-            <SectionTitle
-              eyebrow="03 · Sur mesure"
-              title="Personnalisez votre commande"
-            />
+            <SectionTitle eyebrow="03 · Sur mesure" title="Personnalisez votre commande" />
             <p className="text-charbon/70 leading-relaxed font-light">
-              Prénom du bébé, date de l'événement, palette exclusive — nous
-              adaptons chaque détail pour créer une table à votre image.
+              Prénom du bébé, date de l'événement, palette exclusive — nous adaptons chaque détail
+              pour créer une table à votre image.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Toppers, sablés & macarons au prénom</li>
@@ -189,8 +179,7 @@ function Page() {
               className="w-full bg-white border border-border px-4 py-3"
             />
             <div className="text-xs text-charbon/60">
-              Thème sélectionné :{" "}
-              <span className="text-gold">{theme.label}</span>
+              Thème sélectionné : <span className="text-gold">{theme.label}</span>
             </div>
             <a
               href={waLink}

@@ -121,10 +121,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(
 export const saveSettings = createServerFn({ method: "POST" })
   .inputValidator((d: { values: Partial<Record<SettingKey, string>> }) => d)
   .handler(async ({ data }): Promise<ShopSettings> => {
-    const [{ query }, { requireAdmin }] = await Promise.all([
-      import("./db"),
-      import("./session"),
-    ]);
+    const [{ query }, { requireAdmin }] = await Promise.all([import("./db"), import("./session")]);
     await requireAdmin();
     const entries = Object.entries(data.values).filter(
       ([k, v]) => k in KEYS && typeof v === "string",

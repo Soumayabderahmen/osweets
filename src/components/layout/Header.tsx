@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useShop } from "@/lib/shop-store";
 import { useCollections } from "@/lib/collections";
 import { useCatalog } from "@/lib/catalog";
+import { useGateauxMenu } from "@/lib/gateaux";
 import { saleShortLine, useSaleProducts } from "@/lib/sale";
 import { useSeasonKeys } from "@/lib/seasons-hook";
 import { usePageBanner } from "@/lib/banners";
@@ -413,6 +414,8 @@ export function Header() {
    * ce chantier ne les concerne pas.
    */
   const colsPatisserie = usePatisserieCols();
+  // Menu Gâteaux : les pages réglées dans l'admin (ordre, visibles), sinon celles du code.
+  const colsGateaux = useGateauxMenu();
   const menuSale = useSaleMenu();
   const megaPatisserie = usePageBanner("patisserie-mega-menu-occasions");
   const NAV = useMemo(
@@ -420,23 +423,32 @@ export function Header() {
       NAV_BASE.map((n) =>
         n.label === "Salé"
           ? { ...n, cols: menuSale.cols, cards: menuSale.cards }
-          : n.label === "Pâtisserie Tunisienne"
-            ? {
-                ...n,
-                cols: colsPatisserie,
-                card: megaPatisserie.image
-                  ? {
-                      image: megaPatisserie.image,
-                      title: megaPatisserie.title || "L'atelier",
-                      text: megaPatisserie.subtitle || "Fait main",
-                      cta: "",
-                      to: "/patisserie",
-                    }
-                  : undefined,
-              }
-            : n,
+          : n.label === "Gâteaux" && colsGateaux
+            ? { ...n, cols: colsGateaux }
+            : n.label === "Pâtisserie Tunisienne"
+              ? {
+                  ...n,
+                  cols: colsPatisserie,
+                  card: megaPatisserie.image
+                    ? {
+                        image: megaPatisserie.image,
+                        title: megaPatisserie.title || "L'atelier",
+                        text: megaPatisserie.subtitle || "Fait main",
+                        cta: "",
+                        to: "/patisserie",
+                      }
+                    : undefined,
+                }
+              : n,
       ),
-    [colsPatisserie, menuSale, megaPatisserie.image, megaPatisserie.subtitle, megaPatisserie.title],
+    [
+      colsPatisserie,
+      colsGateaux,
+      menuSale,
+      megaPatisserie.image,
+      megaPatisserie.subtitle,
+      megaPatisserie.title,
+    ],
   );
 
   const current = NAV.find((n) => n.label === hovered);
@@ -650,9 +662,9 @@ export function Header() {
                         key={col.title}
                         className={`p-7 ${i > 0 ? "border-l border-beige" : ""}`}
                       >
-                        <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
+                        <h3 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-5 font-display">
                           {col.title}
-                        </h4>
+                        </h3>
                         <ul>
                           {col.items.map((l) =>
                             l.highlight ? (

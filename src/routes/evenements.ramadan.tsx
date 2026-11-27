@@ -73,10 +73,7 @@ function Page() {
       />
 
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="01 · Moment"
-          title="Pour quel moment du mois ?"
-        />
+        <SectionTitle eyebrow="01 · Moment" title="Pour quel moment du mois ?" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {moments.map((m) => (
             <button
@@ -90,10 +87,7 @@ function Page() {
           ))}
         </div>
         <div className="mt-8">
-          <SectionTitle
-            eyebrow="02 · Format"
-            title="Coffrets ou pièces à l'unité ?"
-          />
+          <SectionTitle eyebrow="02 · Format" title="Coffrets ou pièces à l'unité ?" />
           <div className="flex flex-wrap gap-3 justify-center">
             {formats.map((f) => (
               <button
@@ -114,13 +108,7 @@ function Page() {
           title="Nos incontournables Ramadan"
           desc="Les grandes signatures orientales, façonnées à la main."
         />
-        <SuggestedProducts
-          slugs={[
-            "baklawa-pistache",
-            "samsa-amandes",
-            "kaak-warka",
-          ]}
-        />
+        <SuggestedProducts slugs={["baklawa-pistache", "samsa-amandes", "kaak-warka"]} />
         <p className="text-center mt-6 text-sm text-charbon/60">
           + Formules Iftar à partager et zrir sur commande.
         </p>
@@ -129,15 +117,11 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <SectionTitle
-              eyebrow="04 · Fraîcheur"
-              title="Fabriqué à la commande"
-            />
+            <SectionTitle eyebrow="04 · Fraîcheur" title="Fabriqué à la commande" />
             <p className="text-charbon/70 font-light leading-relaxed">
-              Pendant le mois sacré, chaque pièce est préparée sur commande pour
-              préserver le fondant, le croustillant et les arômes. Nous
-              recommandons vivement la précommande — la demande est forte, les
-              délais peuvent être plus courts.
+              Pendant le mois sacré, chaque pièce est préparée sur commande pour préserver le
+              fondant, le croustillant et les arômes. Nous recommandons vivement la précommande — la
+              demande est forte, les délais peuvent être plus courts.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Livraison en soirée avant l'Iftar (Île-de-France)</li>
@@ -153,8 +137,7 @@ function Page() {
                 onChange={(e) => setRecurrent(e.target.checked)}
                 className="h-4 w-4 accent-gold"
               />
-              Je souhaite mettre en place une commande hebdomadaire pendant tout
-              le mois
+              Je souhaite mettre en place une commande hebdomadaire pendant tout le mois
             </label>
             <textarea
               value={details}
@@ -210,10 +193,7 @@ function Page() {
 
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle
-            eyebrow="06 · Ils nous ont fait confiance"
-            title="Ramadan précédents"
-          />
+          <SectionTitle eyebrow="06 · Ils nous ont fait confiance" title="Ramadan précédents" />
           <SocialProof
             images={[baklawa, samsa, kaakWarka, mignardises]}
             testimonials={[

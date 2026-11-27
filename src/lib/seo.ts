@@ -3,8 +3,22 @@
 import type { Product, ProductVariant } from "@/data/products";
 import { displayedProductPrice } from "@/lib/product-rules";
 
+/**
+ * Adresse publique du site — celle qui part dans les `canonical`, les
+ * balises Open Graph et le sitemap.
+ *
+ * Le jour où la boutique quitte le domaine de préproduction pour son nom
+ * définitif, il suffit de renseigner `VITE_SITE_URL` : sans ça, chaque page
+ * continuerait de désigner l'ancienne adresse comme version de référence, et
+ * Google indexerait la préproduction à la place du vrai site. La valeur par
+ * défaut garde le comportement actuel tant que rien n'est renseigné.
+ */
+const SITE_URL = (
+  import.meta.env?.VITE_SITE_URL ?? "https://osweetspatisserie.lovable.app"
+).replace(/\/+$/, "");
+
 export const SITE = {
-  url: "https://osweetspatisserie.lovable.app",
+  url: SITE_URL,
   name: "Ö' Sweets Pâtisserie",
   phone: "+33 6 99 46 60 30",
   streetAddress: "Évry-Courcouronnes",
@@ -141,10 +155,19 @@ export function organization(): JsonLd {
   };
 }
 
+/**
+ * La pâtisserie en tant que commerce local.
+ *
+ * Émise sur l'accueil ET sur la page Contact : ce sont les deux pages que
+ * Google rapproche d'une recherche « pâtisserie tunisienne Évry ». L'`@id`
+ * fixe est indispensable — sans lui, deux pages décrivant le même commerce
+ * sont lues comme deux commerces distincts.
+ */
 export function bakery(): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "Bakery",
+    "@id": `${SITE.url}/#patisserie`,
     name: SITE.name,
     url: SITE.url,
     telephone: SITE.phone,

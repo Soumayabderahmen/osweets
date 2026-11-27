@@ -6,6 +6,7 @@ import {
   type StockFilter,
 } from "@/components/filters/FiltersSidebar";
 import { itemListJsonLd } from "@/lib/seo";
+import { useGateaux } from "@/lib/gateaux";
 
 export type CakeItem = {
   slug: string;
@@ -60,6 +61,8 @@ export interface CakeCatalogPageProps {
   seasonalFilter?: boolean;
   /** Canonical path used to emit an ItemList JSON-LD for this listing. */
   jsonLdPath?: string;
+  /** Page du menu Gâteaux (gateau_pages.key) : nom, prix, photo et ajouts viennent de l'admin. */
+  page?: string;
 }
 
 const ALL_ALLERGENS = [
@@ -78,7 +81,7 @@ export function CakeCatalogPage({
   title,
   subtitle,
   heroImage,
-  items,
+  items: itemsEcrits,
   flavors,
   sizes,
   flavorLabels,
@@ -92,7 +95,9 @@ export function CakeCatalogPage({
   cta = "add-to-cart",
   seasonalFilter = false,
   jsonLdPath,
+  page,
 }: CakeCatalogPageProps) {
+  const items = useGateaux(page, itemsEcrits);
   const priceBounds = useMemo(() => {
     if (!items.length) return { min: 0, max: 0 };
     const prices = items.map((i) => i.price);
@@ -116,11 +121,10 @@ export function CakeCatalogPage({
   useEffect(() => {
     setPriceMin(priceBounds.min);
     setPriceMax(priceBounds.max);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [priceBounds.min, priceBounds.max]);
 
   const filtered = useMemo(() => {
-    let list = items.filter((it) => {
+    const list = items.filter((it) => {
       if (stock.length && !stock.includes(it.inStock === false ? "out" : "in")) return false;
       if (flavor && it.flavor !== flavor) return false;
       if (size && it.size !== size) return false;

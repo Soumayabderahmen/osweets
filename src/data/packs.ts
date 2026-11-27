@@ -106,14 +106,24 @@ export const eventPacks: Record<string, EventPack[]> = {
       guests: 30,
       price: 320,
       highlight: true,
-      includes: ["Gâteau thématique 24cm", "100 mini-pâtisseries", "Bar à bonbons", "Cupcakes personnalisés"],
+      includes: [
+        "Gâteau thématique 24cm",
+        "100 mini-pâtisseries",
+        "Bar à bonbons",
+        "Cupcakes personnalisés",
+      ],
     },
     {
       id: "grand",
       name: "Pack Grandiose",
       guests: 60,
       price: 580,
-      includes: ["Pièce montée 2 étages personnalisée", "200 mignardises", "Buffet sucré complet", "Mise en scène"],
+      includes: [
+        "Pièce montée 2 étages personnalisée",
+        "200 mignardises",
+        "Buffet sucré complet",
+        "Mise en scène",
+      ],
     },
   ],
   "baby-shower": [
@@ -130,7 +140,12 @@ export const eventPacks: Record<string, EventPack[]> = {
       guests: 30,
       price: 420,
       highlight: true,
-      includes: ["Gâteau gender reveal", "100 mignardises pastel", "Bar à dragées", "Sablés bébé personnalisés"],
+      includes: [
+        "Gâteau gender reveal",
+        "100 mignardises pastel",
+        "Bar à dragées",
+        "Sablés bébé personnalisés",
+      ],
     },
   ],
   entreprise: [
@@ -139,7 +154,11 @@ export const eventPacks: Record<string, EventPack[]> = {
       name: "Pack Équipe",
       guests: 30,
       price: 240,
-      includes: ["100 mignardises individuelles", "Coffrets à offrir (12 pièces)", "Livraison au bureau"],
+      includes: [
+        "100 mignardises individuelles",
+        "Coffrets à offrir (12 pièces)",
+        "Livraison au bureau",
+      ],
     },
     {
       id: "client",
@@ -163,7 +182,12 @@ export const eventPacks: Record<string, EventPack[]> = {
       name: "Plateau Iftar",
       guests: 8,
       price: 65,
-      includes: ["Dattes premium Medjool", "Zlebia & mkhareks", "Baklawa, kaak warka, samsa", "Présentation cuivre"],
+      includes: [
+        "Dattes premium Medjool",
+        "Zlebia & mkhareks",
+        "Baklawa, kaak warka, samsa",
+        "Présentation cuivre",
+      ],
     },
     {
       id: "famille",

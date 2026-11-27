@@ -68,10 +68,7 @@ function Page() {
       />
 
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="01 · Pour qui"
-          title="Choisissez la tranche d'âge"
-        />
+        <SectionTitle eyebrow="01 · Pour qui" title="Choisissez la tranche d'âge" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ages.map((a) => (
             <button
@@ -86,10 +83,7 @@ function Page() {
         </div>
 
         <div className="mt-10">
-          <SectionTitle
-            eyebrow="02 · Ambiance"
-            title="Choisissez votre thème visuel"
-          />
+          <SectionTitle eyebrow="02 · Ambiance" title="Choisissez votre thème visuel" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {themesVisuels.map((t) => (
               <button
@@ -115,15 +109,10 @@ function Page() {
           desc="Une sélection curée pour composer votre table."
         />
         <SuggestedProducts
-          slugs={[
-            "gateau-licorne",
-            "gateau-floral-adulte",
-            "coffret-decouverte",
-          ]}
+          slugs={["gateau-licorne", "gateau-floral-adulte", "coffret-decouverte"]}
         />
         <p className="text-center mt-6 text-sm text-charbon/60">
-          + Number cakes personnalisés, cupcakes assortis et candy bars sur
-          demande.
+          + Number cakes personnalisés, cupcakes assortis et candy bars sur demande.
         </p>
       </section>
 
@@ -140,13 +129,10 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12">
           <div>
-            <SectionTitle
-              eyebrow="04 · Sur mesure"
-              title="Personnalisez votre gâteau"
-            />
+            <SectionTitle eyebrow="04 · Sur mesure" title="Personnalisez votre gâteau" />
             <p className="text-charbon/70 leading-relaxed font-light">
-              Prénom, âge, couleurs, thème, message — chaque détail est pensé
-              pour l'invité d'honneur.
+              Prénom, âge, couleurs, thème, message — chaque détail est pensé pour l'invité
+              d'honneur.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Toppers & sablés personnalisés</li>

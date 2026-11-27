@@ -97,6 +97,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       import("@/api/seasons"),
       import("@/api/families"),
     ]);
+    // Gâteaux (migration 034) : en parallèle, et sans bloquer la page si la base manque.
+    const gateaux = import("@/api/gateaux").then(({ listGateaux }) =>
+      context.queryClient
+        .ensureQueryData({ queryKey: ["gateaux"], queryFn: () => listGateaux(), staleTime: 60_000 })
+        .catch(() => null),
+    );
     const [catalogue, collections, settings, banners, seasons, families] = await Promise.all([
       context.queryClient.ensureQueryData({
         queryKey: ["catalogue"],
@@ -131,6 +137,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ]);
     // Retournées, donc sérialisées vers le navigateur : c'est ce qui permet
     // aux deux rendus de partir du même état (voir `RootComponent`).
+    await gateaux;
+    await gateaux;
     return { catalogue, collections, settings, banners, seasons, families };
   },
   head: () => ({

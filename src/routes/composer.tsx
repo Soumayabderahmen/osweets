@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SITE, breadcrumb, jsonLdScript } from "@/lib/seo";
 import { useEffect, useMemo, useState } from "react";
 import { Check, Plus, Minus, ArrowRight, ArrowLeft, Gift, ChevronRight } from "lucide-react";
 import { zodValidator } from "@tanstack/zod-adapter";
@@ -43,6 +44,15 @@ export const Route = createFileRoute("/composer")({
         content:
           "Choisissez le format, garnissez à votre image, offrez l'exception. Coffrets de 6 à 48 pièces de pâtisseries tunisiennes artisanales.",
       },
+    ],
+    links: [{ rel: "canonical", href: `${SITE.url}/composer` }],
+    scripts: [
+      jsonLdScript(
+        breadcrumb([
+          { name: "Accueil", path: "/" },
+          { name: "Composer son coffret", path: "/composer" },
+        ]),
+      ),
     ],
   }),
   component: Page,

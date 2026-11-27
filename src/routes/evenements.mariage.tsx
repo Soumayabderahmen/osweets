@@ -13,10 +13,7 @@ import {
   FinalCTA,
 } from "@/components/event/EventBlocks";
 import { QuoteForm, type QuotePrefill } from "@/components/event/QuoteForm";
-import {
-  QuantityCalculator,
-  WEDDING_TIERS,
-} from "@/components/event/QuantityCalculator";
+import { QuantityCalculator, WEDDING_TIERS } from "@/components/event/QuantityCalculator";
 import { eventHead } from "@/lib/seo";
 
 const FAQ = [
@@ -75,13 +72,7 @@ function Page() {
           title="Nos incontournables mariage"
           desc="Une base curée à personnaliser selon votre thème et votre nombre d'invités."
         />
-        <SuggestedProducts
-          slugs={[
-            "baklawa-pistache",
-            "kaak-warka",
-            "coffret-prestige",
-          ]}
-        />
+        <SuggestedProducts slugs={["baklawa-pistache", "kaak-warka", "coffret-prestige"]} />
         <div className="mt-10 text-center">
           <Link to="/gateaux/wedding-cakes" className="btn btn-gold">
             Configurer mon Wedding Cake
@@ -93,23 +84,15 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12 items-start">
           <div>
-            <SectionTitle
-              eyebrow="Calculateur"
-              title="Combien de gâteau pour vos invités ?"
-            />
+            <SectionTitle eyebrow="Calculateur" title="Combien de gâteau pour vos invités ?" />
             <p className="text-charbon/70 leading-relaxed font-light">
-              Indiquez votre nombre d'invités : nous suggérons la taille de
-              wedding cake, le nombre de parts et une fourchette de prix.
+              Indiquez votre nombre d'invités : nous suggérons la taille de wedding cake, le nombre
+              de parts et une fourchette de prix.
             </p>
             <ul className="mt-6 space-y-1 text-sm text-charbon/70">
               {WEDDING_TIERS.map((t) => (
-                <li
-                  key={t.label}
-                  className="flex justify-between border-b border-border/60 py-1.5"
-                >
-                  <span>
-                    {t.maxGuests ? `Jusqu'à ${t.maxGuests}` : "100+"} invités
-                  </span>
+                <li key={t.label} className="flex justify-between border-b border-border/60 py-1.5">
+                  <span>{t.maxGuests ? `Jusqu'à ${t.maxGuests}` : "100+"} invités</span>
                   <span className="text-charbon/50">{t.parts}</span>
                 </li>
               ))}
@@ -132,10 +115,7 @@ function Page() {
 
       {/* Book */}
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="Book de réalisations"
-          title="Ils se sont dit oui avec Ö' Sweets"
-        />
+        <SectionTitle eyebrow="Book de réalisations" title="Ils se sont dit oui avec Ö' Sweets" />
         <SocialProof
           images={[
             wedding,
@@ -179,11 +159,7 @@ function Page() {
             <QuoteForm
               source="Mariage"
               prefill={prefill}
-              productOptions={[
-                "Wedding Cake",
-                "Coffrets invités",
-                "Plusieurs produits",
-              ]}
+              productOptions={["Wedding Cake", "Coffrets invités", "Plusieurs produits"]}
             />
           </div>
         </div>
@@ -191,25 +167,15 @@ function Page() {
 
       {/* FAQ */}
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="Questions fréquentes"
-          title="Vos questions, nos réponses"
-        />
+        <SectionTitle eyebrow="Questions fréquentes" title="Vos questions, nos réponses" />
         <div className="max-w-3xl mx-auto space-y-3">
           {FAQ.map((f) => (
-            <details
-              key={f.q}
-              className="group bg-white border border-border p-5"
-            >
+            <details key={f.q} className="group bg-white border border-border p-5">
               <summary className="cursor-pointer font-display text-lg flex justify-between items-center">
                 <span>{f.q}</span>
-                <span className="text-gold group-open:rotate-45 transition">
-                  +
-                </span>
+                <span className="text-gold group-open:rotate-45 transition">+</span>
               </summary>
-              <p className="mt-3 text-charbon/70 font-light leading-relaxed">
-                {f.a}
-              </p>
+              <p className="mt-3 text-charbon/70 font-light leading-relaxed">{f.a}</p>
             </details>
           ))}
         </div>

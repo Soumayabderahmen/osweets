@@ -441,10 +441,17 @@ function Home() {
         <div className="container-os mt-12 grid grid-cols-4 lg:grid-cols-8 gap-2 lg:gap-3">
           {igPhotos.map((img, i) => (
             <Reveal key={i} delay={(i % 8) * 0.04}>
+              {/*
+                Les huit vignettes mènent au même compte et leurs visuels
+                sont illustratifs : leur `alt` reste vide, c'est le lien qui
+                porte le sens. Sans ce libellé, un lecteur d'écran annonçait
+                huit fois « lien » sans dire où il mène.
+              */}
               <a
                 href="https://www.instagram.com/osweet_patisserie/"
                 target="_blank"
                 rel="noreferrer"
+                aria-label={`Photo ${i + 1} sur ${igPhotos.length} — voir le compte Instagram @osweet_patisserie (nouvel onglet)`}
                 className="group block relative aspect-square overflow-hidden rounded-xl bg-beige"
               >
                 <img

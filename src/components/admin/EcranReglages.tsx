@@ -72,21 +72,33 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           <div className="two">
             <label className="f">
               <span>Prix de départ (€)</span>
-              <input value={s.deliveryStart} onChange={(e) => nombre("deliveryStart", e.target.value)} />
+              <input
+                value={s.deliveryStart}
+                onChange={(e) => nombre("deliveryStart", e.target.value)}
+              />
             </label>
             <label className="f">
               <span>Par kilomètre (€)</span>
-              <input value={s.deliveryPerKm} onChange={(e) => nombre("deliveryPerKm", e.target.value)} />
+              <input
+                value={s.deliveryPerKm}
+                onChange={(e) => nombre("deliveryPerKm", e.target.value)}
+              />
             </label>
           </div>
           <div className="two">
             <label className="f">
               <span>Vous livrez jusqu'à (km)</span>
-              <input value={s.deliveryRadiusKm} onChange={(e) => nombre("deliveryRadiusKm", e.target.value)} />
+              <input
+                value={s.deliveryRadiusKm}
+                onChange={(e) => nombre("deliveryRadiusKm", e.target.value)}
+              />
             </label>
             <label className="f">
               <span>Offerte à partir de (€)</span>
-              <input value={s.deliveryFreeFrom} onChange={(e) => nombre("deliveryFreeFrom", e.target.value)} />
+              <input
+                value={s.deliveryFreeFrom}
+                onChange={(e) => nombre("deliveryFreeFrom", e.target.value)}
+              />
             </label>
           </div>
 
@@ -137,11 +149,17 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           <div className="two">
             <label className="f">
               <span>Prix du colis (€)</span>
-              <input value={s.shippingPrice} onChange={(e) => nombre("shippingPrice", e.target.value)} />
+              <input
+                value={s.shippingPrice}
+                onChange={(e) => nombre("shippingPrice", e.target.value)}
+              />
             </label>
             <label className="f">
               <span>Offert à partir de (€)</span>
-              <input value={s.shippingFreeFrom} onChange={(e) => nombre("shippingFreeFrom", e.target.value)} />
+              <input
+                value={s.shippingFreeFrom}
+                onChange={(e) => nombre("shippingFreeFrom", e.target.value)}
+              />
             </label>
           </div>
 
@@ -151,7 +169,12 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           </div>
 
           <div className="foot" style={{ marginTop: 18 }}>
-            <button type="button" className="btn-dark" disabled={busy} onClick={() => void enregistrer()}>
+            <button
+              type="button"
+              className="btn-dark"
+              disabled={busy}
+              onClick={() => void enregistrer()}
+            >
               {busy ? "Enregistrement…" : "Enregistrer"}
             </button>
           </div>
@@ -230,13 +253,18 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           </div>
 
           <div className="hint">
-            Vos quantités ne sont pas touchées : à la réouverture, chaque produit retrouve exactement
-            son stock. La boutique reste consultable — la cliente voit vos produits et vos photos,
-            elle ne peut simplement pas commander.
+            Vos quantités ne sont pas touchées : à la réouverture, chaque produit retrouve
+            exactement son stock. La boutique reste consultable — la cliente voit vos produits et
+            vos photos, elle ne peut simplement pas commander.
           </div>
 
           <div className="foot" style={{ marginTop: 18 }}>
-            <button type="button" className="btn-ghost" disabled={busy} onClick={() => void enregistrer()}>
+            <button
+              type="button"
+              className="btn-ghost"
+              disabled={busy}
+              onClick={() => void enregistrer()}
+            >
               Enregistrer les dates
             </button>
           </div>
@@ -268,7 +296,12 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           </div>
 
           <div className="foot" style={{ marginTop: 18 }}>
-            <button type="button" className="btn-dark" disabled={busy} onClick={() => void enregistrer()}>
+            <button
+              type="button"
+              className="btn-dark"
+              disabled={busy}
+              onClick={() => void enregistrer()}
+            >
               {busy ? "Enregistrement…" : "Enregistrer"}
             </button>
           </div>
@@ -316,7 +349,12 @@ export function EcranReglages({ ctx }: { ctx: Contexte }) {
           </div>
 
           <div className="foot" style={{ marginTop: 18 }}>
-            <button type="button" className="btn-dark" disabled={busy} onClick={() => void enregistrer()}>
+            <button
+              type="button"
+              className="btn-dark"
+              disabled={busy}
+              onClick={() => void enregistrer()}
+            >
               {busy ? "Enregistrement…" : "Enregistrer"}
             </button>
           </div>

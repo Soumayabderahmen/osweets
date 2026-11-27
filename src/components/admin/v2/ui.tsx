@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { ProductRow } from "@/lib/catalog";
 import type { Contexte } from "../core";
+import type { GateauxData } from "@/api/gateaux";
 
 /*
  * Briques de l'administration, dessinées comme le prototype validé
@@ -100,6 +101,11 @@ export interface V2 {
   message: (texte: string, annuler?: () => void) => void;
   /** Ouvre la fenêtre de modification d'un produit (ou d'un produit neuf). */
   modifier: (row: ProductRow | null, preset?: Preset) => void;
+  /** Aller à un écran de la nouvelle administration (« gpages », « gmesure »…). */
+  aller: (e: string, filtre?: string) => void;
+  /** La partie Gâteaux (migration 034), et son rechargement. */
+  gat: GateauxData | null;
+  rechargerGat: () => Promise<void>;
 }
 
 export interface Preset {

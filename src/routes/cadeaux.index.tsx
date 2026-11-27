@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SITE, breadcrumb, jsonLdScript } from "@/lib/seo";
 import { giftCategories } from "@/data/products";
 import { ImmersiveCard } from "@/components/ImmersiveCard";
 import { usePageBannerImage } from "@/lib/banners";
@@ -7,7 +8,20 @@ export const Route = createFileRoute("/cadeaux/")({
   head: () => ({
     meta: [
       { title: "Cadeaux & Coffrets — Ö' Sweets" },
-      { name: "description", content: "Coffrets pour toutes les occasions : Maître & Maîtresse, naissance, remerciement, Aïd, Fête des Mères, Ramadan, anniversaire, entreprise." },
+      {
+        name: "description",
+        content:
+          "Coffrets pour toutes les occasions : Maître & Maîtresse, naissance, remerciement, Aïd, Fête des Mères, Ramadan, anniversaire, entreprise.",
+      },
+    ],
+    links: [{ rel: "canonical", href: `${SITE.url}/cadeaux` }],
+    scripts: [
+      jsonLdScript(
+        breadcrumb([
+          { name: "Accueil", path: "/" },
+          { name: "Cadeaux & Coffrets", path: "/cadeaux" },
+        ]),
+      ),
     ],
   }),
   component: Page,
@@ -30,8 +44,13 @@ function Page() {
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/75" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">Carrousel Immersif · Interactif & fluide</div>
-          <h1 className="font-display text-5xl md:text-7xl mt-5 text-white" style={{ textShadow: "0 2px 30px rgba(0,0,0,0.5)" }}>
+          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">
+            Carrousel Immersif · Interactif & fluide
+          </div>
+          <h1
+            className="font-display text-5xl md:text-7xl mt-5 text-white"
+            style={{ textShadow: "0 2px 30px rgba(0,0,0,0.5)" }}
+          >
             L'Art d'Offrir
           </h1>
           <span className="mt-6 inline-block h-px w-16 bg-gold" />

@@ -25,13 +25,7 @@ export function CornerOrnament({
 }
 
 /** Small 8-point gold rosette (Tunisian Qallaline motif). */
-export function Rosette({
-  className = "",
-  size = 12,
-}: {
-  className?: string;
-  size?: number;
-}) {
+export function Rosette({ className = "", size = 12 }: { className?: string; size?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -51,10 +45,7 @@ export function Rosette({
 /** Divider line — gold hairline with centered rosette. */
 export function DividerRosette({ className = "" }: { className?: string }) {
   return (
-    <div
-      aria-hidden
-      className={`flex items-center gap-3 text-gold ${className}`}
-    >
+    <div aria-hidden className={`flex items-center gap-3 text-gold ${className}`}>
       <span className="h-px flex-1 bg-gold/40" />
       <Rosette />
       <span className="h-px flex-1 bg-gold/40" />
@@ -75,27 +66,16 @@ export function OrnateFrame({
   cornerSize?: number;
 }) {
   return (
-    <div
-      className={`relative bg-ivory ${padded ? "p-6 md:p-7" : ""} ${className}`}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-1.5 border border-gold/60"
-      />
+    <div className={`relative bg-ivory ${padded ? "p-6 md:p-7" : ""} ${className}`}>
+      <div aria-hidden className="pointer-events-none absolute inset-1.5 border border-gold/60" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-[10px] border border-gold/25"
       />
       <CornerOrnament className="top-1 left-1" size={cornerSize} />
       <CornerOrnament className="top-1 right-1 rotate-90" size={cornerSize} />
-      <CornerOrnament
-        className="bottom-1 left-1 -rotate-90"
-        size={cornerSize}
-      />
-      <CornerOrnament
-        className="bottom-1 right-1 rotate-180"
-        size={cornerSize}
-      />
+      <CornerOrnament className="bottom-1 left-1 -rotate-90" size={cornerSize} />
+      <CornerOrnament className="bottom-1 right-1 rotate-180" size={cornerSize} />
       <div className="relative">{children}</div>
     </div>
   );

@@ -1,5 +1,14 @@
 import { useMemo, useState } from "react";
-import { BUDGETS, ChipGroup, Field, FULFILLMENT, inputCls, QuoteNotice, toggleIn, waHref } from "./fields";
+import {
+  BUDGETS,
+  ChipGroup,
+  Field,
+  FULFILLMENT,
+  inputCls,
+  QuoteNotice,
+  toggleIn,
+  waHref,
+} from "./fields";
 
 const SWEET_ITEMS = [
   "Sucré par pièce",
@@ -55,9 +64,29 @@ export function PackQuoteForm({ eventType }: { eventType: string }) {
         `• Livraison / retrait : ${fulfillment}`,
         `• Allergies : ${allergies || "—"}`,
         `• Message : ${message || "—"}`,
-        photos.length > 0 && `• Photos : ${photos.map((p) => p.name).join(", ")} (je les envoie ici)`,
+        photos.length > 0 &&
+          `• Photos : ${photos.map((p) => p.name).join(", ")} (je les envoie ici)`,
       ]),
-    [eventType, name, contact, date, guests, sweets, savory, extras, weddingCake, quantities, theme, colors, budget, address, fulfillment, allergies, message, photos],
+    [
+      eventType,
+      name,
+      contact,
+      date,
+      guests,
+      sweets,
+      savory,
+      extras,
+      weddingCake,
+      quantities,
+      theme,
+      colors,
+      budget,
+      address,
+      fulfillment,
+      allergies,
+      message,
+      photos,
+    ],
   );
 
   return (
@@ -72,69 +101,170 @@ export function PackQuoteForm({ eventType }: { eventType: string }) {
           <input value={eventType} readOnly className={`${inputCls} bg-beige/40`} />
         </Field>
         <Field label="Date de l'événement">
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className={inputCls}
+          />
         </Field>
         <Field label="Nombre d'invités">
-          <input type="number" min={1} max={5000} value={guests} onChange={(e) => setGuests(e.target.value)} placeholder="150" className={inputCls} />
+          <input
+            type="number"
+            min={1}
+            max={5000}
+            value={guests}
+            onChange={(e) => setGuests(e.target.value)}
+            placeholder="150"
+            className={inputCls}
+          />
         </Field>
         <Field label="Option Wedding Cake">
-          <select value={weddingCake} onChange={(e) => setWeddingCake(e.target.value)} className={inputCls}>
-            {["Non", "Oui — 1 étage", "Oui — 2 étages", "Oui — 3 étages et +", "À définir"].map((o) => (
-              <option key={o}>{o}</option>
-            ))}
+          <select
+            value={weddingCake}
+            onChange={(e) => setWeddingCake(e.target.value)}
+            className={inputCls}
+          >
+            {["Non", "Oui — 1 étage", "Oui — 2 étages", "Oui — 3 étages et +", "À définir"].map(
+              (o) => (
+                <option key={o}>{o}</option>
+              ),
+            )}
           </select>
         </Field>
       </div>
 
-      <ChipGroup label="Produits sucrés souhaités" options={SWEET_ITEMS} selected={sweets} onToggle={(v) => setSweets(toggleIn(sweets, v))} />
-      <ChipGroup label="Produits salés souhaités" options={SAVORY_ITEMS} selected={savory} onToggle={(v) => setSavory(toggleIn(savory, v))} />
-      <ChipGroup label="Options complémentaires" options={EXTRAS} selected={extras} onToggle={(v) => setExtras(toggleIn(extras, v))} />
+      <ChipGroup
+        label="Produits sucrés souhaités"
+        options={SWEET_ITEMS}
+        selected={sweets}
+        onToggle={(v) => setSweets(toggleIn(sweets, v))}
+      />
+      <ChipGroup
+        label="Produits salés souhaités"
+        options={SAVORY_ITEMS}
+        selected={savory}
+        onToggle={(v) => setSavory(toggleIn(savory, v))}
+      />
+      <ChipGroup
+        label="Options complémentaires"
+        options={EXTRAS}
+        selected={extras}
+        onToggle={(v) => setExtras(toggleIn(extras, v))}
+      />
 
       <div className="mt-6 grid sm:grid-cols-2 gap-5">
         <Field label="Quantités souhaitées" full>
-          <input value={quantities} onChange={(e) => setQuantities(e.target.value)} maxLength={300} placeholder="Ex. 600 pièces sucrées, 3 plateaux salés, 200 mignardises…" className={inputCls} />
+          <input
+            value={quantities}
+            onChange={(e) => setQuantities(e.target.value)}
+            maxLength={300}
+            placeholder="Ex. 600 pièces sucrées, 3 plateaux salés, 200 mignardises…"
+            className={inputCls}
+          />
         </Field>
         <Field label="Thème">
-          <input value={theme} onChange={(e) => setTheme(e.target.value)} maxLength={200} placeholder="Oriental, champêtre, minimaliste…" className={inputCls} />
+          <input
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            maxLength={200}
+            placeholder="Oriental, champêtre, minimaliste…"
+            className={inputCls}
+          />
         </Field>
         <Field label="Couleurs">
-          <input value={colors} onChange={(e) => setColors(e.target.value)} maxLength={200} placeholder="Ivoire & or, sauge…" className={inputCls} />
+          <input
+            value={colors}
+            onChange={(e) => setColors(e.target.value)}
+            maxLength={200}
+            placeholder="Ivoire & or, sauge…"
+            className={inputCls}
+          />
         </Field>
         <Field label="Budget">
           <select value={budget} onChange={(e) => setBudget(e.target.value)} className={inputCls}>
-            {BUDGETS.map((b) => <option key={b}>{b}</option>)}
+            {BUDGETS.map((b) => (
+              <option key={b}>{b}</option>
+            ))}
           </select>
         </Field>
         <Field label="Livraison ou retrait">
-          <select value={fulfillment} onChange={(e) => setFulfillment(e.target.value)} className={inputCls}>
-            {FULFILLMENT.map((f) => <option key={f}>{f}</option>)}
+          <select
+            value={fulfillment}
+            onChange={(e) => setFulfillment(e.target.value)}
+            className={inputCls}
+          >
+            {FULFILLMENT.map((f) => (
+              <option key={f}>{f}</option>
+            ))}
           </select>
         </Field>
         <Field label="Adresse de l'événement" full>
-          <input value={address} onChange={(e) => setAddress(e.target.value)} maxLength={250} placeholder="Salle, ville, code postal" className={inputCls} />
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            maxLength={250}
+            placeholder="Salle, ville, code postal"
+            className={inputCls}
+          />
         </Field>
         <Field label="Allergies / régimes" full>
-          <input value={allergies} onChange={(e) => setAllergies(e.target.value)} maxLength={300} placeholder="Fruits à coque, gluten…" className={inputCls} />
+          <input
+            value={allergies}
+            onChange={(e) => setAllergies(e.target.value)}
+            maxLength={300}
+            placeholder="Fruits à coque, gluten…"
+            className={inputCls}
+          />
         </Field>
         <Field label="Photos d'inspiration (optionnel)" full>
-          <input type="file" accept="image/*" multiple onChange={(e) => setPhotos(Array.from(e.target.files ?? []).slice(0, 5))} className={`${inputCls} file:mr-3 file:border-0 file:bg-beige file:px-3 file:py-1 file:text-xs`} />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setPhotos(Array.from(e.target.files ?? []).slice(0, 5))}
+            className={`${inputCls} file:mr-3 file:border-0 file:bg-beige file:px-3 file:py-1 file:text-xs`}
+          />
         </Field>
         <Field label="Message libre" full>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} rows={4} className={inputCls} />
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            maxLength={1000}
+            rows={4}
+            className={inputCls}
+          />
         </Field>
         <Field label="Vos nom et prénom">
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} className={inputCls} />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={120}
+            className={inputCls}
+          />
         </Field>
         <Field label="Email ou téléphone">
-          <input value={contact} onChange={(e) => setContact(e.target.value)} maxLength={160} className={inputCls} />
+          <input
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            maxLength={160}
+            className={inputCls}
+          />
         </Field>
       </div>
 
       {photos.length > 0 && (
-        <p className="text-xs text-charbon/60 mt-2">{photos.map((p) => p.name).join(", ")} — à envoyer dans la conversation WhatsApp.</p>
+        <p className="text-xs text-charbon/60 mt-2">
+          {photos.map((p) => p.name).join(", ")} — à envoyer dans la conversation WhatsApp.
+        </p>
       )}
 
-      <a href={link} target="_blank" rel="noreferrer" className="btn btn-gold w-full justify-center mt-8">
+      <a
+        href={link}
+        target="_blank"
+        rel="noreferrer"
+        className="btn btn-gold w-full justify-center mt-8"
+      >
         Demander mon devis
       </a>
       <QuoteNotice />

@@ -57,7 +57,9 @@ export function ProductGallery({
               aria-label={`Voir la photo ${i + 1} de ${name}`}
               aria-current={i === active}
               className={`relative h-20 w-20 shrink-0 overflow-hidden bg-sand transition ${
-                i === active ? "ring-2 ring-gold ring-offset-2 ring-offset-ivory" : "opacity-80 hover:opacity-100"
+                i === active
+                  ? "ring-2 ring-gold ring-offset-2 ring-offset-ivory"
+                  : "opacity-80 hover:opacity-100"
               }`}
             >
               <ProductImage src={src} alt="" placeholderClassName="text-2xl" />

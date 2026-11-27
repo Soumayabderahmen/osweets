@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "8082", "--strictPort"],
       "port": 8082
+    },
+    {
+      "name": "prototype-menu",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8090", "--bind", "127.0.0.1", "--directory", "prototype-menu"],
+      "port": 8090
+    },
+    {
+      "name": "prototype-admin",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8093", "--bind", "127.0.0.1", "--directory", "prototype-admin"],
+      "port": 8093
     }
   ]
 }

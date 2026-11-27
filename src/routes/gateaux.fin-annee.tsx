@@ -92,10 +92,16 @@ function Page() {
   return (
     <div className="bg-ivory">
       <section className="relative h-[46vh] min-h-[360px] overflow-hidden">
-        <img src={catCakes} alt="Fin d'année" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={catCakes}
+          alt="Fin d'année"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-black/70" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white px-6">
-          <div className="text-[10px] tracking-[0.35em] uppercase text-gold">Édition saisonnière</div>
+          <div className="text-[10px] tracking-[0.35em] uppercase text-gold">
+            Édition saisonnière
+          </div>
           <h1 className="font-display text-5xl md:text-6xl mt-4">Gâteaux de fin d'année</h1>
           <span className="mt-5 inline-block h-px w-16 bg-gold" />
           <p className="mt-5 max-w-xl text-white/90 font-light">
@@ -106,44 +112,93 @@ function Page() {
 
       {PREORDER_OPEN ? (
         <div className="bg-gold/10 border-y border-gold/30 text-center py-4 text-sm text-charbon/85 px-4">
-          <span className="text-gold uppercase tracking-[0.25em] text-[10px] mr-2">Précommandes ouvertes</span>
-          <strong>Précommande uniquement</strong> — date limite : <strong>{ORDER_DEADLINE}</strong> · Retrait : {PICKUP_DATES} · {AVAILABILITY}.
+          <span className="text-gold uppercase tracking-[0.25em] text-[10px] mr-2">
+            Précommandes ouvertes
+          </span>
+          <strong>Précommande uniquement</strong> — date limite : <strong>{ORDER_DEADLINE}</strong>{" "}
+          · Retrait : {PICKUP_DATES} · {AVAILABILITY}.
         </div>
       ) : (
         <div className="bg-charbon/5 border-y border-charbon/20 text-center py-4 text-sm text-charbon/85 px-4">
-          <span className="uppercase tracking-[0.25em] text-[10px] mr-2 text-charbon/60">Précommandes closes</span>
-          <strong>Les précommandes de fin d'année sont terminées</strong> (date limite dépassée le {ORDER_DEADLINE}).
-          Cette collection saisonnière n'est plus disponible à la commande — retrouvez-la à la prochaine édition ou{" "}
-          <Link to="/devis" search={{ type: "Gâteau sur mesure" }} className="text-gold underline underline-offset-4">
+          <span className="uppercase tracking-[0.25em] text-[10px] mr-2 text-charbon/60">
+            Précommandes closes
+          </span>
+          <strong>Les précommandes de fin d'année sont terminées</strong> (date limite dépassée le{" "}
+          {ORDER_DEADLINE}). Cette collection saisonnière n'est plus disponible à la commande —
+          retrouvez-la à la prochaine édition ou{" "}
+          <Link
+            to="/devis"
+            search={{ type: "Gâteau sur mesure" }}
+            className="text-gold underline underline-offset-4"
+          >
             demandez un gâteau sur mesure
           </Link>
           .
         </div>
       )}
 
-
       <section className="container-os section-y">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {ITEMS.map((it) => (
-            <article key={it.slug} className="bg-white border border-border hover:border-gold/50 transition">
+            <article
+              key={it.slug}
+              className="bg-white border border-border hover:border-gold/50 transition"
+            >
               <div className="aspect-[4/3] overflow-hidden bg-beige">
-                <img src={it.image} alt={it.name} loading="lazy" className="h-full w-full object-cover" />
+                <img
+                  src={it.image}
+                  alt={it.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="p-6">
                 <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.22em] text-charbon/55">
                   <span>{it.serves}</span>
-                  <span className="font-price text-gold text-base normal-case tracking-normal">{it.price}€</span>
+                  <span className="font-price text-gold text-base normal-case tracking-normal">
+                    {it.price}€
+                  </span>
                 </div>
                 <h3 className="font-display text-xl mt-2 leading-tight">{it.name}</h3>
                 <p className="text-sm text-charbon/75 mt-1">{it.flavor}</p>
 
                 <dl className="mt-4 space-y-2 text-sm text-charbon/75">
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Allergènes</dt><dd>{it.allergens.join(", ")}.</dd></div>
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Conservation</dt><dd>{it.conservation}</dd></div>
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Date limite de commande</dt><dd>{ORDER_DEADLINE}</dd></div>
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Dates de retrait</dt><dd>{PICKUP_DATES}</dd></div>
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Livraison</dt><dd>{it.delivery}</dd></div>
-                  <div><dt className="text-charbon/60 text-xs uppercase tracking-wider">Disponibilité</dt><dd>{PREORDER_OPEN ? AVAILABILITY : "Précommandes closes — indisponible pour cette édition"}</dd></div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">Allergènes</dt>
+                    <dd>{it.allergens.join(", ")}.</dd>
+                  </div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">
+                      Conservation
+                    </dt>
+                    <dd>{it.conservation}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">
+                      Date limite de commande
+                    </dt>
+                    <dd>{ORDER_DEADLINE}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">
+                      Dates de retrait
+                    </dt>
+                    <dd>{PICKUP_DATES}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">Livraison</dt>
+                    <dd>{it.delivery}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-charbon/60 text-xs uppercase tracking-wider">
+                      Disponibilité
+                    </dt>
+                    <dd>
+                      {PREORDER_OPEN
+                        ? AVAILABILITY
+                        : "Précommandes closes — indisponible pour cette édition"}
+                    </dd>
+                  </div>
                 </dl>
 
                 {PREORDER_OPEN ? (
@@ -170,7 +225,6 @@ function Page() {
                     </p>
                   </div>
                 )}
-
               </div>
             </article>
           ))}

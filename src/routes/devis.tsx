@@ -25,7 +25,10 @@ export const Route = createFileRoute("/devis")({
   validateSearch: (s: Record<string, unknown>): DevisSearch => ({
     type: str(s.type),
     date: str(s.date),
-    guests: typeof s.guests === "string" || typeof s.guests === "number" ? Number(s.guests) || undefined : undefined,
+    guests:
+      typeof s.guests === "string" || typeof s.guests === "number"
+        ? Number(s.guests) || undefined
+        : undefined,
     flavors: str(s.flavors),
     allergies: str(s.allergies),
     details: str(s.details),
@@ -42,7 +45,6 @@ type DevisSearch = {
   details?: string;
   produit?: string;
 };
-
 
 function Page() {
   const { type, date, guests, flavors, allergies, details, produit } = Route.useSearch();

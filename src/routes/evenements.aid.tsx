@@ -66,10 +66,7 @@ function Page() {
       />
 
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="01 · Type"
-          title="Coffrets ou gâteaux de fête ?"
-        />
+        <SectionTitle eyebrow="01 · Type" title="Coffrets ou gâteaux de fête ?" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {categories.map((c) => (
             <button
@@ -103,13 +100,7 @@ function Page() {
           title="Nos incontournables Aïd"
           desc="Une sélection dorée pour honorer la fête."
         />
-        <SuggestedProducts
-          slugs={[
-            "coffret-aid",
-            "coffret-prestige",
-            "baklawa-pistache",
-          ]}
-        />
+        <SuggestedProducts slugs={["coffret-aid", "coffret-prestige", "baklawa-pistache"]} />
         <p className="text-center mt-6 text-sm text-charbon/60">
           + Assortiments sur mesure et gâteaux de fête sur demande.
         </p>
@@ -118,13 +109,10 @@ function Page() {
       <section className="bg-sable">
         <div className="container-os section-y grid lg:grid-cols-2 gap-12">
           <div>
-            <SectionTitle
-              eyebrow="04 · Sur mesure"
-              title="Packaging festif & carte de vœux"
-            />
+            <SectionTitle eyebrow="04 · Sur mesure" title="Packaging festif & carte de vœux" />
             <p className="text-charbon/70 font-light leading-relaxed">
-              Chaque coffret est présenté dans un écrin festif, accompagné d'une
-              carte de vœux calligraphiée à votre message.
+              Chaque coffret est présenté dans un écrin festif, accompagné d'une carte de vœux
+              calligraphiée à votre message.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Emballage doré ou terracotta au choix</li>
@@ -193,10 +181,7 @@ function Page() {
 
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle
-            eyebrow="06 · Ils nous ont fait confiance"
-            title="Aïds célébrés ensemble"
-          />
+          <SectionTitle eyebrow="06 · Ils nous ont fait confiance" title="Aïds célébrés ensemble" />
           <SocialProof
             images={[coffret, baklawa, samsa, mignardises]}
             testimonials={[

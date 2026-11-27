@@ -71,7 +71,7 @@ export function Footer() {
         </div>
 
         <div className="md:col-span-3">
-          <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-4">Boutique</h4>
+          <h3 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-4">Boutique</h3>
           <ul className="space-y-2.5 text-sm text-ivory/80">
             <li>
               <Link to="/patisserie" className="hover:text-gold">
@@ -124,7 +124,7 @@ export function Footer() {
         </div>
 
         <div className="md:col-span-4">
-          <h4 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-4">La maison</h4>
+          <h3 className="text-[10px] tracking-[0.22em] uppercase text-gold mb-4">La maison</h3>
           <ul className="space-y-2.5 text-sm text-ivory/80">
             <li>
               <Link to="/la-maison" className="hover:text-gold">

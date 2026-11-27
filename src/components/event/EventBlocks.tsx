@@ -39,7 +39,9 @@ export function EventHero({
       <div className={`absolute inset-0 bg-gradient-to-b from-black/40 via-black/45 to-${tint}`} />
       <div className="relative z-10 h-full flex flex-col items-center justify-center text-white text-center px-6">
         {eyebrow && (
-          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">{eyebrow}</div>
+          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">
+            {eyebrow}
+          </div>
         )}
         <h1
           className="font-display text-5xl md:text-7xl mt-5 text-white"
@@ -54,10 +56,22 @@ export function EventHero({
   );
 }
 
-export function SectionTitle({ eyebrow, title, desc }: { eyebrow?: string; title: string; desc?: string }) {
+export function SectionTitle({
+  eyebrow,
+  title,
+  desc,
+}: {
+  eyebrow?: string;
+  title: string;
+  desc?: string;
+}) {
   return (
     <div className="text-center mb-12">
-      {eyebrow && <div className="text-[10px] tracking-[0.3em] uppercase text-gold font-medium">{eyebrow}</div>}
+      {eyebrow && (
+        <div className="text-[10px] tracking-[0.3em] uppercase text-gold font-medium">
+          {eyebrow}
+        </div>
+      )}
       <h2 className="font-display text-3xl md:text-5xl mt-3">{title}</h2>
       <span className="mt-5 inline-block h-px w-16 bg-gold" />
       {desc && <p className="mt-5 text-charbon/70 max-w-2xl mx-auto font-light">{desc}</p>}
@@ -170,14 +184,21 @@ export function SocialProof({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {images.map((src, i) => (
           <div key={i} className="aspect-square overflow-hidden bg-beige">
-            <img src={src} alt="" loading="lazy" className="h-full w-full object-cover hover:scale-105 transition duration-[900ms]" />
+            <img
+              src={src}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover hover:scale-105 transition duration-[900ms]"
+            />
           </div>
         ))}
       </div>
       <div className="grid md:grid-cols-3 gap-6 mt-10">
         {testimonials.map((t) => (
           <figure key={t.name} className="bg-sable p-6 border-l-2 border-gold">
-            <blockquote className="font-display text-lg leading-snug text-charbon">« {t.text} »</blockquote>
+            <blockquote className="font-display text-lg leading-snug text-charbon">
+              « {t.text} »
+            </blockquote>
             <figcaption className="mt-4 text-xs uppercase tracking-wider text-charbon/60">
               {t.name}
               {t.event && <span className="text-gold"> · {t.event}</span>}
@@ -210,7 +231,10 @@ export function FinalCTA({
             {primary.label}
           </a>
           {secondary && (
-            <Link to={secondary.to as string} className="btn btn-outline-gold text-ivory border-ivory/40">
+            <Link
+              to={secondary.to as string}
+              className="btn btn-outline-gold text-ivory border-ivory/40"
+            >
               {secondary.label}
             </Link>
           )}

@@ -81,6 +81,9 @@ export function Menu({
   rubriques = [],
   rubrique = "",
   allerRubrique,
+  colonnes = [],
+  colonne = "",
+  allerColonne,
   onSignOut,
 }: {
   sections: Section[];
@@ -100,21 +103,33 @@ export function Menu({
   rubriques?: { cle: string; nom: string; n: number; fete: boolean }[];
   rubrique?: string;
   allerRubrique?: (cle: string) => void;
+  /** Les colonnes du menu Gâteaux, montrées sous « Gâteaux › Produits ». */
+  colonnes?: { cle: string; nom: string; n: number }[];
+  colonne?: string;
+  allerColonne?: (cle: string) => void;
   onSignOut: () => void;
 }) {
   const [fermees, setFermees] = useState<Set<number>>(new Set());
-  const [patOuvert, setPatOuvert] = useState(true);
+  // Les entrées à sous-pages ouvertes (Pâtisserie Tunisienne, Gâteaux…).
+  const [ouverts, setOuverts] = useState<Set<string>>(() => new Set(["produits"]));
   const dansSous = sousActifs.includes(ecran);
+  const actifDe = (k: string, sous?: [string, string][]) =>
+    !!sous && ((k === "produits" && dansSous) || sous.some(([sk]) => sk === ecran));
+  const entreeActive = sections
+    .flatMap((s) => s.items)
+    .find(([k, , , sous]) => actifDe(k, sous))?.[0];
   useEffect(() => {
-    if (dansSous) setPatOuvert(true);
-  }, [dansSous]);
+    if (entreeActive) setOuverts((o) => (o.has(entreeActive) ? o : new Set(o).add(entreeActive)));
+  }, [entreeActive]);
+  const filtreSous = (sk: string) =>
+    (sk === "produits" && !!rubrique) || (sk === "gateaux" && !!colonne);
 
   const sousLiens = (sous: [string, string][]) =>
     sous.map(([sk, sn]) => (
       <div key={sk} style={{ display: "contents" }}>
         <button
           type="button"
-          className={`sous-lien${ecran === sk && !(sk === "produits" && rubrique) ? " on" : ""}${sk === "produits" && ecran === "produits" && rubrique ? " parent" : ""}`}
+          className={`sous-lien${ecran === sk && !filtreSous(sk) ? " on" : ""}${ecran === sk && filtreSous(sk) ? " parent" : ""}`}
           onClick={() => aller(sk)}
         >
           {sn}
@@ -134,6 +149,24 @@ export function Menu({
                   {r.nom}
                 </span>
                 <small>{r.n}</small>
+              </button>
+            ))}
+          </div>
+        )}
+        {sk === "gateaux" && colonnes.length > 0 && allerColonne && (
+          <div className="sous-sous">
+            {colonnes.map((c) => (
+              <button
+                type="button"
+                key={c.cle}
+                className={`sous-lien${ecran === "gateaux" && colonne === c.cle ? " on" : ""}`}
+                onClick={() => allerColonne(c.cle)}
+              >
+                <span className="nm">
+                  <span className="pt" />
+                  {c.nom}
+                </span>
+                <small>{c.n}</small>
               </button>
             ))}
           </div>
@@ -190,7 +223,7 @@ export function Menu({
             )}
             <div className="groupe-liens">
               {sec.items.map(([k, icone, nom, sous]) => {
-                const actif = sous ? dansSous : ecran === k;
+                const actif = sous ? actifDe(k, sous) : ecran === k;
                 const pastille = pastilles[k] ?? 0;
                 return (
                   <div
@@ -203,7 +236,7 @@ export function Menu({
                       f.style.left = `${r.right}px`;
                       f.style.top = `${Math.max(8, Math.min(r.top, window.innerHeight - f.offsetHeight - 8))}px`;
                     }}
-                    className={`entree${sous && patOuvert ? " ouverte" : ""}${pastille ? " alerte" : ""}`}
+                    className={`entree${sous && ouverts.has(k) ? " ouverte" : ""}${pastille ? " alerte" : ""}`}
                   >
                     <button
                       type="button"
@@ -211,7 +244,12 @@ export function Menu({
                       onClick={() => {
                         if (!sous) return aller(k);
                         if (replie) return aller(k);
-                        setPatOuvert((o) => !o);
+                        setOuverts((o) => {
+                          const n = new Set(o);
+                          if (n.has(k)) n.delete(k);
+                          else n.add(k);
+                          return n;
+                        });
                       }}
                     >
                       <span className="ibox">

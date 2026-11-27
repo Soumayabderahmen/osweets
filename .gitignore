@@ -33,3 +33,21 @@ dist-ssr
 
 # Variables d'environnement locales
 .env
+
+# Exports, prototypes et sauvegardes de travail — lourds (~35 Mo) et
+# reconstructibles. Ils n'ont pas leur place dans l'historique du dépôt,
+# qui se synchronise avec Lovable.
+lovable-export/
+artifacts/
+prompt-base44/
+prompt-lovable/
+prototype-admin/
+prototype-menu/
+_to_delete/
+export-osweets-treasury.html
+catalogue-patisserie-tunisienne.html
+catalogue-patisserie-tunisienne.pdf
+catalogue-produits-osweets.pdf
+*.avant-extraction
+tsconfig.check2.json
+tmp/

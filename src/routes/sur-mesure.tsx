@@ -15,12 +15,36 @@ export const Route = createFileRoute("/sur-mesure")({
 });
 
 const OPTIONS: { label: string; desc: string; to: string }[] = [
-  { label: "Mariage", desc: "Wedding cake, plateaux, coffrets d'invités.", to: "/evenements/mariage" },
-  { label: "Fiançailles", desc: "Plateaux tunisiens, gâteau signature.", to: "/evenements/fiancailles" },
-  { label: "Fête d'anniversaire", desc: "Gâteau à thème et mignardises.", to: "/evenements/anniversaire" },
-  { label: "Baby Shower", desc: "Douceurs pastel et présentation soignée.", to: "/evenements/baby-shower" },
-  { label: "Gender Reveal", desc: "Gâteau surprise rose ou bleu.", to: "/evenements/gender-reveal" },
-  { label: "Entreprise", desc: "Coffrets clients, séminaires, cocktails.", to: "/evenements/entreprise" },
+  {
+    label: "Mariage",
+    desc: "Wedding cake, plateaux, coffrets d'invités.",
+    to: "/evenements/mariage",
+  },
+  {
+    label: "Fiançailles",
+    desc: "Plateaux tunisiens, gâteau signature.",
+    to: "/evenements/fiancailles",
+  },
+  {
+    label: "Fête d'anniversaire",
+    desc: "Gâteau à thème et mignardises.",
+    to: "/evenements/anniversaire",
+  },
+  {
+    label: "Baby Shower",
+    desc: "Douceurs pastel et présentation soignée.",
+    to: "/evenements/baby-shower",
+  },
+  {
+    label: "Gender Reveal",
+    desc: "Gâteau surprise rose ou bleu.",
+    to: "/evenements/gender-reveal",
+  },
+  {
+    label: "Entreprise",
+    desc: "Coffrets clients, séminaires, cocktails.",
+    to: "/evenements/entreprise",
+  },
   { label: "Ramadan", desc: "Assortiments traditionnels d'Iftar.", to: "/evenements/ramadan" },
   { label: "Aïd", desc: "Plateaux d'Aïd familiaux ou individuels.", to: "/evenements/aid" },
 ];
@@ -31,10 +55,12 @@ function Page() {
       <div className="text-center">
         <div className="eyebrow">Une demande unique</div>
         <h1 className="font-display text-4xl md:text-5xl mt-3">Commande sur mesure</h1>
-        <div className="mt-4"><span className="divider-gold" /></div>
+        <div className="mt-4">
+          <span className="divider-gold" />
+        </div>
         <p className="mt-6 text-charbon/70 max-w-2xl mx-auto">
-          Sélectionnez le type d'événement — chaque univers a son devis dédié, avec calculateur de quantité,
-          suggestions et formulaire adapté. Réponse sous 48h.
+          Sélectionnez le type d'événement — chaque univers a son devis dédié, avec calculateur de
+          quantité, suggestions et formulaire adapté. Réponse sous 48h.
         </p>
       </div>
 
@@ -62,7 +88,9 @@ function Page() {
           Contactez-nous directement — nous étudions toutes les créations sur mesure.
         </p>
         <div className="mt-5 flex flex-wrap gap-3 justify-center">
-          <Link to="/contact" className="btn btn-gold">Nous contacter</Link>
+          <Link to="/contact" className="btn btn-gold">
+            Nous contacter
+          </Link>
           <a
             href="https://wa.me/33699466030"
             target="_blank"

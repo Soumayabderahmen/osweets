@@ -11,8 +11,7 @@
  * confirmés, on garde une formule neutre.
  * Remplacer par la version complète UNIQUEMENT après validation officielle.
  */
-export const ANNOUNCEMENT_MESSAGE =
-  "Pâtisseries artisanales fabriquées à la commande";
+export const ANNOUNCEMENT_MESSAGE = "Pâtisseries artisanales fabriquées à la commande";
 
 /**
  * Retrait sur rendez-vous à Évry-Courcouronnes — À CONFIRMER.
@@ -41,10 +40,10 @@ export const COOKIES_LOCATION: "gateaux" | "epicerie" | "hidden" = "gateaux";
  * Fonctionnalités actives — active uniquement ce qui est réellement branché.
  */
 export const FEATURES = {
-  favorites: true,        // page /favoris + icône cœur
-  search: false,          // désactivé tant que la recherche n'est pas branchée
-  giftMessage: false,     // "Ajouter un message personnalisé" dans le composer
-  genderReveal: true,     // service Gender Reveal actif
+  favorites: true, // page /favoris + icône cœur
+  search: false, // désactivé tant que la recherche n'est pas branchée
+  giftMessage: false, // "Ajouter un message personnalisé" dans le composer
+  genderReveal: true, // service Gender Reveal actif
   plateauxPersonnalises: false, // plateaux composés à la demande — à confirmer
 } as const;
 
@@ -55,6 +54,5 @@ export const COLLECTIONS = {
   bestsellers: false,
   novelties: false,
   fekiaPerlesTraditionLight: false, // gamme officielle non confirmée
-  lightIsOfficialRange: false,      // "Light" gamme officielle vs simple filtre
+  lightIsOfficialRange: false, // "Light" gamme officielle vs simple filtre
 } as const;
-

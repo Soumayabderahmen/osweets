@@ -14,7 +14,9 @@ export function Field({
 }) {
   return (
     <label className={`block ${full ? "sm:col-span-2" : ""}`}>
-      <span className="block text-[11px] uppercase tracking-[0.2em] text-charbon/60 mb-2">{label}</span>
+      <span className="block text-[11px] uppercase tracking-[0.2em] text-charbon/60 mb-2">
+        {label}
+      </span>
       {children}
     </label>
   );
@@ -33,7 +35,9 @@ export function ChipGroup({
 }) {
   return (
     <div className="mt-6">
-      <span className="block text-[11px] uppercase tracking-[0.2em] text-charbon/60 mb-2">{label}</span>
+      <span className="block text-[11px] uppercase tracking-[0.2em] text-charbon/60 mb-2">
+        {label}
+      </span>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
@@ -42,7 +46,9 @@ export function ChipGroup({
             aria-pressed={selected.includes(o)}
             onClick={() => onToggle(o)}
             className={`px-3 py-2 text-sm border transition ${
-              selected.includes(o) ? "border-gold bg-beige" : "border-border bg-white hover:border-gold/50"
+              selected.includes(o)
+                ? "border-gold bg-beige"
+                : "border-border bg-white hover:border-gold/50"
             }`}
           >
             {o}
@@ -75,8 +81,8 @@ export function waHref(lines: (string | false | undefined)[]) {
 export function QuoteNotice() {
   return (
     <p className="text-xs text-charbon/60 mt-3 text-center">
-      Il s'agit d'une <strong>demande de devis</strong>, et non d'une commande payée immédiatement. Nous revenons
-      vers vous sous 48h avec une proposition détaillée.
+      Il s'agit d'une <strong>demande de devis</strong>, et non d'une commande payée immédiatement.
+      Nous revenons vers vous sous 48h avec une proposition détaillée.
     </p>
   );
 }

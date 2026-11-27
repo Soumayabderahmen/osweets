@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SITE, breadcrumb, jsonLdScript } from "@/lib/seo";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { useMemo } from "react";
@@ -8,14 +9,18 @@ import catPat from "@/assets/cat-patisserie.jpg";
 
 type SubKey = "all" | "tartinables" | "huiles" | "vinaigres" | "epices" | "antipasti";
 
-const subCategories: Record<SubKey, {
-  label: string;
-  subtitle: string;
-  filter: (p: Product) => boolean;
-}> = {
+const subCategories: Record<
+  SubKey,
+  {
+    label: string;
+    subtitle: string;
+    filter: (p: Product) => boolean;
+  }
+> = {
   all: {
     label: "L'Épicerie Salée",
-    subtitle: "Tartinables, huiles, épices et antipasti — une sélection méditerranéenne d'exception.",
+    subtitle:
+      "Tartinables, huiles, épices et antipasti — une sélection méditerranéenne d'exception.",
     filter: (p) => p.category === "sale",
   },
   tartinables: {
@@ -26,7 +31,9 @@ const subCategories: Record<SubKey, {
   huiles: {
     label: "Huiles & vinaigres",
     subtitle: "Huiles d'olive, huiles parfumées et vinaigres balsamiques.",
-    filter: (p) => p.category === "sale" && (!!p.themes?.includes("huiles") || !!p.themes?.includes("vinaigres")),
+    filter: (p) =>
+      p.category === "sale" &&
+      (!!p.themes?.includes("huiles") || !!p.themes?.includes("vinaigres")),
   },
   vinaigres: {
     label: "Vinaigres",
@@ -48,7 +55,7 @@ const subCategories: Record<SubKey, {
 const searchSchema = z.object({
   cat: fallback(
     z.enum(["all", "tartinables", "huiles", "vinaigres", "epices", "antipasti"]),
-    "all"
+    "all",
   ).default("all"),
 });
 
@@ -65,10 +72,20 @@ export const Route = createFileRoute("/epicerie-salee")({
       { property: "og:title", content: "L'Épicerie Salée · Ö' Sweets" },
       {
         property: "og:description",
-        content: "Tapenades, houmous, huile d'olive, ras el hanout, olives et antipasti sélectionnés.",
+        content:
+          "Tapenades, houmous, huile d'olive, ras el hanout, olives et antipasti sélectionnés.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE.url}/epicerie-salee` }],
+    scripts: [
+      jsonLdScript(
+        breadcrumb([
+          { name: "Accueil", path: "/" },
+          { name: "L'Épicerie Salée", path: "/epicerie-salee" },
+        ]),
+      ),
     ],
   }),
   component: EpicerieSaleePage,

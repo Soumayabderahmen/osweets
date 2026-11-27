@@ -22,9 +22,7 @@ export const Route = createFileRoute("/evenements/$slug")({
       <h1 className="font-display text-3xl">Événement introuvable</h1>
     </div>
   ),
-  errorComponent: () => (
-    <div className="container-os py-20 text-center">Erreur</div>
-  ),
+  errorComponent: () => <div className="container-os py-20 text-center">Erreur</div>,
   component: Page,
 });
 
@@ -38,9 +36,7 @@ function Page() {
   const [budget, setBudget] = useState(800);
 
   const toggleType = (t: string) =>
-    setTypes((arr) =>
-      arr.includes(t) ? arr.filter((x) => x !== t) : [...arr, t],
-    );
+    setTypes((arr) => (arr.includes(t) ? arr.filter((x) => x !== t) : [...arr, t]));
 
   const waLink = useMemo(() => {
     const txt = `Bonjour, demande de devis ${e.label} :\n• Date : ${date || "à définir"}\n• Invités : ${guests}\n• Pâtisseries souhaitées : ${types.join(", ") || "à définir"}\n• Budget : ~${budget}€`;
@@ -77,9 +73,7 @@ function Page() {
             <div className="text-[10px] tracking-[0.3em] uppercase text-gold font-medium">
               Nos formules
             </div>
-            <h2 className="font-display text-4xl md:text-5xl mt-3">
-              Packs prêts à réserver
-            </h2>
+            <h2 className="font-display text-4xl md:text-5xl mt-3">Packs prêts à réserver</h2>
             <span className="mt-5 inline-block h-px w-16 bg-gold" />
             <p className="mt-5 text-charbon/70 max-w-2xl mx-auto font-light">
               Des formules complètes pensées pour chaque taille d'événement.
@@ -101,15 +95,10 @@ function Page() {
                 <div className="text-xs uppercase tracking-wider text-charbon/60 mt-1">
                   {p.guests} invités
                 </div>
-                <div className="font-price text-4xl text-gold mt-4">
-                  {p.price}€
-                </div>
+                <div className="font-price text-4xl text-gold mt-4">{p.price}€</div>
                 <ul className="mt-6 space-y-3 flex-1">
                   {p.includes.map((line) => (
-                    <li
-                      key={line}
-                      className="flex gap-2 text-sm text-charbon/80"
-                    >
+                    <li key={line} className="flex gap-2 text-sm text-charbon/80">
                       <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
                       <span>{line}</span>
                     </li>
@@ -136,14 +125,11 @@ function Page() {
             <div className="text-[10px] tracking-[0.3em] uppercase text-gold font-medium">
               100% sur mesure
             </div>
-            <h2 className="font-display text-4xl mt-3">
-              Créez votre pack idéal
-            </h2>
+            <h2 className="font-display text-4xl mt-3">Créez votre pack idéal</h2>
             <span className="mt-5 inline-block h-px w-16 bg-gold" />
             <p className="mt-6 text-charbon/70 leading-relaxed">
-              Nos packs ne correspondent pas à vos envies ? Composez votre
-              formule à la carte : nous adaptons quantités, variétés et
-              présentation à votre événement.
+              Nos packs ne correspondent pas à vos envies ? Composez votre formule à la carte : nous
+              adaptons quantités, variétés et présentation à votre événement.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-charbon/75">
               <li>✦ Devis gratuit sous 24h</li>
@@ -170,8 +156,7 @@ function Page() {
 
             <div>
               <label className="text-xs uppercase tracking-wider text-charbon/60">
-                Nombre d'invités :{" "}
-                <span className="text-gold font-medium">{guests}</span>
+                Nombre d'invités : <span className="text-gold font-medium">{guests}</span>
               </label>
               <input
                 type="range"
@@ -213,8 +198,7 @@ function Page() {
 
             <div>
               <label className="text-xs uppercase tracking-wider text-charbon/60">
-                Budget estimé :{" "}
-                <span className="text-gold font-medium">{budget}€</span>
+                Budget estimé : <span className="text-gold font-medium">{budget}€</span>
               </label>
               <input
                 type="range"

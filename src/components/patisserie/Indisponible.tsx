@@ -33,8 +33,8 @@ export function PatisserieIndisponible({ contexte }: { contexte?: string }) {
           <span className="divider-gold" />
         </div>
         <p className="mt-6 text-sm leading-relaxed text-charbon/70">
-          Nos pâtisseries reviennent dans un instant. Nous préférons ne rien vous montrer plutôt
-          que de vous montrer des prix ou des disponibilités qui ne seraient plus les bons.
+          Nos pâtisseries reviennent dans un instant. Nous préférons ne rien vous montrer plutôt que
+          de vous montrer des prix ou des disponibilités qui ne seraient plus les bons.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-charbon/70">
           Le reste de la boutique reste accessible, et notre atelier répond toujours.

@@ -7,7 +7,11 @@ export const Route = createFileRoute("/parrainage")({
   head: () => ({
     meta: [
       { title: "Programme de fidélité — Ö' Sweets" },
-      { name: "description", content: "Programme de fidélité Ö' Sweets : partagez votre code, gagnez 10% sur vos prochaines commandes." },
+      {
+        name: "description",
+        content:
+          "Programme de fidélité Ö' Sweets : partagez votre code, gagnez 10% sur vos prochaines commandes.",
+      },
     ],
   }),
   component: Page,
@@ -30,10 +34,16 @@ function Page() {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
-    } catch {}
+    } catch {
+      // Presse-papiers refusé par le navigateur (contexte non sécurisé,
+      // permission refusée) : le lien reste affiché et sélectionnable à la
+      // main, on n'affiche pas d'erreur pour si peu.
+    }
   };
 
-  const shareText = encodeURIComponent(`Découvre Ö' Sweets — pâtisserie tunisienne d'exception. Profite de -10% sur ta 1ère commande avec mon code : ${code}`);
+  const shareText = encodeURIComponent(
+    `Découvre Ö' Sweets — pâtisserie tunisienne d'exception. Profite de -10% sur ta 1ère commande avec mon code : ${code}`,
+  );
   const waUrl = `https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`;
   const mailUrl = `mailto:?subject=${encodeURIComponent("Ö' Sweets — -10% pour ta 1ère commande")}&body=${shareText}%20${encodeURIComponent(url)}`;
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -44,9 +54,12 @@ function Page() {
       <section className="bg-sable border-b border-border">
         <div className="container-os py-20 text-center">
           <div className="eyebrow text-gold">Programme de fidélité</div>
-          <h1 className="font-display text-4xl md:text-5xl mt-4 text-charbon">Partagez Ö' Sweets, gagnez 10%</h1>
+          <h1 className="font-display text-4xl md:text-5xl mt-4 text-charbon">
+            Partagez Ö' Sweets, gagnez 10%
+          </h1>
           <p className="mt-5 max-w-xl mx-auto text-charbon/70 font-light">
-            Pour chaque proche qui commande grâce à votre code, vous recevez 10% sur votre prochaine commande, et votre filleul profite de 10% de bienvenue.
+            Pour chaque proche qui commande grâce à votre code, vous recevez 10% sur votre prochaine
+            commande, et votre filleul profite de 10% de bienvenue.
           </p>
         </div>
       </section>
@@ -55,11 +68,26 @@ function Page() {
       <section className="container-os section-y">
         <div className="grid md:grid-cols-3 gap-10">
           {[
-            { icon: Share2, t: "1. Partagez votre code", d: "Envoyez votre code unique par WhatsApp, mail ou sur vos réseaux." },
-            { icon: Gift, t: "2. Votre filleul commande", d: "Il bénéficie automatiquement de -10% sur sa première commande." },
-            { icon: Wallet, t: "3. Vous recevez 10%", d: "Une fois sa commande validée, un code -10% est crédité sur votre compte." },
+            {
+              icon: Share2,
+              t: "1. Partagez votre code",
+              d: "Envoyez votre code unique par WhatsApp, mail ou sur vos réseaux.",
+            },
+            {
+              icon: Gift,
+              t: "2. Votre filleul commande",
+              d: "Il bénéficie automatiquement de -10% sur sa première commande.",
+            },
+            {
+              icon: Wallet,
+              t: "3. Vous recevez 10%",
+              d: "Une fois sa commande validée, un code -10% est crédité sur votre compte.",
+            },
           ].map((s) => (
-            <div key={s.t} className="text-center p-8 border border-border hover:border-gold transition">
+            <div
+              key={s.t}
+              className="text-center p-8 border border-border hover:border-gold transition"
+            >
               <s.icon className="h-7 w-7 text-gold mx-auto mb-5" />
               <h3 className="font-display text-xl text-charbon">{s.t}</h3>
               <p className="mt-3 text-sm text-charbon/70 leading-relaxed">{s.d}</p>
@@ -81,15 +109,23 @@ function Page() {
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {copied ? "Copié !" : "Copier le lien"}
             </button>
-            <a href={waUrl} target="_blank" rel="noreferrer" className="btn btn-outline-gold">WhatsApp</a>
-            <a href={mailUrl} className="btn btn-outline-gold">Email</a>
-            <a href={fbUrl} target="_blank" rel="noreferrer" className="btn btn-outline-gold">Facebook</a>
+            <a href={waUrl} target="_blank" rel="noreferrer" className="btn btn-outline-gold">
+              WhatsApp
+            </a>
+            <a href={mailUrl} className="btn btn-outline-gold">
+              Email
+            </a>
+            <a href={fbUrl} target="_blank" rel="noreferrer" className="btn btn-outline-gold">
+              Facebook
+            </a>
           </div>
 
           <div className="mt-12 grid grid-cols-2 gap-4 max-w-md mx-auto">
             <div className="border border-ivory/20 p-5">
               <div className="text-3xl font-price text-gold">{stats.invited}</div>
-              <div className="text-xs uppercase tracking-[0.2em] text-ivory/60 mt-1">Filleul{stats.invited > 1 ? "s" : ""}</div>
+              <div className="text-xs uppercase tracking-[0.2em] text-ivory/60 mt-1">
+                Filleul{stats.invited > 1 ? "s" : ""}
+              </div>
             </div>
             <div className="border border-ivory/20 p-5">
               <div className="text-3xl font-price text-gold">{stats.earned}€</div>
@@ -97,9 +133,13 @@ function Page() {
             </div>
           </div>
           <p className="mt-8 text-xs text-ivory/55 max-w-md mx-auto">
-            La récompense est créditée une fois la commande de votre filleul livrée et validée. Non cumulable avec d'autres promotions.
+            La récompense est créditée une fois la commande de votre filleul livrée et validée. Non
+            cumulable avec d'autres promotions.
           </p>
-          <Link to="/mon-compte" className="inline-block mt-6 text-xs uppercase tracking-[0.22em] text-gold hover:underline">
+          <Link
+            to="/mon-compte"
+            className="inline-block mt-6 text-xs uppercase tracking-[0.22em] text-gold hover:underline"
+          >
             Voir mon espace →
           </Link>
         </div>

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SITE, bakery, breadcrumb, jsonLdScript } from "@/lib/seo";
 import { useState } from "react";
 import { MapPin, Phone, Mail, MessageCircle } from "lucide-react";
 import { z } from "zod";
@@ -12,6 +13,22 @@ export const Route = createFileRoute("/contact")({
         content:
           "Contact Ö' Sweets Pâtisserie — Évry-Courcouronnes. Adresse, horaires, téléphone, WhatsApp et formulaire de question générale. Pour un devis événementiel, rendez-vous sur la page dédiée.",
       },
+    ],
+    links: [{ rel: "canonical", href: `${SITE.url}/contact` }],
+    /*
+     * Page Contact = la fiche d'identité du commerce pour Google. Sans ces
+     * données structurées, l'adresse, le téléphone et la zone desservie ne
+     * sont lus que comme du texte libre : la recherche locale
+     * (« pâtisserie tunisienne près d'Évry ») ne peut pas s'y raccrocher.
+     */
+    scripts: [
+      jsonLdScript(bakery()),
+      jsonLdScript(
+        breadcrumb([
+          { name: "Accueil", path: "/" },
+          { name: "Contact", path: "/contact" },
+        ]),
+      ),
     ],
   }),
   component: Page,
@@ -41,7 +58,9 @@ function Page() {
     const parsed = schema.safeParse({ firstName, lastName, email, phone, subject, message });
     if (!parsed.success) {
       const errs: Record<string, string> = {};
-      parsed.error.issues.forEach((i) => { errs[i.path[0] as string] = i.message; });
+      parsed.error.issues.forEach((i) => {
+        errs[i.path[0] as string] = i.message;
+      });
       setErrors(errs);
       return;
     }
@@ -63,11 +82,15 @@ function Page() {
       <div className="text-center">
         <div className="eyebrow">Une question ?</div>
         <h1 className="font-display text-4xl md:text-6xl mt-3">Contact</h1>
-        <div className="mt-4"><span className="divider-gold" /></div>
+        <div className="mt-4">
+          <span className="divider-gold" />
+        </div>
         <p className="mt-6 text-charbon/70 max-w-2xl mx-auto font-light">
           Une question sur nos créations, une commande en cours, un renseignement ? Écrivez-nous.
           Pour une demande de devis événementiel (mariage, anniversaire, entreprise…),{" "}
-          <Link to="/devis" className="text-gold border-b border-gold/50">rendez-vous sur la page Devis →</Link>
+          <Link to="/devis" className="text-gold border-b border-gold/50">
+            rendez-vous sur la page Devis →
+          </Link>
         </p>
       </div>
 
@@ -88,33 +111,74 @@ function Page() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="rounded-2xl bg-white border border-beige p-8 space-y-4" noValidate>
+            <form
+              onSubmit={handleSubmit}
+              className="rounded-2xl bg-white border border-beige p-8 space-y-4"
+              noValidate
+            >
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Prénom *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
-                  {errors.firstName && <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>}
+                  <input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Prénom *"
+                    className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                  />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-600 mt-1">{errors.firstName}</p>
+                  )}
                 </div>
                 <div>
-                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
-                  {errors.lastName && <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>}
+                  <input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Nom *"
+                    className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                  />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-600 mt-1">{errors.lastName}</p>
+                  )}
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-3">
                 <div>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email *"
+                    className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                  />
                   {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
                 </div>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Téléphone"
+                  className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                />
               </div>
 
               <div>
-                <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Sujet *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
+                <input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Sujet *"
+                  className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                />
                 {errors.subject && <p className="text-xs text-red-600 mt-1">{errors.subject}</p>}
               </div>
 
               <div>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6} placeholder="Votre message *" className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold" />
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={6}
+                  placeholder="Votre message *"
+                  className="w-full rounded-xl border border-beige bg-white px-4 py-3 outline-none focus:border-gold"
+                />
                 {errors.message && <p className="text-xs text-red-600 mt-1">{errors.message}</p>}
               </div>
 
@@ -128,12 +192,16 @@ function Page() {
           )}
 
           <div className="mt-8 bg-beige border border-gold/30 p-6 text-center">
-            <div className="text-[10px] uppercase tracking-[0.28em] text-gold">Événement à organiser ?</div>
+            <div className="text-[10px] uppercase tracking-[0.28em] text-gold">
+              Événement à organiser ?
+            </div>
             <h3 className="font-display text-2xl mt-2">Faites une demande de devis</h3>
             <p className="mt-2 text-sm text-charbon/70">
               Formulaire dédié avec calculateur de quantité, palette et budget.
             </p>
-            <Link to="/devis" className="btn btn-gold mt-4 inline-flex">Accéder au devis</Link>
+            <Link to="/devis" className="btn btn-gold mt-4 inline-flex">
+              Accéder au devis
+            </Link>
           </div>
         </div>
 
@@ -147,11 +215,15 @@ function Page() {
               </li>
               <li className="flex gap-3">
                 <Phone className="h-5 w-5 text-gold shrink-0" />
-                <a href="tel:+33699466030" className="hover:text-gold">+33 6 99 46 60 30</a>
+                <a href="tel:+33699466030" className="hover:text-gold">
+                  +33 6 99 46 60 30
+                </a>
               </li>
               <li className="flex gap-3">
                 <Mail className="h-5 w-5 text-gold shrink-0" />
-                <a href="mailto:contact@osweets.fr" className="hover:text-gold">contact@osweets.fr</a>
+                <a href="mailto:contact@osweets.fr" className="hover:text-gold">
+                  contact@osweets.fr
+                </a>
               </li>
               <li className="flex gap-3 items-center">
                 <MessageCircle className="h-5 w-5 text-gold shrink-0" />
@@ -171,10 +243,22 @@ function Page() {
           <div>
             <h3 className="font-display text-2xl mb-4">Horaires</h3>
             <ul className="text-sm space-y-1">
-              <li className="flex justify-between"><span>Lundi</span><span className="text-charbon/60">Fermé</span></li>
-              <li className="flex justify-between"><span>Mardi — Vendredi</span><span>10h — 19h</span></li>
-              <li className="flex justify-between"><span>Samedi</span><span>10h — 20h</span></li>
-              <li className="flex justify-between"><span>Dimanche</span><span>10h — 18h</span></li>
+              <li className="flex justify-between">
+                <span>Lundi</span>
+                <span className="text-charbon/60">Fermé</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Mardi — Vendredi</span>
+                <span>10h — 19h</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Samedi</span>
+                <span>10h — 20h</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Dimanche</span>
+                <span>10h — 18h</span>
+              </li>
             </ul>
           </div>
 

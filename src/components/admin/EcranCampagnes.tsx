@@ -29,7 +29,8 @@ export function EcranCampagnes({ ctx }: { ctx: Contexte }) {
       l.push(s);
       m.set(s.season_key, l);
     }
-    for (const l of m.values()) l.sort((a, b) => String(a.starts_on).localeCompare(String(b.starts_on)));
+    for (const l of m.values())
+      l.sort((a, b) => String(a.starts_on).localeCompare(String(b.starts_on)));
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [ctx.saisons]);
 
@@ -97,9 +98,9 @@ export function EcranCampagnes({ ctx }: { ctx: Contexte }) {
 
       {orphelines.length > 0 && (
         <div className="note" style={{ borderLeftColor: "#c0392b", marginBottom: 18 }}>
-          <b>Attention.</b> Des produits saisonniers dépendent de{" "}
-          <b>{orphelines.join(", ")}</b>, qui n'a aucune fenêtre : ils resteront invisibles en
-          boutique tant que vous n'en aurez pas ajouté une.
+          <b>Attention.</b> Des produits saisonniers dépendent de <b>{orphelines.join(", ")}</b>,
+          qui n'a aucune fenêtre : ils resteront invisibles en boutique tant que vous n'en aurez pas
+          ajouté une.
         </div>
       )}
 
@@ -211,7 +212,8 @@ function LigneSaison({
             )}
           </div>
           <div className="m">
-            du {jour(String(row.starts_on).slice(0, 10))} au {jour(String(row.ends_on).slice(0, 10))}
+            du {jour(String(row.starts_on).slice(0, 10))} au{" "}
+            {jour(String(row.ends_on).slice(0, 10))}
             {row.preorder_days > 0
               ? ` — précommandes ${row.preorder_days} jour${row.preorder_days > 1 ? "s" : ""} avant`
               : ""}

@@ -9,11 +9,37 @@ export type Tier = {
 };
 
 export const WEDDING_TIERS: Tier[] = [
-  { maxGuests: 20, label: "Petit wedding cake · 1 étage", parts: "~20 parts", priceRange: "à partir de 180 €" },
-  { maxGuests: 40, label: "Wedding cake moyen · 2 étages", parts: "~40 parts", priceRange: "à partir de 340 €" },
-  { maxGuests: 60, label: "Grand wedding cake · 3 étages", parts: "~60 parts", priceRange: "à partir de 520 €" },
-  { maxGuests: 100, label: "Wedding cake XL · 4 étages", parts: "~100 parts", priceRange: "à partir de 880 €" },
-  { maxGuests: null, label: "Wedding cake royal · 5 étages et +", parts: "100 parts et +", priceRange: "sur devis personnalisé", quote: true },
+  {
+    maxGuests: 20,
+    label: "Petit wedding cake · 1 étage",
+    parts: "~20 parts",
+    priceRange: "à partir de 180 €",
+  },
+  {
+    maxGuests: 40,
+    label: "Wedding cake moyen · 2 étages",
+    parts: "~40 parts",
+    priceRange: "à partir de 340 €",
+  },
+  {
+    maxGuests: 60,
+    label: "Grand wedding cake · 3 étages",
+    parts: "~60 parts",
+    priceRange: "à partir de 520 €",
+  },
+  {
+    maxGuests: 100,
+    label: "Wedding cake XL · 4 étages",
+    parts: "~100 parts",
+    priceRange: "à partir de 880 €",
+  },
+  {
+    maxGuests: null,
+    label: "Wedding cake royal · 5 étages et +",
+    parts: "100 parts et +",
+    priceRange: "sur devis personnalisé",
+    quote: true,
+  },
 ];
 
 export function pickTier(guests: number, tiers: Tier[] = WEDDING_TIERS): Tier {
@@ -40,7 +66,9 @@ export function QuantityCalculator({
     <div className="bg-white border border-border p-6 space-y-5">
       <div>
         <label className="flex items-center justify-between mb-2">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-charbon/60">Nombre d'invités</span>
+          <span className="text-[10px] uppercase tracking-[0.25em] text-charbon/60">
+            Nombre d'invités
+          </span>
           <span className="font-display text-2xl text-gold">{guests}</span>
         </label>
         <input
@@ -65,7 +93,9 @@ export function QuantityCalculator({
       </div>
 
       <div className="border-t border-border pt-5 space-y-3">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-gold">Notre recommandation</div>
+        <div className="text-[10px] uppercase tracking-[0.25em] text-gold">
+          Notre recommandation
+        </div>
         <div className="font-display text-xl leading-snug">{tier.label}</div>
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-charbon/70">
           <span>{tier.parts}</span>
@@ -73,7 +103,8 @@ export function QuantityCalculator({
           <span>{tier.priceRange}</span>
         </div>
         <div className="bg-beige border-l-2 border-gold px-4 py-3 text-sm">
-          Pour <strong>{guests}</strong> invités : <em className="italic">{tier.label}</em>, {tier.parts}.
+          Pour <strong>{guests}</strong> invités : <em className="italic">{tier.label}</em>,{" "}
+          {tier.parts}.
         </div>
       </div>
 
@@ -83,7 +114,9 @@ export function QuantityCalculator({
           onClick={() => onUseForQuote(guests, tier.label)}
           className="btn btn-outline-gold w-full justify-center"
         >
-          {tier.quote ? "Utiliser pour mon devis personnalisé" : "Utiliser ce résultat pour mon devis"}
+          {tier.quote
+            ? "Utiliser pour mon devis personnalisé"
+            : "Utiliser ce résultat pour mon devis"}
         </button>
       )}
     </div>

@@ -72,7 +72,10 @@ export const Route = createFileRoute("/gateaux/cake-de-voyage")({
           "Notre cake de voyage signature, décliné en 5 parfums : citron, orange, chocolat, sorgho/droô, pistache. Expédition France entière.",
       },
       { property: "og:title", content: "Cake de voyage | Ö' Sweets" },
-      { property: "og:description", content: "5 parfums : citron, orange, chocolat, sorgho/droô, pistache." },
+      {
+        property: "og:description",
+        content: "5 parfums : citron, orange, chocolat, sorgho/droô, pistache.",
+      },
       { property: "og:image", content: absUrl(cakeCitron) },
       { property: "og:type", content: "product" },
       { property: "og:url", content: absUrl(PATH) },
@@ -102,35 +105,48 @@ function Page() {
     <div className="bg-ivory">
       <section className="container-os section-y">
         <nav className="text-xs uppercase tracking-[0.22em] text-charbon/55 mb-8">
-          <Link to="/gateaux" className="hover:text-gold">Gâteaux</Link>
+          <Link to="/gateaux" className="hover:text-gold">
+            Gâteaux
+          </Link>
           <span className="mx-2">/</span>
-          <Link to="/gateaux/gateaux-de-voyage" className="hover:text-gold">Gâteaux de voyage</Link>
+          <Link to="/gateaux/gateaux-de-voyage" className="hover:text-gold">
+            Gâteaux de voyage
+          </Link>
           <span className="mx-2">/</span>
           <span className="text-charbon">Cake de voyage</span>
         </nav>
 
         <div className="grid md:grid-cols-2 gap-12">
           <div className="aspect-square overflow-hidden bg-beige">
-            <img src={flavor.image} alt={`Cake de voyage ${flavor.label}`} className="h-full w-full object-cover transition duration-700" />
+            <img
+              src={flavor.image}
+              alt={`Cake de voyage ${flavor.label}`}
+              className="h-full w-full object-cover transition duration-700"
+            />
           </div>
 
           <div>
             <div className="text-[10px] tracking-[0.35em] uppercase text-gold">Signature</div>
             <h1 className="font-display text-4xl md:text-5xl mt-3">Cake de voyage</h1>
             <p className="mt-4 text-charbon/75 font-light leading-relaxed">
-              Notre cake signature façonné à la main, décliné en cinq parfums. Un moelleux généreux qui se conserve et voyage.
+              Notre cake signature façonné à la main, décliné en cinq parfums. Un moelleux généreux
+              qui se conserve et voyage.
             </p>
 
             <div className="mt-6 font-price text-gold text-3xl">{PRICE}€</div>
 
             <fieldset className="mt-8">
-              <legend className="text-xs uppercase tracking-[0.22em] text-charbon/60 mb-3">Choisir mon parfum</legend>
+              <legend className="text-xs uppercase tracking-[0.22em] text-charbon/60 mb-3">
+                Choisir mon parfum
+              </legend>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {FLAVORS.map((f) => (
                   <label
                     key={f.id}
                     className={`flex items-start gap-3 border p-4 cursor-pointer transition ${
-                      flavorId === f.id ? "border-gold bg-gold/5" : "border-border hover:border-gold/50"
+                      flavorId === f.id
+                        ? "border-gold bg-gold/5"
+                        : "border-border hover:border-gold/50"
                     }`}
                   >
                     <input
@@ -151,14 +167,38 @@ function Page() {
             </fieldset>
 
             <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-charbon/80 border-t border-border pt-6">
-              <div><dt className="text-charbon/50 text-xs uppercase tracking-wider">Format</dt><dd>Cake entier</dd></div>
-              <div><dt className="text-charbon/50 text-xs uppercase tracking-wider">Poids</dt><dd>450 g</dd></div>
-              <div><dt className="text-charbon/50 text-xs uppercase tracking-wider">Portions</dt><dd>6 à 8 personnes</dd></div>
-              <div><dt className="text-charbon/50 text-xs uppercase tracking-wider">Expédition</dt><dd>Oui, France entière</dd></div>
-              <div className="col-span-2"><dt className="text-charbon/50 text-xs uppercase tracking-wider">Préparation</dt><dd>Sous 48 à 72h après validation de commande.</dd></div>
-              <div className="col-span-2"><dt className="text-charbon/50 text-xs uppercase tracking-wider">Conservation</dt><dd>8 jours à température ambiante, dans son emballage d'origine.</dd></div>
-              <div className="col-span-2"><dt className="text-charbon/50 text-xs uppercase tracking-wider">Ingrédients</dt><dd>{flavor.ingredients.join(", ")}.</dd></div>
-              <div className="col-span-2"><dt className="text-charbon/50 text-xs uppercase tracking-wider">Allergènes</dt><dd>{flavor.allergens.join(", ")}.</dd></div>
+              <div>
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Format</dt>
+                <dd>Cake entier</dd>
+              </div>
+              <div>
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Poids</dt>
+                <dd>450 g</dd>
+              </div>
+              <div>
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Portions</dt>
+                <dd>6 à 8 personnes</dd>
+              </div>
+              <div>
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Expédition</dt>
+                <dd>Oui, France entière</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Préparation</dt>
+                <dd>Sous 48 à 72h après validation de commande.</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Conservation</dt>
+                <dd>8 jours à température ambiante, dans son emballage d'origine.</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Ingrédients</dt>
+                <dd>{flavor.ingredients.join(", ")}.</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-charbon/50 text-xs uppercase tracking-wider">Allergènes</dt>
+                <dd>{flavor.allergens.join(", ")}.</dd>
+              </div>
             </dl>
 
             <a

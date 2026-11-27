@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SITE, breadcrumb, jsonLdScript } from "@/lib/seo";
 import { events } from "@/data/products";
 import { ImmersiveCard } from "@/components/ImmersiveCard";
 import { usePageBannerImage } from "@/lib/banners";
@@ -12,6 +13,15 @@ export const Route = createFileRoute("/evenements/")({
         content:
           "Mariage, anniversaire, baby shower, fiançailles, entreprise, Ramadan, Aïd. Devis sur mesure.",
       },
+    ],
+    links: [{ rel: "canonical", href: `${SITE.url}/evenements` }],
+    scripts: [
+      jsonLdScript(
+        breadcrumb([
+          { name: "Accueil", path: "/" },
+          { name: "Événements", path: "/evenements" },
+        ]),
+      ),
     ],
   }),
   component: Page,

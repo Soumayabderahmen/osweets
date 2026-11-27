@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { destinationLegacy } from "./lib/redirections-legacy";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -40,6 +41,21 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      /*
+       * Anciennes adresses d'abord : une fiche retirée ou une collection
+       * masquée doit répondre 301 vers ce qui la remplace, pas 404. On le
+       * fait ici, avant le routeur, pour que ce soit une vraie redirection
+       * HTTP — la seule que Google transfère.
+       */
+      const url = new URL(request.url);
+      const cible = destinationLegacy(url.pathname, url.search);
+      if (cible) {
+        return new Response(null, {
+          status: 301,
+          headers: { location: cible, "cache-control": "public, max-age=3600" },
+        });
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

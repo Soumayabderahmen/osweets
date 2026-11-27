@@ -12,7 +12,15 @@ import { dbConfig, loadEnv } from "./db-env.mjs";
 loadEnv();
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SITE = "https://osweetspatisserie.lovable.app";
+/*
+ * Même source que `SITE.url` côté application (src/lib/seo.ts) : le jour du
+ * changement de domaine, une seule variable à renseigner, sinon le sitemap
+ * annoncerait encore la préproduction.
+ */
+const SITE = (process.env.VITE_SITE_URL ?? "https://osweetspatisserie.lovable.app").replace(
+  /\/+$/,
+  "",
+);
 
 /** Pages privées ou transactionnelles : jamais indexées. */
 const EXCLUDED = new Set(["/admin", "/checkout", "/panier", "/mon-compte", "/favoris"]);
@@ -53,6 +61,17 @@ function routeToPath(file) {
   return "/" + segments.join("/");
 }
 
+/**
+ * Une route qui ne fait que rediriger (ancienne adresse conservée pour ne
+ * pas casser les liens) n'est pas une page : l'annoncer au sitemap envoie
+ * Google sur un 301 au lieu de la destination. On les reconnaît à leur
+ * `throw redirect(...)`, ce qui dispense d'en tenir la liste à jour.
+ */
+function estPureRedirection(fichier) {
+  const src = readFileSync(join(root, "src", "routes", fichier), "utf8");
+  return /throw\s+redirect\s*\(/.test(src) && !/function\s+\w*(Page|Component)/.test(src);
+}
+
 function staticRoutes() {
   return (
     readdirSync(join(root, "src", "routes"))
@@ -61,6 +80,7 @@ function staticRoutes() {
       // c'est la publication en back-office qui décide, pas l'existence
       // d'un `.tsx`.
       .filter((f) => !COLLECTIONS_STATIQUES.has(f))
+      .filter((f) => !estPureRedirection(f))
       .map(routeToPath)
       .filter((p) => p && !EXCLUDED.has(p))
   );
@@ -122,7 +142,19 @@ async function patisserieDepuisLaBase() {
  * importe ses visuels via Vite. La Pâtisserie Tunisienne n'y est plus.
  */
 function productPaths() {
-  const src = readFileSync(join(root, "src", "data", "products.ts"), "utf8");
+  const fichier = readFileSync(join(root, "src", "data", "products.ts"), "utf8");
+  /*
+   * Ce fichier n'exporte pas que des produits : `giftCategories` et
+   * `events` y vivent aussi, et leurs entrées ont elles aussi une clé
+   * `slug`. Balayer tout le fichier publiait donc au sitemap des adresses
+   * comme /produits/mariage ou /produits/naissance, qui n'ont jamais
+   * existé — treize 404 annoncées à Google. On ne lit que le tableau
+   * `products`, du début de sa déclaration jusqu'à l'export suivant.
+   */
+  const debut = fichier.indexOf("export const products");
+  if (debut === -1) return [];
+  const suivant = fichier.slice(debut + 1).search(/^export (const|type|interface) /m);
+  const src = suivant === -1 ? fichier.slice(debut) : fichier.slice(debut, debut + 1 + suivant);
   const slugs = [...src.matchAll(/^\s*slug:\s*"([^"]+)"/gm)].map((m) => m[1]);
   // Les fiches encore en brouillon (prix non arrêté) restent hors sitemap.
   const drafts = new Set(

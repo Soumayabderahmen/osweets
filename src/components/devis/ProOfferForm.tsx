@@ -41,7 +41,20 @@ export function ProOfferForm() {
         `• Message : ${message || "—"}`,
         logo ? `• Logo : ${logo.name} (je l'envoie ici)` : "",
       ]),
-    [company, contactName, email, phone, type, quantity, budget, date, fulfillment, custom, message, logo],
+    [
+      company,
+      contactName,
+      email,
+      phone,
+      type,
+      quantity,
+      budget,
+      date,
+      fulfillment,
+      custom,
+      message,
+      logo,
+    ],
   );
 
   return (
@@ -53,52 +66,121 @@ export function ProOfferForm() {
 
       <div className="mt-8 grid sm:grid-cols-2 gap-5">
         <Field label="Nom de l'entreprise">
-          <input value={company} onChange={(e) => setCompany(e.target.value)} maxLength={150} className={inputCls} />
+          <input
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            maxLength={150}
+            className={inputCls}
+          />
         </Field>
         <Field label="Nom du contact">
-          <input value={contactName} onChange={(e) => setContactName(e.target.value)} maxLength={120} className={inputCls} />
+          <input
+            value={contactName}
+            onChange={(e) => setContactName(e.target.value)}
+            maxLength={120}
+            className={inputCls}
+          />
         </Field>
         <Field label="Email">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} className={inputCls} />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            maxLength={255}
+            className={inputCls}
+          />
         </Field>
         <Field label="Téléphone">
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} className={inputCls} />
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            maxLength={30}
+            className={inputCls}
+          />
         </Field>
         <Field label="Type de demande">
           <select value={type} onChange={(e) => setType(e.target.value)} className={inputCls}>
-            {PRO_TYPES.map((t) => <option key={t}>{t}</option>)}
+            {PRO_TYPES.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
           </select>
         </Field>
         <Field label="Quantité">
-          <input value={quantity} onChange={(e) => setQuantity(e.target.value)} maxLength={200} placeholder="Ex. 80 coffrets" className={inputCls} />
+          <input
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            maxLength={200}
+            placeholder="Ex. 80 coffrets"
+            className={inputCls}
+          />
         </Field>
         <Field label="Budget">
           <select value={budget} onChange={(e) => setBudget(e.target.value)} className={inputCls}>
-            {BUDGETS.map((b) => <option key={b}>{b}</option>)}
+            {BUDGETS.map((b) => (
+              <option key={b}>{b}</option>
+            ))}
           </select>
         </Field>
         <Field label="Date souhaitée">
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className={inputCls}
+          />
         </Field>
         <Field label="Livraison ou retrait">
-          <select value={fulfillment} onChange={(e) => setFulfillment(e.target.value)} className={inputCls}>
-            {FULFILLMENT.map((f) => <option key={f}>{f}</option>)}
+          <select
+            value={fulfillment}
+            onChange={(e) => setFulfillment(e.target.value)}
+            className={inputCls}
+          >
+            {FULFILLMENT.map((f) => (
+              <option key={f}>{f}</option>
+            ))}
           </select>
         </Field>
         <Field label="Personnalisation souhaitée">
-          <input value={custom} onChange={(e) => setCustom(e.target.value)} maxLength={300} placeholder="Logo doré, carte, ruban aux couleurs…" className={inputCls} />
+          <input
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            maxLength={300}
+            placeholder="Logo doré, carte, ruban aux couleurs…"
+            className={inputCls}
+          />
         </Field>
         <Field label="Logo de l'entreprise (optionnel)" full>
-          <input type="file" accept="image/*,application/pdf" onChange={(e) => setLogo(e.target.files?.[0] ?? null)} className={`${inputCls} file:mr-3 file:border-0 file:bg-beige file:px-3 file:py-1 file:text-xs`} />
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(e) => setLogo(e.target.files?.[0] ?? null)}
+            className={`${inputCls} file:mr-3 file:border-0 file:bg-beige file:px-3 file:py-1 file:text-xs`}
+          />
         </Field>
         <Field label="Message" full>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} rows={4} className={inputCls} />
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            maxLength={1000}
+            rows={4}
+            className={inputCls}
+          />
         </Field>
       </div>
 
-      {logo && <p className="text-xs text-charbon/60 mt-2">{logo.name} — à envoyer dans la conversation WhatsApp.</p>}
+      {logo && (
+        <p className="text-xs text-charbon/60 mt-2">
+          {logo.name} — à envoyer dans la conversation WhatsApp.
+        </p>
+      )}
 
-      <a href={link} target="_blank" rel="noreferrer" className="btn btn-gold w-full justify-center mt-8">
+      <a
+        href={link}
+        target="_blank"
+        rel="noreferrer"
+        className="btn btn-gold w-full justify-center mt-8"
+      >
         Demander mon devis
       </a>
       <QuoteNotice />

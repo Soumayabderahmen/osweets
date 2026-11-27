@@ -1,15 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { cakeSizes, cakeFlavors } from "@/data/themes";
+import { useCakeConfig } from "@/lib/gateaux";
 import cakePistache from "@/assets/cake-pistache.jpg";
 
 export const Route = createFileRoute("/gateaux/gender-reveal")({
   head: () => ({
     meta: [
       { title: "Gâteau Gender Reveal sur mesure — Ö' Sweets" },
-      { name: "description", content: "Révélez le sexe de bébé avec un gâteau surprise fille ou garçon. Personnalisez couleur, taille, parfum et date de l'événement." },
+      {
+        name: "description",
+        content:
+          "Révélez le sexe de bébé avec un gâteau surprise fille ou garçon. Personnalisez couleur, taille, parfum et date de l'événement.",
+      },
       { property: "og:title", content: "Gâteau Gender Reveal — Ö' Sweets" },
-      { property: "og:description", content: "Gâteau surprise fille ou garçon, sur mesure pour votre baby shower." },
+      {
+        property: "og:description",
+        content: "Gâteau surprise fille ou garçon, sur mesure pour votre baby shower.",
+      },
     ],
   }),
   component: Page,
@@ -18,14 +25,33 @@ export const Route = createFileRoute("/gateaux/gender-reveal")({
 type Reveal = "fille" | "garcon" | "surprise";
 
 const reveals: { id: Reveal; label: string; emoji: string; color: string; desc: string }[] = [
-  { id: "fille", label: "C'est une fille", emoji: "🎀", color: "#F5B7C7", desc: "Cœur du gâteau rose poudré." },
-  { id: "garcon", label: "C'est un garçon", emoji: "💙", color: "#9EC5E8", desc: "Cœur du gâteau bleu ciel." },
-  { id: "surprise", label: "Surprise pour nous aussi", emoji: "✨", color: "#D8C79A", desc: "Nous gardons le secret jusqu'au moment magique." },
+  {
+    id: "fille",
+    label: "C'est une fille",
+    emoji: "🎀",
+    color: "#F5B7C7",
+    desc: "Cœur du gâteau rose poudré.",
+  },
+  {
+    id: "garcon",
+    label: "C'est un garçon",
+    emoji: "💙",
+    color: "#9EC5E8",
+    desc: "Cœur du gâteau bleu ciel.",
+  },
+  {
+    id: "surprise",
+    label: "Surprise pour nous aussi",
+    emoji: "✨",
+    color: "#D8C79A",
+    desc: "Nous gardons le secret jusqu'au moment magique.",
+  },
 ];
 
 function Page() {
   const [reveal, setReveal] = useState<Reveal>("fille");
-  const [size, setSize] = useState(cakeSizes[1]);
+  const { sizes: cakeSizes, flavors: cakeFlavors } = useCakeConfig();
+  const [size, setSize] = useState(cakeSizes[1] ?? cakeSizes[0]);
   const [flavor, setFlavor] = useState(cakeFlavors[0]);
   const [eventDate, setEventDate] = useState("");
   const [guests, setGuests] = useState("");
@@ -44,14 +70,23 @@ function Page() {
     <div className="bg-ivory">
       {/* Hero */}
       <section className="relative h-[52vh] min-h-[400px] overflow-hidden">
-        <img src={cakePistache} alt="Gâteau Gender Reveal" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={cakePistache}
+          alt="Gâteau Gender Reveal"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div
           className="absolute inset-0"
           style={{ background: `linear-gradient(to bottom, ${selected.color}55, rgba(0,0,0,0.7))` }}
         />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-white text-center px-6">
-          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">Sur mesure · Gâteaux</div>
-          <h1 className="font-display text-5xl md:text-6xl mt-4 text-white" style={{ textShadow: "0 2px 30px rgba(0,0,0,0.55)" }}>
+          <div className="text-[10px] tracking-[0.35em] uppercase text-gold font-medium">
+            Sur mesure · Gâteaux
+          </div>
+          <h1
+            className="font-display text-5xl md:text-6xl mt-4 text-white"
+            style={{ textShadow: "0 2px 30px rgba(0,0,0,0.55)" }}
+          >
             Gâteau Gender Reveal
           </h1>
           <span className="mt-5 h-px w-16 bg-gold inline-block" />
@@ -59,7 +94,9 @@ function Page() {
             Un gâteau surprise pour révéler le sexe de bébé au moment de la découpe.
           </p>
           <div className="mt-6 text-xs tracking-wider text-white/80 uppercase">
-            <Link to="/gateaux" className="hover:text-gold">Gâteaux</Link>
+            <Link to="/gateaux" className="hover:text-gold">
+              Gâteaux
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-gold">Gender Reveal</span>
           </div>
@@ -71,7 +108,9 @@ function Page() {
           {/* Reveal choice */}
           <div>
             <div className="flex items-baseline justify-between mb-6">
-              <h2 className="font-display text-2xl"><span className="text-gold">01.</span> Fille, garçon ou surprise ?</h2>
+              <h2 className="font-display text-2xl">
+                <span className="text-gold">01.</span> Fille, garçon ou surprise ?
+              </h2>
               <span className="text-xs text-charbon/60">{selected.label}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -84,7 +123,10 @@ function Page() {
                   <div className="text-3xl mb-3">{r.emoji}</div>
                   <div className="font-display text-base">{r.label}</div>
                   <div className="text-xs text-charbon/60 mt-2 leading-relaxed">{r.desc}</div>
-                  <span className="absolute right-4 top-4 h-4 w-4 rounded-full border border-white shadow" style={{ background: r.color }} />
+                  <span
+                    className="absolute right-4 top-4 h-4 w-4 rounded-full border border-white shadow"
+                    style={{ background: r.color }}
+                  />
                 </button>
               ))}
             </div>
@@ -93,7 +135,9 @@ function Page() {
           {/* Size */}
           <div>
             <div className="flex items-baseline justify-between mb-6">
-              <h2 className="font-display text-2xl"><span className="text-gold">02.</span> Choisissez la taille</h2>
+              <h2 className="font-display text-2xl">
+                <span className="text-gold">02.</span> Choisissez la taille
+              </h2>
               <span className="text-xs text-charbon/60">{size.diameter}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -104,7 +148,9 @@ function Page() {
                   className={`p-5 text-center transition border-2 ${size.id === s.id ? "border-gold bg-beige" : "border-border bg-white hover:border-gold/50"}`}
                 >
                   <div className="font-display text-lg">{s.diameter}</div>
-                  <div className="text-xs text-charbon/60 mt-1 uppercase tracking-wider">{s.parts} parts</div>
+                  <div className="text-xs text-charbon/60 mt-1 uppercase tracking-wider">
+                    {s.parts} parts
+                  </div>
                   <div className="font-price text-xl text-gold mt-2">{s.price}€</div>
                 </button>
               ))}
@@ -114,7 +160,9 @@ function Page() {
           {/* Flavor */}
           <div>
             <div className="flex items-baseline justify-between mb-6">
-              <h2 className="font-display text-2xl"><span className="text-gold">03.</span> Choisissez le parfum</h2>
+              <h2 className="font-display text-2xl">
+                <span className="text-gold">03.</span> Choisissez le parfum
+              </h2>
               <span className="text-xs text-charbon/60">{flavor.label}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -132,10 +180,14 @@ function Page() {
 
           {/* Event config */}
           <div>
-            <h2 className="font-display text-2xl mb-6"><span className="text-gold">04.</span> Configurer l'événement</h2>
+            <h2 className="font-display text-2xl mb-6">
+              <span className="text-gold">04.</span> Configurer l'événement
+            </h2>
             <div className="grid md:grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Date de l'événement</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Date de l'événement
+                </span>
                 <input
                   type="date"
                   value={eventDate}
@@ -144,7 +196,9 @@ function Page() {
                 />
               </label>
               <label className="block">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Nombre d'invités</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Nombre d'invités
+                </span>
                 <input
                   type="number"
                   min={1}
@@ -181,22 +235,50 @@ function Page() {
             {selected.emoji}
           </div>
           <div className="text-sm space-y-2 border-y border-border py-4">
-            <div className="flex justify-between"><span className="text-charbon/60">Révélation</span><span>{selected.label}</span></div>
-            <div className="flex justify-between"><span className="text-charbon/60">Taille</span><span>{size.diameter}</span></div>
-            <div className="flex justify-between"><span className="text-charbon/60">Parts</span><span>{size.parts}</span></div>
-            <div className="flex justify-between"><span className="text-charbon/60">Parfum</span><span>{flavor.label}</span></div>
-            {eventDate && <div className="flex justify-between"><span className="text-charbon/60">Date</span><span>{eventDate}</span></div>}
-            {guests && <div className="flex justify-between"><span className="text-charbon/60">Invités</span><span>{guests}</span></div>}
+            <div className="flex justify-between">
+              <span className="text-charbon/60">Révélation</span>
+              <span>{selected.label}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-charbon/60">Taille</span>
+              <span>{size.diameter}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-charbon/60">Parts</span>
+              <span>{size.parts}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-charbon/60">Parfum</span>
+              <span>{flavor.label}</span>
+            </div>
+            {eventDate && (
+              <div className="flex justify-between">
+                <span className="text-charbon/60">Date</span>
+                <span>{eventDate}</span>
+              </div>
+            )}
+            {guests && (
+              <div className="flex justify-between">
+                <span className="text-charbon/60">Invités</span>
+                <span>{guests}</span>
+              </div>
+            )}
           </div>
           <div className="flex items-end justify-between">
             <span className="text-xs uppercase tracking-wider text-charbon/60">Prix estimé</span>
             <span className="font-price text-3xl text-gold">{total}€</span>
           </div>
-          <a href={waLink} target="_blank" rel="noreferrer" className="btn btn-gold w-full justify-center">
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-gold w-full justify-center"
+          >
             Commander sur WhatsApp
           </a>
           <p className="text-[11px] text-charbon/55 leading-relaxed">
-            Confirmation sous 24h. Délai minimum 5 jours avant la date. Acompte 30% à la commande. Décor Gender Reveal inclus (+20€).
+            Confirmation sous 24h. Délai minimum 5 jours avant la date. Acompte 30% à la commande.
+            Décor Gender Reveal inclus (+20€).
           </p>
         </aside>
       </section>

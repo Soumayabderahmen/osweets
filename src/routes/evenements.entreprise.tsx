@@ -97,13 +97,7 @@ function Page() {
           title="Nos incontournables corporate"
           desc="Curated pour vos réceptions et cadeaux d'affaires."
         />
-        <SuggestedProducts
-          slugs={[
-            "coffret-prestige",
-            "coffret-decouverte",
-            "coffret-aid",
-          ]}
-        />
+        <SuggestedProducts slugs={["coffret-prestige", "coffret-decouverte", "coffret-aid"]} />
         <p className="text-center mt-6 text-sm text-charbon/60">
           + Personnalisation logo, ruban et carte de vœux sur devis.
         </p>
@@ -111,10 +105,7 @@ function Page() {
 
       <section className="bg-sable">
         <div className="container-os section-y">
-          <SectionTitle
-            eyebrow="04 · Service B2B"
-            title="Un accompagnement dédié"
-          />
+          <SectionTitle eyebrow="04 · Service B2B" title="Un accompagnement dédié" />
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
@@ -135,13 +126,9 @@ function Page() {
               },
             ].map((b) => (
               <div key={b.t} className="bg-white border border-border p-6">
-                <div className="text-[10px] uppercase tracking-[0.28em] text-gold">
-                  Service
-                </div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-gold">Service</div>
                 <div className="font-display text-lg mt-2">{b.t}</div>
-                <p className="text-sm text-charbon/70 mt-2 leading-relaxed">
-                  {b.d}
-                </p>
+                <p className="text-sm text-charbon/70 mt-2 leading-relaxed">{b.d}</p>
               </div>
             ))}
           </div>
@@ -151,13 +138,10 @@ function Page() {
       <section className="container-os section-y">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           <div>
-            <SectionTitle
-              eyebrow="05 · Votre projet"
-              title="Décrivez votre besoin"
-            />
+            <SectionTitle eyebrow="05 · Votre projet" title="Décrivez votre besoin" />
             <p className="text-charbon/70 font-light leading-relaxed">
-              Un chargé de projet vous répond sous 24 h avec un devis détaillé,
-              adapté à votre volume et à vos codes de marque.
+              Un chargé de projet vous répond sous 24 h avec un devis détaillé, adapté à votre
+              volume et à vos codes de marque.
             </p>
           </div>
           <div className="bg-white border border-border p-8 space-y-4">
@@ -227,10 +211,7 @@ function Page() {
 
       <section className="bg-beige">
         <div className="container-os section-y">
-          <SectionTitle
-            eyebrow="07 · Ils nous ont fait confiance"
-            title="Réalisations corporate"
-          />
+          <SectionTitle eyebrow="07 · Ils nous ont fait confiance" title="Réalisations corporate" />
           <SocialProof
             images={[coffret, mignardises, wedding, platter]}
             testimonials={[

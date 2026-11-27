@@ -29,6 +29,8 @@ import {
   type Partie,
 } from "./Ecrans";
 import { EcranProfil } from "./Profil";
+import { COLONNES_G, EcranGateaux, EcranMesure, EcranPagesGateaux } from "./Gateaux";
+import { listGateaux, type GateauxData } from "@/api/gateaux";
 import type { AdminIdentity } from "@/api/auth";
 import { Ic, Toasts, V2Context, type Preset, type Toast } from "./ui";
 import "../admin.css";
@@ -51,6 +53,8 @@ type Ecran =
   | "bandeaux"
   | "attente"
   | "profil"
+  | "gpages"
+  | "gmesure"
   | Partie;
 
 /** Le menu de gauche suit le menu du site : chaque partie au même endroit. */
@@ -69,7 +73,16 @@ const SECTIONS: { titre: string; items: [Ecran, string, string, [Ecran, string][
           ["collections", "Rubriques du menu"],
         ],
       ],
-      ["gateaux", "gateau", "Gâteaux"],
+      [
+        "gateaux",
+        "gateau",
+        "Gâteaux",
+        [
+          ["gateaux", "Produits"],
+          ["gpages", "Pages du menu"],
+          ["gmesure", "Sur mesure"],
+        ],
+      ],
       ["coffrets", "coffret", "Coffrets"],
       ["sale", "plat", "Salé"],
       ["cadeaux", "coeur", "Cadeaux"],
@@ -94,13 +107,16 @@ const SECTIONS: { titre: string; items: [Ecran, string, string, [Ecran, string][
   },
 ];
 const PATISSERIE: Ecran[] = ["produits", "familles", "collections", "campagnes"];
+const GATEAUX: Ecran[] = ["gateaux", "gpages", "gmesure"];
 const NOMS: Record<Ecran, string> = {
   accueil: "Accueil",
   produits: "Produits",
   familles: "Familles",
   collections: "Rubriques du menu",
   campagnes: "Ramadan & Aïd",
-  gateaux: "Gâteaux",
+  gateaux: "Produits",
+  gpages: "Pages du menu",
+  gmesure: "Sur mesure",
   coffrets: "Coffrets",
   sale: "Salé",
   cadeaux: "Cadeaux",
@@ -128,6 +144,15 @@ export function AdminV2({
   const { email, displayName: nom } = admin;
   const [ecran, setEcran] = useState<Ecran>("accueil");
   const [rubrique, setRubrique] = useState("");
+  const [colonneG, setColonneG] = useState("");
+  const [gat, setGat] = useState<GateauxData | null>(null);
+  const rechargerGat = useCallback(async () => {
+    try {
+      setGat(await listGateaux());
+    } catch {
+      setGat({ ok: false, pages: [], gateaux: [], config: null });
+    }
+  }, []);
   const [filtre, setFiltre] = useState<string | undefined>();
   const [panneau, setPanneau] = useState<PanneauDemande | null>(null);
   const [fenetre, setFenetre] = useState<{
@@ -180,7 +205,8 @@ export function AdminV2({
 
   useEffect(() => {
     void recharger();
-  }, [recharger]);
+    void rechargerGat();
+  }, [recharger, rechargerGat]);
 
   const { setTiroir } = menu;
   const aller = useCallback(
@@ -188,6 +214,7 @@ export function AdminV2({
       setEcran((e === "bord" ? "accueil" : e) as Ecran);
       setFiltre(f);
       setRubrique("");
+      setColonneG("");
       setTiroir(false);
       window.scrollTo({ top: 0 });
     },
@@ -236,12 +263,17 @@ export function AdminV2({
   const v2 = {
     ctx,
     message,
+    aller,
+    gat,
+    rechargerGat,
     modifier: (row: ProductRow | null, preset?: Preset) =>
       setFenetre((f) => ({ row, preset, n: (f?.n ?? 0) + 1 })),
   };
 
   const nouvelles = commandes.filter((c) => c.status === "nouvelle").length;
-  const comptes = {
+  const comptes: Record<string, number> = {
+    gateaux: gat?.gateaux.length ?? 0,
+    gpages: gat?.pages.length ?? 0,
     produits: filterPatisserieRows(produits).filter((r) => !r.archived).length,
     familles: familles.length,
     collections: collections.length,
@@ -296,7 +328,19 @@ export function AdminV2({
       n: patVivants.filter((r) => (r.collections ?? []).includes(c.product_key)).length,
       fete: cleSaisons.has(c.product_key),
     }));
+  const colonnesGateaux = COLONNES_G.map((col) => ({
+    cle: col,
+    nom: col,
+    n: (gat?.gateaux ?? []).filter(
+      (g) => gat?.pages.find((p) => p.key === g.page_key)?.column_label === col,
+    ).length,
+  })).filter((c) => c.n > 0);
+  const allerColonne = (col: string) => {
+    aller("gateaux");
+    setColonneG(col);
+  };
   const nomEcran = NOMS[ecran];
+  const dansGat = GATEAUX.includes(ecran);
   const dansPat = PATISSERIE.includes(ecran);
 
   const contenu = chargement ? (
@@ -321,6 +365,12 @@ export function AdminV2({
     <EcranRubriques />
   ) : ecran === "commandes" ? (
     <EcranCommandesV2 />
+  ) : ecran === "gateaux" ? (
+    <EcranGateaux colonne={colonneG} setColonne={setColonneG} />
+  ) : ecran === "gpages" ? (
+    <EcranPagesGateaux />
+  ) : ecran === "gmesure" ? (
+    <EcranMesure />
   ) : ecran === "profil" ? (
     <EcranProfil admin={admin} onChange={onAdminChange} />
   ) : ecran === "reglages" ? (
@@ -371,6 +421,9 @@ export function AdminV2({
               rubriques={rubriquesMenu}
               rubrique={rubrique}
               allerRubrique={allerRubrique}
+              colonnes={colonnesGateaux}
+              colonne={colonneG}
+              allerColonne={allerColonne}
               onSignOut={onSignOut}
             />
           </nav>

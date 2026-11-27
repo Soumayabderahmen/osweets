@@ -15,10 +15,7 @@ import {
   FinalCTA,
 } from "@/components/event/EventBlocks";
 import { QuoteForm, type QuotePrefill } from "@/components/event/QuoteForm";
-import {
-  QuantityCalculator,
-  type Tier,
-} from "@/components/event/QuantityCalculator";
+import { QuantityCalculator, type Tier } from "@/components/event/QuantityCalculator";
 import { eventHead } from "@/lib/seo";
 
 const FIANCAILLES_TIERS: Tier[] = [
@@ -103,17 +100,9 @@ function Page() {
       />
 
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="Sélection"
-          title="L'essentiel des fiançailles tunisiennes"
-        />
+        <SectionTitle eyebrow="Sélection" title="L'essentiel des fiançailles tunisiennes" />
         <SuggestedProducts
-          slugs={[
-            "kaak-warka",
-            "baklawa-pistache",
-            "samsa-amandes",
-            "coffret-prestige",
-          ]}
+          slugs={["kaak-warka", "baklawa-pistache", "samsa-amandes", "coffret-prestige"]}
         />
         <div className="mt-10 text-center">
           <Link to="/gateaux/wedding-cakes" className="btn btn-gold">
@@ -145,15 +134,10 @@ function Page() {
                   <div className="text-xs uppercase tracking-wider text-charbon/60 mt-1">
                     {p.guests} invités
                   </div>
-                  <div className="font-price text-4xl text-gold mt-4">
-                    {p.price}€
-                  </div>
+                  <div className="font-price text-4xl text-gold mt-4">{p.price}€</div>
                   <ul className="mt-6 space-y-3 flex-1">
                     {p.includes.map((line) => (
-                      <li
-                        key={line}
-                        className="flex gap-2 text-sm text-charbon/80"
-                      >
+                      <li key={line} className="flex gap-2 text-sm text-charbon/80">
                         <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
                         <span>{line}</span>
                       </li>
@@ -184,13 +168,10 @@ function Page() {
       {/* Calculator */}
       <section className="container-os section-y grid lg:grid-cols-2 gap-12 items-start">
         <div>
-          <SectionTitle
-            eyebrow="Calculateur"
-            title="La bonne formule pour vos invités"
-          />
+          <SectionTitle eyebrow="Calculateur" title="La bonne formule pour vos invités" />
           <p className="text-charbon/70 font-light leading-relaxed">
-            Précisez votre nombre d'invités : nous vous suggérons la taille du
-            gâteau et le volume de mignardises à prévoir.
+            Précisez votre nombre d'invités : nous vous suggérons la taille du gâteau et le volume
+            de mignardises à prévoir.
           </p>
         </div>
         <QuantityCalculator
@@ -202,9 +183,7 @@ function Page() {
               suggestedSize: size,
               productType: "Pack fiançailles",
             });
-            document
-              .getElementById("fiancailles-devis")
-              ?.scrollIntoView({ behavior: "smooth" });
+            document.getElementById("fiancailles-devis")?.scrollIntoView({ behavior: "smooth" });
           }}
         />
       </section>
@@ -234,25 +213,15 @@ function Page() {
 
       {/* FAQ */}
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="Questions fréquentes"
-          title="Vos questions, nos réponses"
-        />
+        <SectionTitle eyebrow="Questions fréquentes" title="Vos questions, nos réponses" />
         <div className="max-w-3xl mx-auto space-y-3">
           {FAQ.map((f) => (
-            <details
-              key={f.q}
-              className="group bg-white border border-border p-5"
-            >
+            <details key={f.q} className="group bg-white border border-border p-5">
               <summary className="cursor-pointer font-display text-lg flex justify-between items-center">
                 <span>{f.q}</span>
-                <span className="text-gold group-open:rotate-45 transition">
-                  +
-                </span>
+                <span className="text-gold group-open:rotate-45 transition">+</span>
               </summary>
-              <p className="mt-3 text-charbon/70 font-light leading-relaxed">
-                {f.a}
-              </p>
+              <p className="mt-3 text-charbon/70 font-light leading-relaxed">{f.a}</p>
             </details>
           ))}
         </div>
@@ -278,10 +247,7 @@ function Page() {
       </section>
 
       <section className="container-os section-y">
-        <SectionTitle
-          eyebrow="Ils nous ont fait confiance"
-          title="Réalisations récentes"
-        />
+        <SectionTitle eyebrow="Ils nous ont fait confiance" title="Réalisations récentes" />
         <SocialProof
           images={[kaakWarka, baklawa, cakeVanille, mignardises]}
           testimonials={[

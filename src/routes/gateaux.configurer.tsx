@@ -28,7 +28,8 @@ export const Route = createFileRoute("/gateaux/configurer")({
       jsonLdScript(
         service({
           name: "Gâteau sur mesure",
-          description: "Configuration d'un gâteau sur mesure : base, parfums, portions, allergies et date.",
+          description:
+            "Configuration d'un gâteau sur mesure : base, parfums, portions, allergies et date.",
           serviceType: "Gâteau sur mesure",
           path: PATH,
         }),
@@ -67,7 +68,13 @@ const FLAVORS = [
   "Café",
 ];
 
-const FINISHES = ["Crème au beurre lisse", "Chantilly mascarpone", "Glaçage miroir", "Pâte à sucre", "Nu (naked cake)"];
+const FINISHES = [
+  "Crème au beurre lisse",
+  "Chantilly mascarpone",
+  "Glaçage miroir",
+  "Pâte à sucre",
+  "Nu (naked cake)",
+];
 
 function Page() {
   const [base, setBase] = useState(BASES[0]);
@@ -80,7 +87,9 @@ function Page() {
   const [touched, setTouched] = useState(false);
 
   const toggleFlavor = (f: string) =>
-    setFlavors((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : prev.length >= 3 ? prev : [...prev, f]));
+    setFlavors((prev) =>
+      prev.includes(f) ? prev.filter((x) => x !== f) : prev.length >= 3 ? prev : [...prev, f],
+    );
 
   const valid = flavors.length > 0 && guests > 0 && !!date;
 
@@ -108,14 +117,21 @@ function Page() {
   return (
     <div className="bg-ivory">
       <section className="relative h-[46vh] min-h-[340px] overflow-hidden">
-        <img src={cakePistache} alt="Gâteau sur mesure Ö' Sweets" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={cakePistache}
+          alt="Gâteau sur mesure Ö' Sweets"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/35 to-black/75" />
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white px-6">
           <div className="text-[10px] tracking-[0.35em] uppercase text-gold">Sur mesure</div>
-          <h1 className="font-display text-4xl md:text-6xl mt-4 text-white">Configurer mon gâteau</h1>
+          <h1 className="font-display text-4xl md:text-6xl mt-4 text-white">
+            Configurer mon gâteau
+          </h1>
           <span className="mt-5 inline-block h-px w-16 bg-gold" />
           <p className="mt-5 max-w-xl text-white/90 font-light">
-            Base, parfums, portions, allergies et date : votre configuration est transmise avec votre demande de devis.
+            Base, parfums, portions, allergies et date : votre configuration est transmise avec
+            votre demande de devis.
           </p>
         </div>
       </section>
@@ -124,7 +140,9 @@ function Page() {
         <div className="space-y-12">
           {/* Base */}
           <div>
-            <h2 className="font-display text-2xl mb-5"><span className="text-gold">01.</span> Choix de la base</h2>
+            <h2 className="font-display text-2xl mb-5">
+              <span className="text-gold">01.</span> Choix de la base
+            </h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {BASES.map((b) => (
                 <button
@@ -142,7 +160,9 @@ function Page() {
 
           {/* Parfums */}
           <div>
-            <h2 className="font-display text-2xl mb-2"><span className="text-gold">02.</span> Parfums</h2>
+            <h2 className="font-display text-2xl mb-2">
+              <span className="text-gold">02.</span> Parfums
+            </h2>
             <p className="text-sm text-charbon/60 mb-5">Sélectionnez 1 à 3 parfums.</p>
             <div className="flex flex-wrap gap-2">
               {FLAVORS.map((f) => {
@@ -166,7 +186,9 @@ function Page() {
 
           {/* Finition */}
           <div>
-            <h2 className="font-display text-2xl mb-5"><span className="text-gold">03.</span> Finition</h2>
+            <h2 className="font-display text-2xl mb-5">
+              <span className="text-gold">03.</span> Finition
+            </h2>
             <div className="flex flex-wrap gap-2">
               {FINISHES.map((f) => (
                 <button
@@ -183,10 +205,14 @@ function Page() {
 
           {/* Personnes / date / allergies */}
           <div>
-            <h2 className="font-display text-2xl mb-5"><span className="text-gold">04.</span> Détails</h2>
+            <h2 className="font-display text-2xl mb-5">
+              <span className="text-gold">04.</span> Détails
+            </h2>
             <div className="grid sm:grid-cols-2 gap-5">
               <label className="block">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Nombre de personnes</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Nombre de personnes
+                </span>
                 <input
                   type="number"
                   min={1}
@@ -197,7 +223,9 @@ function Page() {
                 />
               </label>
               <label className="block">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Date souhaitée</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Date souhaitée
+                </span>
                 <input
                   type="date"
                   min={today}
@@ -208,7 +236,9 @@ function Page() {
                 {touched && !date && <span className="text-sm text-red-600">Date requise.</span>}
               </label>
               <label className="block sm:col-span-2">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Allergies & intolérances</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Allergies & intolérances
+                </span>
                 <input
                   type="text"
                   maxLength={300}
@@ -219,7 +249,9 @@ function Page() {
                 />
               </label>
               <label className="block sm:col-span-2">
-                <span className="text-xs uppercase tracking-wider text-charbon/60">Précisions (facultatif)</span>
+                <span className="text-xs uppercase tracking-wider text-charbon/60">
+                  Précisions (facultatif)
+                </span>
                 <textarea
                   rows={4}
                   maxLength={1000}
@@ -237,12 +269,30 @@ function Page() {
         <aside className="bg-sable p-8 h-fit lg:sticky lg:top-32 space-y-4">
           <h2 className="font-display text-xl">Votre gâteau</h2>
           <dl className="text-sm space-y-2 border-y border-border py-4">
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Base</dt><dd className="text-right">{base.label}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Parfums</dt><dd className="text-right">{flavors.length ? flavors.join(", ") : "—"}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Finition</dt><dd className="text-right">{finish}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Personnes</dt><dd className="text-right">{guests}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Date</dt><dd className="text-right">{date || "—"}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-charbon/60">Allergies</dt><dd className="text-right">{allergies || "—"}</dd></div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Base</dt>
+              <dd className="text-right">{base.label}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Parfums</dt>
+              <dd className="text-right">{flavors.length ? flavors.join(", ") : "—"}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Finition</dt>
+              <dd className="text-right">{finish}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Personnes</dt>
+              <dd className="text-right">{guests}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Date</dt>
+              <dd className="text-right">{date || "—"}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-charbon/60">Allergies</dt>
+              <dd className="text-right">{allergies || "—"}</dd>
+            </div>
           </dl>
           {valid ? (
             <Link to="/devis" search={search} className="btn btn-gold w-full justify-center">

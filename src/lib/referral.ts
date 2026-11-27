@@ -50,7 +50,10 @@ export function captureRefFromUrl() {
       localStorage.setItem(APPLIED_KEY, ref);
       return ref;
     }
-  } catch {}
+  } catch {
+    // Navigation privée ou stockage refusé : pas de code de parrainage
+    // mémorisé, on retombe simplement sur `null` ci-dessous.
+  }
   return null;
 }
 
