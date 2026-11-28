@@ -52,11 +52,19 @@ const subCategories: Record<
   },
 };
 
+/*
+ * `cat` est FACULTATIF, et surtout sans valeur par défaut : une valeur par
+ * défaut obligerait le routeur à réécrire /epicerie-salee en
+ * /epicerie-salee?cat=all par une redirection, à chaque visite. Son absence
+ * vaut « all », résolu à la lecture juste en dessous. Le repli reste en
+ * place pour une valeur présente mais inconnue (vieux lien, faute de
+ * frappe) : elle retombe sur « all » au lieu de casser la page.
+ */
 const searchSchema = z.object({
   cat: fallback(
     z.enum(["all", "tartinables", "huiles", "vinaigres", "epices", "antipasti"]),
     "all",
-  ).default("all"),
+  ).optional(),
 });
 
 export const Route = createFileRoute("/epicerie-salee")({
@@ -93,7 +101,9 @@ export const Route = createFileRoute("/epicerie-salee")({
 
 function EpicerieSaleePage() {
   const { cat } = Route.useSearch();
-  const sub = subCategories[cat as SubKey];
+  // Pas de `cat` dans l'adresse = la sélection complète.
+  const actuelle: SubKey = cat ?? "all";
+  const sub = subCategories[actuelle];
 
   const filtered = useMemo(() => products.filter(sub.filter), [sub]);
 
@@ -106,7 +116,7 @@ function EpicerieSaleePage() {
       breadcrumb={[
         { label: "Accueil", to: "/" },
         { label: "L'Épicerie Salée", to: "/epicerie-salee" },
-        ...(cat !== "all" ? [{ label: sub.label }] : []),
+        ...(actuelle !== "all" ? [{ label: sub.label }] : []),
       ]}
       products={filtered}
       filters={{ stock: true, price: true, allergens: true }}

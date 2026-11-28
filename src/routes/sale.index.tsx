@@ -12,8 +12,14 @@ import { useSaleProducts } from "@/lib/sale";
  * boutons sans toucher au code. `cat` désigne un plateau par son adresse ;
  * les anciens liens (?cat=classique, ?cat=prestige) restent valables.
  */
+/*
+ * `cat` est FACULTATIF, et surtout sans valeur par défaut : une valeur par
+ * défaut obligerait le routeur à réécrire /sale en /sale?cat=all par une
+ * redirection, à chaque visite. L'absence de `cat` veut simplement dire
+ * « tous les plateaux », ce que le code ci-dessous sait déjà traiter.
+ */
 const searchSchema = z.object({
-  cat: fallback(z.string(), "all").default("all"),
+  cat: fallback(z.string(), "all").optional(),
 });
 
 export const Route = createFileRoute("/sale/")({
@@ -44,7 +50,9 @@ export const Route = createFileRoute("/sale/")({
 function SalePage() {
   const { cat } = Route.useSearch();
   const plateaux = useSaleProducts();
-  const choisi = plateaux.find((p) => p.slug === cat || p.slug === `plateau-sale-${cat}`);
+  const choisi = cat
+    ? plateaux.find((p) => p.slug === cat || p.slug === `plateau-sale-${cat}`)
+    : undefined;
   const affiches = choisi ? [choisi] : plateaux;
 
   return (
